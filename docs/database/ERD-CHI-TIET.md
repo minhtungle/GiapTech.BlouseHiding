@@ -1,8 +1,22 @@
 # GiapTech.BlouseHiding — ERD chi tiết
 
-> Cụ thể hóa mục 8 (Mô hình dữ liệu cốt lõi) của [`PHUONG-AN-THUC-HIEN.md`](./PHUONG-AN-THUC-HIEN.md)
-> và mục 1 (Luồng nghiệp vụ) của [`LUONG-NGHIEP-VU-MAN-HINH.md`](./LUONG-NGHIEP-VU-MAN-HINH.md).
+> Cụ thể hóa mô hình dữ liệu cốt lõi của [`../nghiep-vu/PHAN-TICH-NGHIEP-VU.md`](../nghiep-vu/PHAN-TICH-NGHIEP-VU.md)
+> và mục 1 (Luồng nghiệp vụ) của [`../nghiep-vu/LUONG-NGHIEP-VU-MAN-HINH.md`](../nghiep-vu/LUONG-NGHIEP-VU-MAN-HINH.md).
 > Kiểu dữ liệu viết theo PostgreSQL. Mỗi bảng đều có `id UUID PK`, `created_at`, `updated_at` trừ khi ghi chú khác.
+> Quy ước migration: [`QUY-UOC-MIGRATION.md`](./QUY-UOC-MIGRATION.md).
+
+---
+
+## 0. Công nghệ CSDL & lưu trữ
+
+| Thành phần | Lựa chọn | Lý do |
+|---|---|---|
+| CSDL chính | **PostgreSQL 16+** | Mạnh về JSONB (lưu `data_json` của CV Builder, `payload` thông báo), full-text search sẵn có cho MVP |
+| Full-text MVP | Extension **`pg_trgm`** + `tsvector` trên `jobs`, `candidate_profiles` | Đủ dùng cho tìm kiếm ở Giai đoạn 1, tránh vận hành OpenSearch quá sớm |
+| Search nâng cao (GĐ2) | **OpenSearch** (thay vì Elasticsearch) | License Apache 2.0 rõ ràng hơn Elastic License, tương thích API Elasticsearch cũ |
+| Cache | **Redis 7+** qua `StackExchange.Redis` | Cache kết quả tìm kiếm, session SignalR backplane, rate-limit counter |
+| Object storage | **MinIO** tự host (API tương thích S3) | Ảnh CCHN, giấy phép, CV PDF, logo — không lưu trong Postgres |
+| Backup | `pg_dump`/`pg_basebackup` định kỳ (cron) + WAL archiving, đẩy bản backup ra **ngoài VPS chính** | Tự host không có snapshot managed — **bắt buộc** có bản sao ngoài máy chủ chính + diễn tập khôi phục định kỳ. Chi tiết quy trình: [`../ha-tang/VAN-HANH-RUNBOOK.md`](../ha-tang/VAN-HANH-RUNBOOK.md) |
 
 ---
 
@@ -659,6 +673,7 @@ erDiagram
 
 ---
 
-## 5. Bước tiếp theo
+## 5. Xem thêm
 
-→ Tiếp theo: **thiết kế API** (endpoint theo từng bảng/luồng ở trên, request/response, phân quyền RBAC).
+- Hợp đồng API dựa trên schema này: [`../backend/API-DESIGN.md`](../backend/API-DESIGN.md)
+- Quy ước migration: [`QUY-UOC-MIGRATION.md`](./QUY-UOC-MIGRATION.md)

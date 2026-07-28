@@ -1,6 +1,6 @@
 # GiapTech.BlouseHiding — Luồng nghiệp vụ & Danh sách màn hình
 
-> Cụ thể hóa từ [`PHUONG-AN-THUC-HIEN.md`](./PHUONG-AN-THUC-HIEN.md) (mục 3 — Phạm vi nghiệp vụ).
+> Cụ thể hóa từ [`PHAN-TICH-NGHIEP-VU.md`](./PHAN-TICH-NGHIEP-VU.md) (mục 3 — Phạm vi nghiệp vụ).
 > Tài liệu này mô tả **luồng nghiệp vụ chi tiết** (theo actor) và **danh sách màn hình** ở mức đủ để
 > lên wireframe. Sơ đồ dùng cú pháp Mermaid — GitHub render trực tiếp.
 

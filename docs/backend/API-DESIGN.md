@@ -1,7 +1,9 @@
 # GiapTech.BlouseHiding — Thiết kế API
 
-> Cụ thể hóa từ [`ERD-CHI-TIET.md`](./ERD-CHI-TIET.md) và [`LUONG-NGHIEP-VU-MAN-HINH.md`](./LUONG-NGHIEP-VU-MAN-HINH.md).
+> Cụ thể hóa từ [`../database/ERD-CHI-TIET.md`](../database/ERD-CHI-TIET.md) và
+> [`../nghiep-vu/LUONG-NGHIEP-VU-MAN-HINH.md`](../nghiep-vu/LUONG-NGHIEP-VU-MAN-HINH.md).
 > REST, JSON, versioned qua path `/api/v1`. Auth: JWT Bearer (access token ngắn hạn + refresh token).
+> Quy ước code implement các endpoint này: [`KIEN-TRUC-BACKEND.md`](./KIEN-TRUC-BACKEND.md).
 
 ---
 
@@ -229,6 +231,6 @@
 
 ## 14. Bước tiếp theo
 
-→ Xem [`wireframes/man-hinh-cot-loi.html`](./wireframes/man-hinh-cot-loi.html) — wireframe trực quan
-cho 3 màn hình cốt lõi (Chi tiết tin, Hồ sơ CCHN, ATS Kanban), chú thích ánh xạ trực tiếp tới các
-endpoint ở trên và các bảng trong `ERD-CHI-TIET.md`.
+→ Xem [`../frontend/wireframes/man-hinh-cot-loi.html`](../frontend/wireframes/man-hinh-cot-loi.html) —
+wireframe trực quan cho 3 màn hình cốt lõi (Chi tiết tin, Hồ sơ CCHN, ATS Kanban), chú thích ánh xạ
+trực tiếp tới các endpoint ở trên và các bảng trong [`../database/ERD-CHI-TIET.md`](../database/ERD-CHI-TIET.md).

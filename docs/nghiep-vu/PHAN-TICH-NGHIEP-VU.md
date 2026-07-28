@@ -1,13 +1,12 @@
-# GiapTech.BlouseHiding — Phương án thực hiện
+# GiapTech.BlouseHiding — Phân tích nghiệp vụ
 
 > Nền tảng tuyển dụng **chuyên biệt cho ngành y tế** (Healthcare Recruitment Platform),
 > tham khảo mô hình của các nền tảng phổ biến như **TopCV** (CV/việc làm) và **Ybox** (sự kiện/cơ hội).
-
-Tài liệu này là bản phân tích nghiệp vụ và đề xuất kiến trúc/công nghệ/lộ trình để khởi động dự án.
-Các quyết định lớn (tech stack, phạm vi MVP) được nêu rõ để chốt trước khi code.
-
-**Đã chốt:** Backend **.NET (ASP.NET Core)**; giai đoạn đầu triển khai **Web trước, MVP đầy đủ**
-(không cắt bớt hạng mục ở mục 8.1).
+>
+> Tài liệu này tập trung **nghiệp vụ**: mục tiêu, actor, phạm vi tính năng, đối chiếu thị trường,
+> roadmap, rủi ro. Kiến trúc & công nghệ xem [`../kien-truc/TONG-QUAN-KIEN-TRUC.md`](../kien-truc/TONG-QUAN-KIEN-TRUC.md).
+> Luồng nghiệp vụ chi tiết + màn hình xem [`LUONG-NGHIEP-VU-MAN-HINH.md`](./LUONG-NGHIEP-VU-MAN-HINH.md).
+> Danh sách tính năng dạng checklist xem [`DANH-SACH-TINH-NANG.md`](./DANH-SACH-TINH-NANG.md).
 
 ---
 
@@ -69,7 +68,7 @@ thời gian tuyển trung bình (time-to-hire).
 - Quy trình duyệt tin (draft → pending → published → expired/closed).
 - **Gói đăng tin theo tier** (Eco/Pro/Max, tính theo thời gian hiển thị) — mô hình tham khảo TopCV,
   đưa vào **ngay từ MVP** vì là nguồn doanh thu chính (xem mục 4.1).
-- Đăng tin miễn phí có giới hạn cho cơ sở y tế mới — chiến lược mồi tham khảo Ybox (xem mục 9 — rủi ro).
+- Đăng tin miễn phí có giới hạn cho cơ sở y tế mới — chiến lược mồi tham khảo Ybox (xem mục 7 — rủi ro).
 
 ### 3.5 Tìm kiếm & gợi ý
 - Tìm kiếm full-text + bộ lọc (chuyên khoa, địa điểm, lương, loại hình, tuyến).
@@ -140,7 +139,7 @@ Doanh thu từ bảo trợ truyền thông trả phí, không phải từ CV Bui
 | Công cụ tiện ích | Tính phụ cấp trực/độc hại/thâm niên nghề y, thuế TNCN | 3.9 |
 | Đánh giá công ty | Đánh giá cơ sở y tế — kiểm duyệt chặt do nhạy cảm ngành | 3.9 |
 | Chuyên mục nội dung | "Góc nghề y": CME, hội thảo, học bổng, cuộc thi | 3.8, Giai đoạn 3 |
-| Đăng tin miễn phí mồi | Giải bài toán "con gà–quả trứng" cho cơ sở y tế mới | 3.4, mục 10 (rủi ro) |
+| Đăng tin miễn phí mồi | Giải bài toán "con gà–quả trứng" cho cơ sở y tế mới | 3.4, mục 7 (rủi ro) |
 | Mô hình CTV/cộng đồng | Cộng đồng sinh viên y khoa/hội chuyên khoa — không phải core MVP | Giai đoạn 3 |
 
 **Khác biệt cố ý (không copy):** TopCV/Ybox không cần xác thực năng lực hành nghề — đây vẫn là **rào cản
@@ -160,111 +159,7 @@ tin cậy phải giữ làm lõi** của hệ thống này, không đánh đổi
 
 ---
 
-## 6. Kiến trúc hệ thống đề xuất
-
-### 6.1 Nguyên tắc
-- **Modular Monolith trước, tách microservice sau** khi tải & đội ngũ đủ lớn — tối ưu tốc độ ra MVP.
-- **Clean Architecture + Domain-Driven Design (DDD)**: tách Domain / Application / Infrastructure / API.
-- API-first: backend phục vụ đồng thời web + mobile qua REST (cân nhắc gRPC nội bộ).
-
-### 6.2 Phân rã module (bounded contexts)
-```
-Identity        — tài khoản, vai trò, xác thực
-Profile         — hồ sơ ứng viên, CCHN, chuyên khoa
-Employer        — tổ chức/cơ sở y tế, xác minh
-Job             — tin tuyển dụng, danh mục, kiểm duyệt
-Application     — ứng tuyển, ATS pipeline
-Search          — index & truy vấn (Elasticsearch)
-Matching        — gợi ý việc/ứng viên
-Messaging       — chat, thông báo
-Events          — hội thảo/CME (lớp Ybox)
-Admin           — kiểm duyệt, cấu hình, báo cáo
-```
-
-### 6.3 Sơ đồ tổng quát (logic)
-```
-   [Web App]        [Mobile App]        [Admin Portal]
-        \                |                   /
-         \               |                  /
-              ┌────────────────────────┐
-              │      API Gateway        │
-              └────────────────────────┘
-                          │
-              ┌────────────────────────┐
-              │  Backend (Modular       │
-              │  Monolith / .NET)       │
-              │  Identity · Profile ·   │
-              │  Job · Application ·     │
-              │  Matching · Messaging   │
-              └────────────────────────┘
-             /        |         |        \
-   [PostgreSQL] [Elasticsearch] [Redis] [Blob/S3]
-                                    │
-                        [RabbitMQ / message bus]
-                                    │
-                 [Workers: email, index, matching, notif]
-```
-
----
-
-## 7. Đề xuất công nghệ (tech stack)
-
-> Tên project theo quy ước `GiapTech.*` (namespace .NET) ⇒ **khuyến nghị stack .NET** cho backend.
-> Xem [`TECH-STACK-CHI-TIET.md`](./TECH-STACK-CHI-TIET.md) để biết thư viện cụ thể theo từng lớp
-> (backend, CSDL, frontend, giao thức kết nối, hạ tầng, dịch vụ bên thứ ba tại Việt Nam).
-
-| Lớp | Đề xuất chính | Phương án thay thế |
-|-----|---------------|--------------------|
-| Backend | **ASP.NET Core (.NET 8/9), C#** | Node.js (NestJS), Java (Spring Boot) |
-| Kiến trúc | Clean Architecture + DDD, EF Core | Dapper cho truy vấn nặng |
-| CSDL | **PostgreSQL** | SQL Server |
-| Tìm kiếm | **Elasticsearch / OpenSearch** | Postgres full-text (giai đoạn MVP) |
-| Cache | **Redis** | — |
-| Hàng đợi | **RabbitMQ** (hoặc Azure Service Bus) | Kafka (khi scale lớn) |
-| Realtime | **SignalR** (chat/thông báo) | WebSocket thuần |
-| Lưu trữ file | **S3 / Azure Blob** | MinIO (self-host) |
-| Web frontend | **Next.js (React, TypeScript)** | Blazor (nếu muốn full-.NET) |
-| Mobile | **Flutter** hoặc **React Native** | — |
-| Auth | JWT + refresh token, OAuth2 | IdentityServer / Keycloak |
-| Hạ tầng | Docker + CI/CD (GitHub Actions), Azure/AWS | Kubernetes khi cần scale |
-| Quan trắc | Serilog + OpenTelemetry, Prometheus/Grafana, Sentry | — |
-
-**Lưu ý:** nếu đội ngũ mạnh về JS/TS hơn .NET, có thể đổi backend sang NestJS mà không thay đổi kiến trúc tổng thể.
-Đây là quyết định cần chốt trước khi khởi tạo solution.
-
----
-
-## 8. Mô hình dữ liệu cốt lõi (rút gọn)
-
-```
-User(id, email, phone, passwordHash, role, status, createdAt)
-CandidateProfile(id, userId, fullName, dob, headline, summary, ...)
-  ├─ License(id, profileId, licenseNo, issuedBy, scope, issuedAt, expiredAt, verifyStatus)
-  ├─ Specialty(id, profileId, specialtyCode, level)
-  ├─ Experience(id, profileId, org, position, tier, from, to)
-  └─ Education / Certificate (CME) ...
-Organization(id, name, type, licenseNo, size, verifyStatus, ...)
-EmployerMember(id, orgId, userId, role)          // nhiều HR / 1 tổ chức
-Job(id, orgId, title, specialtyCode, employmentType, salaryMin/Max,
-    location, requiredLicense, experienceYears, status, publishedAt, expiredAt)
-Application(id, jobId, candidateId, cvSnapshot, stage, note, score, createdAt)
-Conversation / Message(...)                       // chat
-Event(id, type, title, startAt, location, ...)    // lớp Ybox
-Notification(id, userId, type, payload, readAt)
-Category(specialty / tier / location) — danh mục chuẩn hóa
-AuditLog(...) — phục vụ tuân thủ NĐ 13/2023
-
-// Monetization (tham khảo TopCV — mục 4.1, 4.3)
-JobPackage(id, tier: Eco|Pro|Max, durationDays, price, perks)   // gói đăng tin theo tier
-JobPosting(id, jobId, packageId, purchasedAt, expiresAt)
-CreditWallet(id, orgId, balance)
-CreditTransaction(id, orgId, amount, reason: Purchase|UnlockProfile|Refund, createdAt)
-ProfileUnlock(id, orgId, candidateId, creditCost, unlockedAt)   // NTD "mở" hồ sơ ứng viên
-```
-
----
-
-## 9. Lộ trình triển khai (Roadmap)
+## 6. Lộ trình triển khai (Roadmap)
 
 ### Giai đoạn 0 — Khởi tạo (1–2 tuần)
 - Khởi tạo solution (Clean Architecture), CI/CD, môi trường dev/staging, Docker Compose.
@@ -284,10 +179,10 @@ ProfileUnlock(id, orgId, candidateId, creditCost, unlockedAt)   // NTD "mở" h�
 > được đưa vào ngay từ MVP thay vì để Giai đoạn 2, vì đây là nguồn doanh thu chính (xem mục 4.1, 4.3).
 > **Thanh toán tự động (cổng VNPay/Momo/...) chưa chốt** — MVP xử lý gói tin/credit bằng quy trình
 > thủ công (chuyển khoản + Admin đối soát), không chặn tiến độ; schema/API giữ nguyên để cắm cổng tự
-> động sau mà không phải đổi model (xem `TECH-STACK-CHI-TIET.md` mục 6).
+> động sau mà không phải đổi model (xem [ADR-0003](../kien-truc/adr/0003-hoan-cong-thanh-toan-tu-dong.md)).
 
 ### Giai đoạn 2 — Hoàn thiện
-- Elasticsearch cho tìm kiếm nâng cao.
+- OpenSearch cho tìm kiếm nâng cao.
 - Gợi ý việc / matching ứng viên.
 - Chat realtime (SignalR).
 - Mobile app (Flutter/React Native).
@@ -301,7 +196,7 @@ ProfileUnlock(id, orgId, candidateId, creditCost, unlockedAt)   // NTD "mở" h�
 
 ---
 
-## 10. Rủi ro & giải pháp
+## 7. Rủi ro & giải pháp
 
 | Rủi ro | Giải pháp |
 |--------|-----------|
@@ -313,20 +208,9 @@ ProfileUnlock(id, orgId, candidateId, creditCost, unlockedAt)   // NTD "mở" h�
 
 ---
 
-## 11. Quyết định & việc còn lại
+## 8. Xem thêm
 
-**Đã chốt:**
-1. Tech stack backend: **.NET 10 (ASP.NET Core, LTS)**.
-2. Nền tảng đầu tiên: **Web trước, MVP đầy đủ** (không cắt bớt hạng mục Giai đoạn 1).
-3. Hạ tầng: **Self-host VPS** (Docker Compose + Caddy + MinIO + Grafana/Loki/Prometheus, chi tiết ở
-   `TECH-STACK-CHI-TIET.md` mục 5).
-4. Cổng thanh toán tự động: **hoãn lại** — MVP dùng quy trình thủ công (chuyển khoản + Admin đối soát),
-   schema/API giữ nguyên để cắm cổng sau (mục 9, `TECH-STACK-CHI-TIET.md` mục 6).
-
-**Còn cần chốt (không chặn tiến độ):**
-5. **Nhà cung cấp VPS cụ thể** (VN hay quốc tế) — xem phân tích `TECH-STACK-CHI-TIET.md` mục 5.3.
-6. Phạm vi chính xác của "CV Scoring" ở MVP — quy tắc tính điểm tự động hay chỉ gắn nhãn thủ công trước?
-7. Cổng thanh toán tự động cụ thể — cần chốt trước khi triển khai tính năng thanh toán thật (Giai đoạn 1
-   vẫn chạy được bằng quy trình thủ công trong lúc chờ).
-
-> Đủ điều kiện khởi tạo solution theo Clean Architecture (Giai đoạn 0 của roadmap) khi bạn sẵn sàng.
+- Quyết định kiến trúc/công nghệ & trạng thái: [`../kien-truc/TONG-QUAN-KIEN-TRUC.md`](../kien-truc/TONG-QUAN-KIEN-TRUC.md)
+- Luồng nghiệp vụ chi tiết + danh sách màn hình: [`LUONG-NGHIEP-VU-MAN-HINH.md`](./LUONG-NGHIEP-VU-MAN-HINH.md)
+- Danh sách tính năng dạng checklist: [`DANH-SACH-TINH-NANG.md`](./DANH-SACH-TINH-NANG.md)
+- Thuật ngữ nghiệp vụ/y tế: [`../kien-truc/THUAT-NGU.md`](../kien-truc/THUAT-NGU.md)

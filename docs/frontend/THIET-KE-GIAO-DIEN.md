@@ -1,7 +1,7 @@
 # GiapTech.BlouseHiding — Định hướng thiết kế giao diện
 
 > Trả lời trực tiếp 3 câu hỏi: phong cách thiết kế nào, có dùng thẳng mã nguồn mở không, và thư viện
-> nào thuận tiện. Cụ thể hóa phần Frontend của [`TECH-STACK-CHI-TIET.md`](./TECH-STACK-CHI-TIET.md)
+> nào thuận tiện. Cụ thể hóa phần Frontend của [`CONG-NGHE-FRONTEND.md`](./CONG-NGHE-FRONTEND.md)
 > và tiếp nối bảng màu/kiểu chữ đã dùng ở [`wireframes/man-hinh-cot-loi.html`](./wireframes/man-hinh-cot-loi.html).
 
 ---
