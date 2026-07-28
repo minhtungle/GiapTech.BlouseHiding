@@ -19,6 +19,10 @@ kiến trúc **Clean Architecture + Modular Monolith**, frontend **Next.js + sha
 
 ## Mục lục tài liệu
 
+- **[Tổng thuật hệ thống](docs/TONG-THUAT-HE-THONG.md)** — trình bày toàn bộ hệ thống dưới dạng văn
+  bản liền mạch, viết cho người mới tiếp cận đọc một mạch để đánh giá tổng thể trước khi đọc sâu từng
+  phần bên dưới.
+
 ### Kiến trúc & công nghệ chung
 - [Tổng quan kiến trúc & công nghệ](docs/kien-truc/TONG-QUAN-KIEN-TRUC.md) — điểm vào chính, bản đồ công nghệ, trạng thái quyết định
 - [Architecture Decision Records (ADR)](docs/kien-truc/adr/) — vì sao mỗi quyết định lớn được chọn
