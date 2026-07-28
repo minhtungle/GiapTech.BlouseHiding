@@ -30,7 +30,7 @@ src/
         GetCandidateProfile/
           GetCandidateProfileQuery.cs
           GetCandidateProfileQueryHandler.cs
-    Jobs/ · Applications/ · Employers/ · Messaging/ · Admin/ · Events/   (tương tự Candidates/)
+    Jobs/ · Applications/ · Employers/ · Messaging/ · Ops/ · Events/   (tương tự Candidates/ — Ops = đội Vận hành, xem ../kien-truc/THUAT-NGU.md)
 
   Infrastructure/     — EF Core DbContext + Migrations, implement interface của Application
                         (EmailSender, S3/MinIO storage, SMS OTP client...), ASP.NET Core Identity setup.

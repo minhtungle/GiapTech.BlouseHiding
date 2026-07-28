@@ -19,8 +19,12 @@
   ```json
   { "type": "validation_error", "title": "...", "status": 400, "errors": { "field": ["message"] } }
   ```
-- **Phân quyền (RBAC)**: mỗi endpoint ghi rõ role được phép — `Candidate`, `Employer` (member của org),
-  `Admin`, `Moderator`, hoặc `Owner` (chỉ chủ sở hữu resource, vd. hồ sơ của chính mình).
+- **Phân quyền (RBAC)**: mỗi endpoint ghi rõ role được phép — `Candidate`, `Employer` (member của org,
+  dùng trang **Admin**), `Admin`/`Moderator` (role backend của đội **Vận hành** nội bộ nền tảng — xem
+  quy ước tên site ở [`../nghiep-vu/PHAN-TICH-NGHIEP-VU.md`](../nghiep-vu/PHAN-TICH-NGHIEP-VU.md) mục 2),
+  hoặc `Owner` (chỉ chủ sở hữu resource, vd. hồ sơ của chính mình).
+  > ⚠️ Role backend tên là `Admin` nhưng **site tương ứng gọi là "Vận hành"**, không phải trang "Admin"
+  > mà Nhà tuyển dụng dùng — 2 khái niệm khác nhau, tránh nhầm lẫn khi đọc bảng dưới.
 - **Idempotency**: các endpoint tạo giao dịch tiền/credit nhận header `Idempotency-Key`.
 
 ---
@@ -48,7 +52,7 @@
 |---|---|---|---|
 | GET | `/candidates/me` | Candidate (Owner) | Xem hồ sơ của chính mình |
 | PUT | `/candidates/me` | Candidate (Owner) | Cập nhật thông tin chung |
-| GET | `/candidates/{id}` | Employer (đã unlock) / Admin | Xem hồ sơ ứng viên khác — 403 nếu chưa unlock (mục 7) |
+| GET | `/candidates/{id}` | Employer (đã unlock) / Vận hành | Xem hồ sơ ứng viên khác — 403 nếu chưa unlock (mục 7) |
 | GET | `/candidates/{id}/public-summary` | Public | Bản rút gọn ẩn danh (vd. sau khi NTD xem trong kết quả tìm kiếm chưa mở) |
 | POST | `/candidates/me/licenses` | Candidate (Owner) | Thêm CCHN + upload document |
 | PUT | `/candidates/me/licenses/{licenseId}` | Candidate (Owner) | Sửa CCHN (chỉ khi `pending`/`rejected`) |
@@ -183,24 +187,28 @@
 
 ---
 
-## 11. Admin & Moderation — `/admin`
+## 11. Vận hành nền tảng (Ops) — `/ops`
+
+> Prefix `/ops` (không phải `/admin`) — role backend vẫn tên `Admin`/`Moderator`, nhưng site tương ứng
+> gọi là **Vận hành**, phân biệt với trang **Admin** dành cho Nhà tuyển dụng (mục 4 trở lên). Xem quy
+> ước tên site ở [`../nghiep-vu/PHAN-TICH-NGHIEP-VU.md`](../nghiep-vu/PHAN-TICH-NGHIEP-VU.md) mục 2.
 
 | Method | Path | Quyền | Mô tả |
 |---|---|---|---|
-| GET | `/admin/licenses?status=pending` | Admin/Moderator | Hàng đợi duyệt CCHN |
-| POST | `/admin/licenses/{id}/verify` | Admin/Moderator | Duyệt/từ chối kèm lý do |
-| GET | `/admin/organizations?status=pending` | Admin/Moderator | Hàng đợi duyệt tổ chức |
-| POST | `/admin/organizations/{id}/verify` | Admin/Moderator | Duyệt/từ chối |
-| GET | `/admin/jobs?status=pending` | Admin/Moderator | Hàng đợi duyệt tin |
-| POST | `/admin/jobs/{id}/moderate` | Admin/Moderator | Duyệt/từ chối kèm lý do |
-| GET | `/admin/reports?status=pending` | Admin/Moderator | Danh sách báo cáo vi phạm |
-| POST | `/admin/reports/{id}/resolve` | Admin/Moderator | Xử lý report |
-| GET | `/admin/users` | Admin | Tìm kiếm/quản lý người dùng |
-| POST | `/admin/users/{id}/suspend` | Admin | Khóa tài khoản |
-| CRUD | `/admin/catalog/specialties`, `/admin/catalog/locations` | Admin | Quản lý danh mục |
-| CRUD | `/admin/job-packages` | Admin | Cấu hình gói tin/giá |
-| GET | `/admin/audit-logs` | Admin | Tra cứu nhật ký kiểm toán |
-| GET | `/admin/dashboard/stats` | Admin | Số liệu tổng quan |
+| GET | `/ops/licenses?status=pending` | Admin/Moderator | Hàng đợi duyệt CCHN |
+| POST | `/ops/licenses/{id}/verify` | Admin/Moderator | Duyệt/từ chối kèm lý do |
+| GET | `/ops/organizations?status=pending` | Admin/Moderator | Hàng đợi duyệt tổ chức |
+| POST | `/ops/organizations/{id}/verify` | Admin/Moderator | Duyệt/từ chối |
+| GET | `/ops/jobs?status=pending` | Admin/Moderator | Hàng đợi duyệt tin |
+| POST | `/ops/jobs/{id}/moderate` | Admin/Moderator | Duyệt/từ chối kèm lý do |
+| GET | `/ops/reports?status=pending` | Admin/Moderator | Danh sách báo cáo vi phạm |
+| POST | `/ops/reports/{id}/resolve` | Admin/Moderator | Xử lý report |
+| GET | `/ops/users` | Admin | Tìm kiếm/quản lý người dùng |
+| POST | `/ops/users/{id}/suspend` | Admin | Khóa tài khoản |
+| CRUD | `/ops/catalog/specialties`, `/ops/catalog/locations` | Admin | Quản lý danh mục |
+| CRUD | `/ops/job-packages` | Admin | Cấu hình gói tin/giá |
+| GET | `/ops/audit-logs` | Admin | Tra cứu nhật ký kiểm toán |
+| GET | `/ops/dashboard/stats` | Admin | Số liệu tổng quan |
 
 ---
 
@@ -211,7 +219,7 @@
 | GET | `/events` | Public | Danh sách sự kiện/CME/học bổng |
 | GET | `/events/{id}` | Public | Chi tiết |
 | POST | `/events/{id}/register` | Candidate/Employer | Đăng ký tham dự |
-| POST | `/events` | Employer / Admin | Tạo sự kiện (kiểm duyệt trước publish) |
+| POST | `/events` | Employer / Vận hành | Tạo sự kiện (kiểm duyệt trước publish) |
 
 ---
 
@@ -219,13 +227,13 @@
 
 | Luồng (xem `LUONG-NGHIEP-VU-MAN-HINH.md`) | Endpoint chính theo thứ tự gọi |
 |---|---|
-| 1.1 Đăng ký & xác thực CCHN | `POST /auth/register` → `POST /auth/verify-otp` → `POST /candidates/me/licenses` → (admin) `POST /admin/licenses/{id}/verify` |
-| 1.2 Xác minh cơ sở y tế | `POST /organizations` → `POST /organizations/{id}/documents` → (admin) `POST /admin/organizations/{id}/verify` |
-| 1.3 Đăng tin + mua gói | `POST /jobs` → `POST /payments/job-package` → webhook → `POST /jobs/{id}/submit` → (admin) `POST /admin/jobs/{id}/moderate` |
+| 1.1 Đăng ký & xác thực CCHN | `POST /auth/register` → `POST /auth/verify-otp` → `POST /candidates/me/licenses` → (Vận hành) `POST /ops/licenses/{id}/verify` |
+| 1.2 Xác minh cơ sở y tế | `POST /organizations` → `POST /organizations/{id}/documents` → (Vận hành) `POST /ops/organizations/{id}/verify` |
+| 1.3 Đăng tin + mua gói | `POST /jobs` → `POST /payments/job-package` → webhook → `POST /jobs/{id}/submit` → (Vận hành) `POST /ops/jobs/{id}/moderate` |
 | 1.4 Tìm & ứng tuyển | `GET /jobs` → `GET /jobs/{id}` → `POST /jobs/{jobId}/applications` |
 | 1.5 ATS pipeline | `GET /jobs/{id}/applications` → `PATCH /applications/{id}/stage` → `POST /applications/{id}/notes` |
 | 1.6 Credit mở hồ sơ | `GET /candidates/search` → `POST /payments/credit-topup` (nếu thiếu) → `POST /candidates/{id}/unlock` |
-| 1.7 Kiểm duyệt | `GET /admin/licenses|organizations|jobs|reports?status=pending` → `POST .../verify|moderate|resolve` |
+| 1.7 Kiểm duyệt (trang Vận hành) | `GET /ops/licenses|organizations|jobs|reports?status=pending` → `POST .../verify|moderate|resolve` |
 
 ---
 

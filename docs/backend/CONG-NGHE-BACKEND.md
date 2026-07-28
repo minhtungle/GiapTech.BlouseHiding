@@ -66,7 +66,7 @@ tự dựng từ đầu — đã có sẵn MediatR, FluentValidation, EF Core, S
 
 | Nhu cầu | Đề xuất | Ghi chú |
 |---|---|---|
-| Thanh toán (gói tin, credit) | **Chưa quyết — để sau** | Xem [ADR-0003](../kien-truc/adr/0003-hoan-cong-thanh-toan-tu-dong.md). MVP xử lý tạm bằng quy trình thủ công: NTD chuyển khoản kèm mã tham chiếu, Admin đối soát qua endpoint `POST /admin/...`. `payments`/`job_purchases`/`credit_transactions` (ERD) giữ nguyên schema để cắm cổng tự động sau. |
+| Thanh toán (gói tin, credit) | **Chưa quyết — để sau** | Xem [ADR-0003](../kien-truc/adr/0003-hoan-cong-thanh-toan-tu-dong.md). MVP xử lý tạm bằng quy trình thủ công: NTD chuyển khoản kèm mã tham chiếu, đội Vận hành đối soát qua endpoint `POST /ops/...`. `payments`/`job_purchases`/`credit_transactions` (ERD) giữ nguyên schema để cắm cổng tự động sau. |
 | SMS OTP | **eSMS.vn** hoặc **SpeedSMS** | Giá tốt hơn Twilio cho số điện thoại Việt Nam, độ trễ thấp trong nước |
 | OAuth đăng nhập | Google (chuẩn), **Zalo** (phổ biến tại VN, tự implement REST vì không có SDK .NET chính thức) | |
 | Bản đồ/địa chỉ | **Goong Maps** (Việt hóa, giá tốt) hoặc Google Maps nếu cần độ phủ toàn cầu | Không cấp thiết ở MVP |

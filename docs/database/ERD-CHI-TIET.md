@@ -219,7 +219,7 @@ erDiagram
     }
 ```
 
-### 1.4 Admin, Events & Content (Giai đoạn 3)
+### 1.4 Vận hành, Events & Content (Giai đoạn 3)
 
 ```mermaid
 erDiagram
@@ -284,7 +284,7 @@ erDiagram
 | email | varchar(255) | UNIQUE, NOT NULL | |
 | phone | varchar(20) | UNIQUE | |
 | password_hash | varchar(255) | NOT NULL | bcrypt/argon2 |
-| role | enum | NOT NULL | `candidate`, `employer`, `admin`, `moderator` |
+| role | enum | NOT NULL | `candidate`, `employer` (dùng trang **Admin**), `admin`/`moderator` (đội **Vận hành** — xem `../nghiep-vu/PHAN-TICH-NGHIEP-VU.md` mục 2) |
 | status | enum | NOT NULL DEFAULT `active` | `active`, `suspended`, `deleted` |
 | email_verified_at | timestamp | nullable | |
 | phone_verified_at | timestamp | nullable | |
@@ -326,7 +326,7 @@ erDiagram
 | issued_at | date | NOT NULL | |
 | expired_at | date | nullable | NULL = không thời hạn |
 | verify_status | enum | NOT NULL DEFAULT `pending` | `pending`, `verified`, `rejected`, `expired` |
-| verified_by | uuid | FK → users, nullable | admin duyệt |
+| verified_by | uuid | FK → users, nullable | đội Vận hành duyệt |
 | verified_at | timestamp | nullable | |
 | reject_reason | text | nullable | |
 | document_url | text | NOT NULL | ảnh/scan chứng chỉ |

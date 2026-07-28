@@ -4,9 +4,11 @@
 > Phong cách thiết kế & quyết định dùng mã nguồn mở ở đâu: [`THIET-KE-GIAO-DIEN.md`](./THIET-KE-GIAO-DIEN.md).
 > Wireframe/style guide trực quan: [`wireframes/`](./wireframes/).
 
-**Khu vực Admin:** cùng 1 codebase Next.js (route group `app/(admin)/...`), **không** tách app riêng
-chạy thẳng shadcn-admin — chỉ tham khảo bố cục từ đó rồi tự viết lại bằng chính component đã chọn dưới
-đây, để giữ 1 domain – 1 container – 1 bộ thiết kế (xem [ADR-0004](../kien-truc/adr/0004-tech-stack-net-nextjs.md)).
+**3 khu vực site, 1 codebase** (xem quy ước tên ở [`../kien-truc/THUAT-NGU.md`](../kien-truc/THUAT-NGU.md)):
+`app/(client)/...` (ứng viên/khách), `app/(admin)/...` (Nhà tuyển dụng), `app/(ops)/...` (đội Vận hành
+nội bộ). **Không** tách app riêng cho `(ops)` chạy thẳng shadcn-admin — chỉ tham khảo bố cục từ đó rồi
+tự viết lại bằng chính component đã chọn dưới đây, để giữ 1 domain – 1 container – 1 bộ thiết kế
+(xem [ADR-0004](../kien-truc/adr/0004-tech-stack-net-nextjs.md), [ADR-0005](../kien-truc/adr/0005-dat-ten-3-khu-vuc-site.md)).
 
 ---
 
@@ -22,9 +24,9 @@ chạy thẳng shadcn-admin — chỉ tham khảo bố cục từ đó rồi t�
 | Quản lý state client nhẹ | **Zustand** | Chỉ cho state UI thuần túy (modal, wizard hồ sơ) — tránh Redux thừa cho quy mô này |
 | Form & validate | **React Hook Form + Zod** | Zod schema tái dùng ý tưởng validate giống FluentValidation phía backend |
 | Kéo-thả ATS Kanban | **dnd-kit** | Nhẹ, accessible, đúng nhu cầu màn hình ATS đã thiết kế |
-| Bảng dữ liệu (Admin, danh sách ứng viên/tin) | **TanStack Table** (headless) | Không mang UI mặc định, tự style theo shadcn/ui table component |
+| Bảng dữ liệu (trang Admin/Vận hành, danh sách ứng viên/tin) | **TanStack Table** (headless) | Không mang UI mặc định, tự style theo shadcn/ui table component |
 | Rich text editor | **Tiptap** | Mô tả công việc, bài viết "Góc nghề y" (Giai đoạn 3) |
-| Biểu đồ (dashboard Admin) | **Tremor** (dựng trên Recharts) | Component biểu đồ + KPI card sẵn, phối màu theo CSS variable — khớp nhanh với token thiết kế |
+| Biểu đồ (dashboard Admin/Vận hành) | **Tremor** (dựng trên Recharts) | Component biểu đồ + KPI card sẵn, phối màu theo CSS variable — khớp nhanh với token thiết kế |
 | Realtime client | **@microsoft/signalr** | Khớp SignalR backend |
 | i18n | **next-intl** | Tiếng Việt chính, để ngỏ tiếng Anh cho ứng viên/tổ chức nước ngoài sau này |
 | Testing | **Vitest** + **React Testing Library** (unit) + **Playwright** (e2e) | Playwright thay thế Cypress — nhanh hơn, chạy đa trình duyệt |

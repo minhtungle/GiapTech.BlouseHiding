@@ -28,15 +28,22 @@ thời gian tuyển trung bình (time-to-hire).
 
 ---
 
-## 2. Đối tượng người dùng (Actors)
+## 2. Đối tượng người dùng (Actors) & khu vực site
 
-| Actor | Mô tả | Nhu cầu chính |
-|------|-------|----------------|
-| **Ứng viên** | Nhân sự y tế đang/muốn tìm việc | Tạo hồ sơ, xác thực chứng chỉ, tìm & ứng tuyển, theo dõi trạng thái |
-| **Nhà tuyển dụng (NTD)** | Cơ sở y tế / HR / trưởng khoa | Đăng tin, sàng lọc, quản lý pipeline ứng viên, hẹn phỏng vấn |
-| **Quản trị viên (Admin)** | Vận hành nền tảng | Kiểm duyệt tin & doanh nghiệp, xác thực chứng chỉ, xử lý báo cáo |
-| **Kiểm duyệt viên (Moderator)** | Đội duyệt nội dung | Duyệt tin tuyển dụng, duyệt hồ sơ doanh nghiệp |
-| **Khách (Guest)** | Chưa đăng nhập | Xem tin, tìm kiếm cơ bản |
+> **Quy ước đặt tên 3 khu vực site** (áp dụng xuyên suốt mọi tài liệu, xem thêm
+> [`../kien-truc/THUAT-NGU.md`](../kien-truc/THUAT-NGU.md)):
+> - **Client** — trang cho Ứng viên & Khách (công khai).
+> - **Admin** — trang quản trị dành cho **Nhà tuyển dụng** (đăng tin, quản lý CV/ATS, mua gói, credit).
+> - **Vận hành** — trang nội bộ đội ngũ vận hành nền tảng (không phải NTD): duyệt CCHN, duyệt doanh
+>   nghiệp, duyệt tin, xử lý báo cáo.
+
+| Actor | Mô tả | Nhu cầu chính | Dùng khu vực site |
+|------|-------|----------------|---|
+| **Ứng viên** | Nhân sự y tế đang/muốn tìm việc | Tạo hồ sơ, xác thực chứng chỉ, tìm & ứng tuyển, theo dõi trạng thái | Client |
+| **Nhà tuyển dụng (NTD)** | Cơ sở y tế / HR / trưởng khoa | Đăng tin, sàng lọc, quản lý pipeline ứng viên, hẹn phỏng vấn | **Admin** |
+| **Nhân viên vận hành** | Đội ngũ nội bộ vận hành nền tảng (role backend: `admin`) | Kiểm duyệt tin & doanh nghiệp, xác thực chứng chỉ, xử lý báo cáo | **Vận hành** |
+| **Kiểm duyệt viên** | Đội duyệt nội dung (role backend: `moderator`) | Duyệt tin tuyển dụng, duyệt hồ sơ doanh nghiệp | **Vận hành** |
+| **Khách (Guest)** | Chưa đăng nhập | Xem tin, tìm kiếm cơ bản | Client |
 
 ---
 
@@ -44,7 +51,7 @@ thời gian tuyển trung bình (time-to-hire).
 
 ### 3.1 Tài khoản & định danh
 - Đăng ký/đăng nhập (email, SĐT, OAuth Google/Zalo), OTP, quên mật khẩu.
-- Phân quyền theo vai trò (RBAC): Candidate / Employer / Admin / Moderator.
+- Phân quyền theo vai trò (RBAC, role backend): `candidate` / `employer` / `admin` (đội Vận hành) / `moderator`.
 - Đa hồ sơ NTD dưới một tổ chức (nhiều HR cùng quản lý 1 bệnh viện).
 
 ### 3.2 Hồ sơ ứng viên (CV) — **đặc thù y tế**
@@ -59,7 +66,7 @@ thời gian tuyển trung bình (time-to-hire).
 
 ### 3.3 Doanh nghiệp / cơ sở y tế
 - Hồ sơ tổ chức: loại hình (BV công/tư, phòng khám, nhà thuốc, cty dược…), quy mô, giấy phép hoạt động.
-- Xác minh doanh nghiệp (upload giấy phép → Admin duyệt).
+- Xác minh doanh nghiệp (upload giấy phép → đội Vận hành duyệt).
 - Trang thương hiệu tuyển dụng (employer branding).
 
 ### 3.4 Tin tuyển dụng
@@ -166,8 +173,8 @@ tin cậy phải giữ làm lõi** của hệ thống này, không đánh đổi
 - Thiết kế schema & danh mục chuyên khoa/tuyến chuẩn.
 
 ### Giai đoạn 1 — MVP (8–10 tuần, Web) — *đủ để chạy thử thị trường*
-- Identity + RBAC (Candidate/Employer/Admin).
-- Hồ sơ ứng viên (gồm CCHN & chuyên khoa) + xác thực CCHN thủ công qua Admin.
+- Identity + RBAC (Candidate/Employer/Vận hành).
+- Hồ sơ ứng viên (gồm CCHN & chuyên khoa) + xác thực CCHN thủ công qua đội Vận hành.
 - Hồ sơ & xác minh doanh nghiệp.
 - Đăng tin + kiểm duyệt + đăng tin công khai + **gói đăng tin theo tier (Eco/Pro/Max)**.
 - Tìm kiếm & lọc (giai đoạn đầu dùng Postgres full-text).
@@ -178,7 +185,7 @@ tin cậy phải giữ làm lõi** của hệ thống này, không đánh đổi
 > MVP giữ **đầy đủ hạng mục** theo quyết định đã chốt — không cắt bớt; monetization (gói tin + credit)
 > được đưa vào ngay từ MVP thay vì để Giai đoạn 2, vì đây là nguồn doanh thu chính (xem mục 4.1, 4.3).
 > **Thanh toán tự động (cổng VNPay/Momo/...) chưa chốt** — MVP xử lý gói tin/credit bằng quy trình
-> thủ công (chuyển khoản + Admin đối soát), không chặn tiến độ; schema/API giữ nguyên để cắm cổng tự
+> thủ công (chuyển khoản + đội Vận hành đối soát), không chặn tiến độ; schema/API giữ nguyên để cắm cổng tự
 > động sau mà không phải đổi model (xem [ADR-0003](../kien-truc/adr/0003-hoan-cong-thanh-toan-tu-dong.md)).
 
 ### Giai đoạn 2 — Hoàn thiện

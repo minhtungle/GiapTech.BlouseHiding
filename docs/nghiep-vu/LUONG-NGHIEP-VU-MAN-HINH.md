@@ -3,6 +3,10 @@
 > Cụ thể hóa từ [`PHAN-TICH-NGHIEP-VU.md`](./PHAN-TICH-NGHIEP-VU.md) (mục 3 — Phạm vi nghiệp vụ).
 > Tài liệu này mô tả **luồng nghiệp vụ chi tiết** (theo actor) và **danh sách màn hình** ở mức đủ để
 > lên wireframe. Sơ đồ dùng cú pháp Mermaid — GitHub render trực tiếp.
+>
+> **Quy ước tên site**: **Client** (Ứng viên/Khách) · **Admin** (Nhà tuyển dụng) · **Vận hành** (đội
+> nội bộ nền tảng) — xem [`PHAN-TICH-NGHIEP-VU.md`](./PHAN-TICH-NGHIEP-VU.md) mục 2. Trong các sơ đồ
+> dưới đây, node ghi "Vận hành" là đội nội bộ nền tảng, **không phải** trang Admin của NTD.
 
 ---
 
@@ -17,7 +21,7 @@ flowchart TD
     C --> D[Nhập chuyên khoa + thông tin CCHN]
     D --> E[Upload ảnh/scan chứng chỉ hành nghề]
     E --> F[Trạng thái hồ sơ: Chưa xác thực]
-    F --> G{Admin duyệt CCHN}
+    F --> G{Vận hành duyệt CCHN}
     G -- Hợp lệ --> H[Trạng thái: Đã xác thực ✔ — hiển thị badge]
     G -- Không hợp lệ/thiếu --> I[Từ chối kèm lý do]
     I --> J[Ứng viên bổ sung & nộp lại]
@@ -38,7 +42,7 @@ flowchart TD
     A[Đại diện cơ sở y tế đăng ký tài khoản NTD] --> B[Tạo hồ sơ tổ chức: loại hình, quy mô]
     B --> C[Upload giấy phép hoạt động khám chữa bệnh/kinh doanh dược]
     C --> D[Trạng thái: Chờ xác minh]
-    D --> E{Admin duyệt}
+    D --> E{Vận hành duyệt}
     E -- Hợp lệ --> F[Đã xác minh ✔ — được phép đăng tin]
     E -- Không hợp lệ --> G[Từ chối kèm lý do, yêu cầu bổ sung]
     G --> C
@@ -107,7 +111,7 @@ flowchart TD
     F --> G[HR chủ động nhắn tin/mời ứng tuyển]
 ```
 
-### 1.7 Kiểm duyệt & vận hành (Admin/Moderator)
+### 1.7 Kiểm duyệt & vận hành (trang Vận hành — Admin/Moderator)
 
 ```mermaid
 flowchart TD
@@ -152,7 +156,7 @@ flowchart TD
 | Cài đặt tài khoản | Đổi mật khẩu, quyền riêng tư, xóa tài khoản (tuân thủ NĐ 13/2023) |
 | Công cụ tiện ích (GĐ2) | Tính phụ cấp trực/độc hại, thuế TNCN, test năng lực |
 
-### 2.3 Nhà tuyển dụng (Employer / HR)
+### 2.3 Trang Admin — Nhà tuyển dụng (Employer / HR)
 
 | Màn hình | Mô tả |
 |---|---|
@@ -169,7 +173,7 @@ flowchart TD
 | Tin nhắn | Chat với ứng viên |
 | Thông báo | Danh sách thông báo |
 
-### 2.4 Quản trị (Admin / Moderator)
+### 2.4 Trang Vận hành — Quản trị nền tảng (Admin / Moderator)
 
 | Màn hình | Mô tả |
 |---|---|
@@ -187,7 +191,7 @@ flowchart TD
 
 ## 3. Ma trận Actor × Module (tham chiếu nhanh)
 
-| Module | Guest | Candidate | Employer | Admin/Mod |
+| Module | Guest (Client) | Candidate (Client) | Employer (trang Admin) | Vận hành |
 |---|:---:|:---:|:---:|:---:|
 | Tìm & xem tin | ✔ | ✔ | ✔ | ✔ |
 | Hồ sơ & CCHN | – | ✔ (sở hữu) | xem (sau unlock) | duyệt |
@@ -200,9 +204,8 @@ flowchart TD
 
 ---
 
-## 4. Bước tiếp theo đề xuất
+## 4. Xem thêm
 
-Sau tài liệu này, các hướng thiết kế còn lại (tham khảo mục 11 của phương án thực hiện):
-- **ERD chi tiết** — mở rộng mục 8 của phương án thực hiện thành schema đầy đủ (bảng, kiểu dữ liệu, ràng buộc).
-- **Thiết kế API** — endpoint theo từng module ở mục 2.1–2.4 trên, request/response, phân quyền theo RBAC.
-- **Wireframe trực quan** (Artifact/Figma-style) cho các màn hình cốt lõi: Chi tiết tin, Hồ sơ CCHN, ATS Kanban.
+- Schema đầy đủ: [`../database/ERD-CHI-TIET.md`](../database/ERD-CHI-TIET.md)
+- Endpoint theo từng module ở mục 2.1–2.4 trên: [`../backend/API-DESIGN.md`](../backend/API-DESIGN.md)
+- Wireframe trực quan: [`../frontend/wireframes/`](../frontend/wireframes/)

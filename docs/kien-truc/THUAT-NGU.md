@@ -4,6 +4,18 @@
 > đoán nghĩa hoặc hỏi lại nhiều lần khi đọc tài liệu/code. Tên trường/bảng trong ngoặc `code` khớp với
 > [`../database/ERD-CHI-TIET.md`](../database/ERD-CHI-TIET.md).
 
+## Quy ước tên 3 khu vực site (đọc trước — hay gây nhầm lẫn nhất)
+
+| Tên site | Dành cho | Role backend tương ứng |
+|---|---|---|
+| **Client** | Ứng viên & khách chưa đăng nhập (công khai) | `candidate`, guest |
+| **Admin** | **Nhà tuyển dụng** — đăng tin, quản lý CV/ATS, mua gói, credit | `employer` |
+| **Vận hành** | Đội nội bộ vận hành nền tảng — duyệt CCHN/doanh nghiệp/tin, xử lý report | `admin`, `moderator` |
+
+> ⚠️ **Điểm dễ nhầm**: role backend tên là `admin` nhưng đó là đội **Vận hành**, không phải trang
+> **Admin** (trang đó dành cho Nhà tuyển dụng — role `employer`). Hai chữ "Admin" chỉ trùng tên, không
+> liên quan đến nhau. Luôn ghi rõ "trang Admin (NTD)" hoặc "đội Vận hành" khi có thể nhầm lẫn.
+
 ## Thuật ngữ ngành y
 
 | Thuật ngữ | Giải thích |
@@ -32,7 +44,7 @@
 
 | Viết tắt | Ý nghĩa |
 |---|---|
-| **RBAC** | Role-Based Access Control — phân quyền theo vai trò (Candidate/Employer/Admin/Moderator). |
+| **RBAC** | Role-Based Access Control — phân quyền theo vai trò (`candidate`/`employer`/`admin`/`moderator`). |
 | **BFF** | Backend For Frontend — tầng trung gian mỏng giữa frontend và backend chính (Next.js API routes nếu cần). |
 | **ADR** | Architecture Decision Record — bản ghi quyết định kiến trúc, xem [`adr/`](./adr/). |
 

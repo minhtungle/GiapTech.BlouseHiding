@@ -52,7 +52,7 @@ kiến trúc **Clean Architecture + Modular Monolith**, frontend **Next.js + sha
 ### Hướng dẫn sử dụng
 - [Ứng viên](docs/huong-dan-su-dung/HUONG-DAN-UNG-VIEN.md)
 - [Nhà tuyển dụng](docs/huong-dan-su-dung/HUONG-DAN-NHA-TUYEN-DUNG.md)
-- [Quản trị viên / Kiểm duyệt viên](docs/huong-dan-su-dung/HUONG-DAN-QUAN-TRI.md)
+- [Trang Vận hành — Quản trị viên / Kiểm duyệt viên](docs/huong-dan-su-dung/HUONG-DAN-VAN-HANH.md)
 
 ### Vận hành dự án (root)
 - [CLAUDE.md](CLAUDE.md) — hướng dẫn bắt buộc cho AI agent

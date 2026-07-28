@@ -3,7 +3,7 @@
 **Trạng thái:** Đã chấp nhận
 
 ## Bối cảnh
-Hệ thống có nhiều bounded context (Identity, Profile, Job, Application, Messaging, Admin...) và cần
+Hệ thống có nhiều bounded context (Identity, Profile, Job, Application, Messaging, Ops...) và cần
 dễ bảo trì/bàn giao khi có người mới tham gia. Microservice giải quyết được vấn đề scale độc lập từng
 domain nhưng trả giá bằng độ phức tạp vận hành (network, distributed transaction, observability) —
 không phù hợp giai đoạn đội ngũ nhỏ, MVP chưa xác định tải thực tế.

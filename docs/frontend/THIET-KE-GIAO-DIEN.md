@@ -49,7 +49,7 @@ bảo vệ dữ liệu cá nhân đã nêu ở phương án thực hiện.
 
 ## 3. Có dùng thẳng mã nguồn mở không? — Có, nhưng phân biệt rõ 2 khu vực
 
-### 3.1 Khu vực công khai & nghiệp vụ chính (Candidate / Employer-facing)
+### 3.1 Khu vực Client & Admin — nghiệp vụ chính (Candidate / Employer-facing)
 → **Không lấy nguyên theme/template có sẵn.** Một template tải về (kiểu ThemeForest hay một Next.js
 SaaS starter) sẽ khiến trang trông giống hàng loạt sản phẩm khác, phá vỡ đúng thứ đang cố xây (niềm
 tin qua bản sắc riêng). Thay vào đó:
@@ -60,16 +60,21 @@ tin qua bản sắc riêng). Thay vào đó:
   và tốn thời gian nhất nếu tự viết từ đầu — trong khi phần giao diện (màu/bo góc/khoảng cách) hoàn
   toàn tùy biến theo token ở mục 5, không bị ép theo "trông giống shadcn mặc định".
 
-### 3.2 Khu vực quản trị nội bộ (Admin/Moderator)
-→ **Nên dùng thẳng một admin dashboard mã nguồn mở** làm nền, vì khu vực này:
-- Rất ít người dùng (chỉ nội bộ), không cần truyền tải bản sắc thương hiệu
-- Ưu tiên tốc độ ra màn hình hơn là thiết kế riêng
-- Đề xuất: **shadcn-admin** (dự án cộng đồng, MIT, xây sẵn trên đúng shadcn/ui + Tailwind) — vì dùng
-  chung hệ component với khu vực chính, không phải học/维护 2 hệ thống UI song song.
+### 3.2 Khu vực Vận hành — đội nội bộ nền tảng (Admin/Moderator role, xem `../kien-truc/THUAT-NGU.md`)
+> ⚠️ Quyết định cuối (xem [ADR-0004](../kien-truc/adr/0004-tech-stack-net-nextjs.md)): **cùng 1
+> codebase Next.js** (route group riêng), **không** chạy shadcn-admin như 1 app tách biệt — chỉ tham
+> khảo bố cục rồi tự dựng lại bằng component đã chọn ở mục 4, để giữ 1 domain/1 bộ thiết kế nhất quán.
+
+Lý do cân nhắc ban đầu để tham khảo **shadcn-admin** (dự án cộng đồng, MIT, xây sẵn trên đúng
+shadcn/ui + Tailwind) thay vì tự vẽ layout từ đầu:
+- Rất ít người dùng (chỉ nội bộ đội Vận hành), không cần đầu tư thiết kế riêng như khu vực đối ngoại.
+- Ưu tiên tốc độ ra màn hình — tham khảo bố cục (sidebar, bảng, filter) từ shadcn-admin rút ngắn thời
+  gian dựng UI, nhưng vẫn build lại bằng component/token đã chọn để không phải học/duy trì 2 hệ UI.
 
 **Tóm lại — trả lời thẳng câu hỏi:** dùng mã nguồn mở ở tầng **nền tảng/hạ tầng component** (shadcn/ui,
-Radix, icon, font) chứ không dùng ở tầng **giao diện cuối cùng** cho khu vực đối ngoại. Ngược lại, khu
-vực nội bộ (Admin) có thể dùng thẳng cả giao diện có sẵn vì không ảnh hưởng thương hiệu.
+Radix, icon, font) chứ không dùng ở tầng **giao diện cuối cùng** cho bất kỳ khu vực nào, kể cả Vận
+hành — khác biệt duy nhất ở khu vực Vận hành là được phép **tham khảo bố cục** admin dashboard có sẵn
+để đi nhanh hơn.
 
 ---
 
@@ -80,12 +85,12 @@ vực nội bộ (Admin) có thể dùng thẳng cả giao diện có sẵn vì 
 | Component nền + theming | **shadcn/ui** (Radix + Tailwind) | Copy-code, tùy biến 100%, theming bằng CSS variable — khớp thẳng với token ở mục 5 |
 | Icon | **Lucide** | Đi kèm mặc định với shadcn/ui, nét vẽ nhất quán, mã nguồn mở, đủ icon y tế cơ bản (stethoscope, syringe, hospital...) |
 | Minh họa (empty state, onboarding) | **unDraw** | Mã nguồn mở, **tự đổi màu SVG theo bảng màu riêng** (khác hẳn ảnh stock chung chung) |
-| Admin dashboard nền | **shadcn-admin** | Xây trên shadcn/ui — đồng bộ component, không phải học hệ UI thứ 2 |
+| Bố cục tham khảo trang Vận hành | **shadcn-admin** (chỉ tham khảo, không cài làm dependency) | Xây trên shadcn/ui — bố cục sidebar/bảng quen thuộc, tự dựng lại bằng component đã chọn |
 | Kanban kéo-thả (ATS) | **dnd-kit** | Nhẹ, accessible, đã chọn ở tech stack |
 | Rich text (mô tả tin, bài viết) | **Tiptap** | Headless, style theo token riêng, không mang theo CSS mặc định xấu |
 | Biểu đồ dashboard | **Tremor** (dựng trên Recharts) | Component biểu đồ + KPI card sẵn, phối màu theo CSS variable — khớp nhanh với theme |
 | Form | **React Hook Form + Zod** | Đã chọn ở tech stack — validate đồng nhất với backend |
-| Bảng dữ liệu (danh sách ứng viên, tin, người dùng ở Admin) | **TanStack Table** (headless) | Không mang UI mặc định, tự style theo shadcn/ui table component |
+| Bảng dữ liệu (danh sách ứng viên, tin, người dùng ở trang Vận hành) | **TanStack Table** (headless) | Không mang UI mặc định, tự style theo shadcn/ui table component |
 
 ---
 

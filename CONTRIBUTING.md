@@ -19,7 +19,7 @@ Theo [Conventional Commits](https://www.conventionalcommits.org/):
 <mô tả chi tiết nếu cần — giải thích TẠI SAO, không chỉ CÁI GÌ>
 ```
 `type`: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `perf`.
-Ví dụ: `feat(licenses): thêm luồng duyệt CCHN thủ công cho Admin`.
+Ví dụ: `feat(licenses): thêm luồng duyệt CCHN thủ công cho đội Vận hành`.
 
 ## Quy trình Pull Request
 

@@ -1,8 +1,10 @@
-# Hướng dẫn sử dụng — Quản trị viên / Kiểm duyệt viên
+# Hướng dẫn sử dụng — Trang Vận hành (Quản trị viên / Kiểm duyệt viên)
 
 > ⚠️ Tài liệu mô tả trải nghiệm **dự kiến** dựa trên thiết kế luồng nghiệp vụ
 > ([`../nghiep-vu/LUONG-NGHIEP-VU-MAN-HINH.md`](../nghiep-vu/LUONG-NGHIEP-VU-MAN-HINH.md)) — cần cập
-> nhật lại theo giao diện thật khi sản phẩm hoàn thiện.
+> nhật lại theo giao diện thật khi sản phẩm hoàn thiện. Đây là trang **Vận hành** — nội bộ đội ngũ nền
+> tảng, **không phải** trang Admin dành cho Nhà tuyển dụng (xem
+> [`../kien-truc/THUAT-NGU.md`](../kien-truc/THUAT-NGU.md)).
 
 ---
 

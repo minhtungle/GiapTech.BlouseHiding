@@ -2,7 +2,9 @@
 
 > ⚠️ Tài liệu mô tả trải nghiệm **dự kiến** dựa trên thiết kế luồng nghiệp vụ
 > ([`../nghiep-vu/LUONG-NGHIEP-VU-MAN-HINH.md`](../nghiep-vu/LUONG-NGHIEP-VU-MAN-HINH.md)) — cần cập
-> nhật lại theo giao diện thật khi sản phẩm hoàn thiện.
+> nhật lại theo giao diện thật khi sản phẩm hoàn thiện. Đây là hướng dẫn cho **trang Admin** (khu vực
+> dành riêng cho Nhà tuyển dụng — không phải trang nội bộ đội Vận hành, xem
+> [`../kien-truc/THUAT-NGU.md`](../kien-truc/THUAT-NGU.md)).
 
 ---
 
@@ -20,7 +22,7 @@
 3. Chọn **gói đăng tin**: Eco/Pro/Max — khác nhau về thời gian hiển thị và vị trí ưu tiên trong kết quả
    tìm kiếm.
 4. **Thanh toán (hiện tại là quy trình thủ công):** chuyển khoản theo thông tin hiển thị kèm **mã tham
-   chiếu**, sau đó chờ Admin đối soát và duyệt gói (thường trong ngày làm việc). ⚠️ Thanh toán tự động sẽ
+   chiếu**, sau đó chờ đội Vận hành đối soát và duyệt gói (thường trong ngày làm việc). ⚠️ Thanh toán tự động sẽ
    được bổ sung sau, xem [ADR-0003](../kien-truc/adr/0003-hoan-cong-thanh-toan-tu-dong.md).
 5. Sau khi thanh toán được duyệt, tin vào hàng đợi kiểm duyệt nội dung trước khi hiển thị công khai.
 

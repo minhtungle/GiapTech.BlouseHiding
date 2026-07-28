@@ -49,7 +49,9 @@ src/
   Application/        — use case (CQRS/MediatR), 1 thư mục / 1 bounded context
   Infrastructure/     — EF Core, implement interface của Application
   Web/                — Controllers/API, composition root
-web/                  — Next.js (App Router) — candidate/employer/admin cùng 1 codebase
+web/                  — Next.js (App Router) — 3 route group: (client)/(admin)/(ops), cùng 1 codebase
+                        Client=candidate/guest · Admin=Nhà tuyển dụng · Ops="Vận hành" nội bộ nền tảng
+                        (xem docs/kien-truc/THUAT-NGU.md — role backend `admin` ≠ site "Admin")
 docs/                 — toàn bộ tài liệu (bản đồ ở mục 2)
 ```
 
@@ -68,9 +70,10 @@ docs/                 — toàn bộ tài liệu (bản đồ ở mục 2)
    - Đổi `applications.stage` phải ghi `application_stage_history` cùng transaction.
    - Xóa tài khoản là soft-delete + anonymize, không bao giờ xóa cứng dữ liệu liên quan CCHN/audit log.
 5. **Không tự ý đổi/xóa migration đã merge** — tạo migration mới để sửa, xem `docs/database/QUY-UOC-MIGRATION.md`.
-6. **Không lấy nguyên một Next.js SaaS template hay chạy shadcn-admin như 1 app riêng** cho khu vực
-   candidate/employer/admin — lý do ở [ADR-0004](docs/kien-truc/adr/0004-tech-stack-net-nextjs.md).
-   Component nền tảng dùng shadcn/ui (copy-code vào repo), không cài package UI đóng gói khác thay thế.
+6. **Không lấy nguyên một Next.js SaaS template hay chạy shadcn-admin như 1 app riêng** cho bất kỳ khu
+   vực nào (Client/Admin/Vận hành) — lý do ở [ADR-0004](docs/kien-truc/adr/0004-tech-stack-net-nextjs.md)
+   và [ADR-0005](docs/kien-truc/adr/0005-dat-ten-3-khu-vuc-site.md). Component nền tảng dùng shadcn/ui
+   (copy-code vào repo), không cài package UI đóng gói khác thay thế.
 7. **Quyết định kiến trúc lớn/khó đảo ngược → viết ADR mới** trong `docs/kien-truc/adr/`, đánh số tiếp
    theo, theo đúng format 4 ADR hiện có (Bối cảnh/Quyết định/Phương án đã cân nhắc/Hệ quả). Đừng chỉ
    sửa trực tiếp tài liệu tổng quan mà không để lại dấu vết quyết định.

@@ -31,8 +31,10 @@ Search          — index & truy vấn (OpenSearch, Giai đoạn 2)
 Matching        — gợi ý việc/ứng viên
 Messaging       — chat, thông báo
 Events          — hội thảo/CME (lớp Ybox)
-Admin           — kiểm duyệt, cấu hình, báo cáo
+Ops             — kiểm duyệt, cấu hình, báo cáo (đội Vận hành nội bộ — không phải trang Admin của NTD)
 ```
+
+> Quy ước tên 3 khu vực site (Client/Admin/Vận hành) xem [`THUAT-NGU.md`](./THUAT-NGU.md).
 
 Mỗi bounded context tương ứng 1 nhóm `Features/` trong tầng `Application` — xem quy ước cụ thể ở
 `KIEN-TRUC-BACKEND.md`.
@@ -42,9 +44,11 @@ Mỗi bounded context tương ứng 1 nhóm `Features/` trong tầng `Applicatio
 ## 3. Sơ đồ tổng quát (logic)
 
 ```
-   [Web App]        [Mobile App, GĐ2]        [Admin]
-        \                |                    /   (cùng 1 app Next.js —
-         \               |                   /     xem docs/frontend)
+  [Client: Web App]  [Mobile App, GĐ2]  [Admin: NTD]  [Vận hành]
+        \                |                    |            /
+         \               |                    |           /   (Client/Admin/Vận hành
+          \              |                    |          /     cùng 1 app Next.js —
+           \             |                    |         /       route group riêng, xem docs/frontend)
               ┌────────────────────────┐
               │  Caddy (reverse proxy)  │
               └────────────────────────┘
@@ -121,6 +125,7 @@ tránh tình trạng "sao lại chọn cái này" phải hỏi lại khi bàn gi
 | [0002](./adr/0002-self-host-vps.md) | Hạ tầng self-host VPS thay vì cloud managed (Azure/AWS) |
 | [0003](./adr/0003-hoan-cong-thanh-toan-tu-dong.md) | Hoãn chọn cổng thanh toán tự động, dùng quy trình thủ công ở MVP |
 | [0004](./adr/0004-tech-stack-net-nextjs.md) | Chọn .NET (backend) + Next.js/shadcn-ui (frontend) thay vì Node.js full-stack |
+| [0005](./adr/0005-dat-ten-3-khu-vuc-site.md) | Đặt tên 3 khu vực site: Client / Admin (NTD) / Vận hành (nội bộ) |
 
 ---
 
@@ -132,8 +137,10 @@ tránh tình trạng "sao lại chọn cái này" phải hỏi lại khi bàn gi
 3. Hạ tầng: **Self-host VPS**.
 4. Cổng thanh toán tự động: **hoãn lại** — MVP dùng quy trình thủ công.
 5. Kiến trúc: **Clean Architecture + Modular Monolith**.
-6. Khu vực Admin: **cùng 1 codebase Next.js** (route group), không tách app riêng dùng shadcn-admin
-   trực tiếp — chỉ tham khảo bố cục.
+6. Tên 3 khu vực site: **Client** (ứng viên/khách) · **Admin** (Nhà tuyển dụng) · **Vận hành** (đội nội
+   bộ nền tảng) — cả 3 **cùng 1 codebase Next.js** (route group riêng), không tách app riêng dùng
+   shadcn-admin trực tiếp — chỉ tham khảo bố cục. Xem [ADR-0005](./adr/0005-dat-ten-3-khu-vuc-site.md)
+   và [`THUAT-NGU.md`](./THUAT-NGU.md).
 
 **Còn cần chốt (không chặn tiến độ):**
 7. Nhà cung cấp VPS cụ thể (VN hay quốc tế) — xem `../ha-tang/HA-TANG-TRIEN-KHAI.md` mục so sánh.

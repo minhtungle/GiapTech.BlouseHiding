@@ -9,8 +9,8 @@ cụ thể chưa được đưa ra — không nên chặn tiến độ phát tri
 
 ## Quyết định
 - **MVP không tích hợp cổng thanh toán tự động.** Quy trình thay thế: nhà tuyển dụng chuyển khoản ngân
-  hàng theo thông tin hiển thị kèm mã tham chiếu; Admin đối soát thủ công và duyệt gói tin/nạp credit
-  qua endpoint quản trị.
+  hàng theo thông tin hiển thị kèm mã tham chiếu; đội **Vận hành** đối soát thủ công và duyệt gói
+  tin/nạp credit qua endpoint `/ops/*` (xem [ADR-0005](./0005-dat-ten-3-khu-vuc-site.md)).
 - Schema (`payments`, `job_purchases`, `credit_transactions` trong ERD) và endpoint (`POST /payments/*`
   trong API design) **giữ nguyên như đã thiết kế cho cổng tự động** — trường `provider` trong `payments`
   đơn giản chưa có giá trị thật nào ngoài xử lý thủ công, để khi chọn cổng thật chỉ cần cắm thêm
@@ -25,5 +25,5 @@ cụ thể chưa được đưa ra — không nên chặn tiến độ phát tri
 ## Hệ quả
 - (+) Không chặn tiến độ khởi tạo/phát triển MVP.
 - (+) Khi chọn cổng thật, chỉ thêm implementation, không đổi schema/API đã có.
-- (−) Vận hành thủ công (đối soát chuyển khoản) tốn công Admin, không scale tốt khi số lượng giao dịch
-  tăng — cần chốt cổng tự động trước khi tăng trưởng đáng kể.
+- (−) Vận hành thủ công (đối soát chuyển khoản) tốn công đội Vận hành, không scale tốt khi số lượng
+  giao dịch tăng — cần chốt cổng tự động trước khi tăng trưởng đáng kể.

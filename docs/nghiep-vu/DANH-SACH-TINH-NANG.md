@@ -23,7 +23,7 @@
 - ⬜ Đăng ký/đăng nhập email + SĐT, OTP
 - ⬜ OAuth Google
 - ⬜ OAuth Zalo
-- ⬜ RBAC (Candidate/Employer/Admin/Moderator)
+- ⬜ RBAC (`candidate`/`employer`/`admin`/`moderator` — site Client/Admin/Vận hành)
 - ⬜ Đa thành viên HR trong 1 tổ chức
 
 ### Hồ sơ ứng viên
@@ -31,19 +31,19 @@
 - ⬜ Quản lý CCHN (thêm/sửa/upload document)
 - ⬜ Gắn chuyên khoa + trình độ
 - ⬜ CV Builder (mẫu dựng sẵn) + upload PDF
-- ⬜ Hàng đợi duyệt CCHN (Admin)
+- ⬜ Hàng đợi duyệt CCHN (Vận hành)
 
 ### Cơ sở y tế
 - ⬜ Đăng ký hồ sơ tổ chức
 - ⬜ Upload giấy phép hoạt động
-- ⬜ Hàng đợi duyệt tổ chức (Admin)
+- ⬜ Hàng đợi duyệt tổ chức (Vận hành)
 - ⬜ Trang công khai cơ sở y tế
 
 ### Tin tuyển dụng
 - ⬜ Tạo/sửa tin (draft)
 - ⬜ Gói đăng tin Eco/Pro/Max
-- ⬜ Quy trình thanh toán thủ công (chuyển khoản + Admin đối soát)
-- ⬜ Hàng đợi duyệt nội dung tin (Admin/Moderator)
+- ⬜ Quy trình thanh toán thủ công (chuyển khoản + Vận hành đối soát)
+- ⬜ Hàng đợi duyệt nội dung tin (Vận hành: Admin/Moderator)
 - ⬜ Tìm kiếm & lọc (Postgres full-text)
 
 ### Ứng tuyển & ATS
@@ -56,7 +56,7 @@
 - ⬜ Thông báo trong ứng dụng
 - ⬜ Thông báo email
 
-### Quản trị
+### Vận hành
 - ⬜ Dashboard số liệu cơ bản
 - ⬜ Quản lý người dùng (khóa/mở khóa)
 - ⬜ Xử lý báo cáo vi phạm

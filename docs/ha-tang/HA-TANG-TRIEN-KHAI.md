@@ -20,14 +20,15 @@ thứ Azure/AWS managed từng cân nhắc (SignalR Service, Key Vault, RDS...) 
                  │  Caddy        │  reverse proxy + auto HTTPS (Let's Encrypt)
                  └──────┬───────┘
                         │
-        ┌───────────────┼───────────────┐
-        │               │               │
- ┌──────▼─────┐  ┌──────▼─────┐  ┌──────▼─────┐
- │ Next.js     │  │ ASP.NET     │  │ Admin       │   (docker compose services,
- │ (web+admin) │  │ Core API    │  │ (route      │    cùng 1 docker network nội bộ)
- │             │  │             │  │  group)     │
- └─────────────┘  └──────┬─────┘  └─────────────┘
-                        │
+                ┌───────┴───────┐
+                │               │
+     ┌──────────────────┐  ┌─────────────┐
+     │ Next.js            │  │ ASP.NET     │   (docker compose services,
+     │ Client/Admin(NTD)/  │  │ Core API    │    cùng 1 docker network nội bộ)
+     │ Vận hành (3 route   │  │             │
+     │ group, 1 codebase)  │  │             │
+     └──────────────────┘  └──────┬─────┘
+                                  │
    ┌───────────┬────────┼────────┬────────────┐
 ┌──▼───┐   ┌────▼───┐ ┌──▼───┐ ┌──▼────┐  ┌────▼────┐
 │Postgres│  │ Redis  │ │RabbitMQ│ │MinIO │  │Hangfire │  ← tất cả container riêng,
