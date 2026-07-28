@@ -210,6 +210,8 @@ Admin           — kiểm duyệt, cấu hình, báo cáo
 ## 7. Đề xuất công nghệ (tech stack)
 
 > Tên project theo quy ước `GiapTech.*` (namespace .NET) ⇒ **khuyến nghị stack .NET** cho backend.
+> Xem [`TECH-STACK-CHI-TIET.md`](./TECH-STACK-CHI-TIET.md) để biết thư viện cụ thể theo từng lớp
+> (backend, CSDL, frontend, giao thức kết nối, hạ tầng, dịch vụ bên thứ ba tại Việt Nam).
 
 | Lớp | Đề xuất chính | Phương án thay thế |
 |-----|---------------|--------------------|

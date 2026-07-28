@@ -12,6 +12,7 @@ xác thực chứng chỉ hành nghề, phân loại chuyên khoa, loại hình 
 - [ERD chi tiết](docs/ERD-CHI-TIET.md) — schema đầy đủ: bảng, cột, khóa, ràng buộc nghiệp vụ.
 - [Thiết kế API](docs/API-DESIGN.md) — endpoint REST theo từng module, phân quyền RBAC.
 - [Wireframe màn hình cốt lõi](docs/wireframes/man-hinh-cot-loi.html) — bố cục 3 màn hình chính (mở bằng trình duyệt).
+- [Lựa chọn công nghệ chi tiết](docs/TECH-STACK-CHI-TIET.md) — thư viện cụ thể theo từng lớp: backend, CSDL, frontend, giao thức kết nối, hạ tầng, dịch vụ VN.
 
 ## Trạng thái
 
