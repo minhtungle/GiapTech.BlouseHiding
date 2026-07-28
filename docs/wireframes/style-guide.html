@@ -1,0 +1,251 @@
+<title>BlouseHiding — Style Guide</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper: #f2f4f1; --paper-raised: #ffffff; --paper-sunken: #e9ede8;
+    --ink: #16262a; --ink-muted: #5b6e6c; --ink-faint: #8a9997;
+    --accent-seal: #ba3b21; --accent-seal-soft: #f4e2dc;
+    --accent-jade: #2f6e62; --accent-jade-soft: #e2eeea;
+    --amber-pending: #a9761b; --amber-pending-soft: #f5e9d2;
+    --line: #d9ded9; --line-strong: #c1c9c0;
+    --shadow: 0 1px 2px rgba(22,38,42,.06), 0 8px 24px -12px rgba(22,38,42,.18);
+    --font-display: Georgia, "Iowan Old Style", "Noto Serif", "Times New Roman", serif;
+    --font-body: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper: #101918; --paper-raised: #16211f; --paper-sunken: #0c1413;
+      --ink: #e8ede9; --ink-muted: #93a6a2; --ink-faint: #5f716e;
+      --accent-seal: #e1633f; --accent-seal-soft: #3a231c;
+      --accent-jade: #59ab99; --accent-jade-soft: #1c2e2a;
+      --amber-pending: #d9ab52; --amber-pending-soft: #362a15;
+      --line: #263230; --line-strong: #33413e;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 28px -14px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper: #101918; --paper-raised: #16211f; --paper-sunken: #0c1413;
+    --ink: #e8ede9; --ink-muted: #93a6a2; --ink-faint: #5f716e;
+    --accent-seal: #e1633f; --accent-seal-soft: #3a231c;
+    --accent-jade: #59ab99; --accent-jade-soft: #1c2e2a;
+    --amber-pending: #d9ab52; --amber-pending-soft: #362a15;
+    --line: #263230; --line-strong: #33413e;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 28px -14px rgba(0,0,0,.5);
+  }
+  :root[data-theme="light"]{
+    --paper: #f2f4f1; --paper-raised: #ffffff; --paper-sunken: #e9ede8;
+    --ink: #16262a; --ink-muted: #5b6e6c; --ink-faint: #8a9997;
+    --accent-seal: #ba3b21; --accent-seal-soft: #f4e2dc;
+    --accent-jade: #2f6e62; --accent-jade-soft: #e2eeea;
+    --amber-pending: #a9761b; --amber-pending-soft: #f5e9d2;
+    --line: #d9ded9; --line-strong: #c1c9c0;
+    --shadow: 0 1px 2px rgba(22,38,42,.06), 0 8px 24px -12px rgba(22,38,42,.18);
+  }
+
+  *{ box-sizing: border-box; }
+  html{ background: var(--paper); }
+  body{
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: var(--font-body); line-height: 1.55; -webkit-font-smoothing: antialiased;
+  }
+  @media (prefers-reduced-motion: reduce){ *{ transition-duration: .001ms !important; } }
+  a{ color: var(--accent-jade); }
+  :focus-visible{ outline: 2px solid var(--accent-jade); outline-offset: 2px; border-radius: 4px; }
+
+  .wrap{ max-width: 980px; margin: 0 auto; padding: 0 24px 100px; }
+
+  .topbar{
+    position: sticky; top: 0; z-index: 5;
+    display:flex; align-items:center; justify-content: space-between;
+    padding: 16px 24px; background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(8px); border-bottom: 1px solid var(--line);
+  }
+  .topbar-inner{ max-width: 980px; margin: 0 auto; width:100%; display:flex; align-items:center; justify-content:space-between; }
+  .brand{ font-family: var(--font-display); font-size: 15px; }
+  .brand .dot{ color: var(--accent-seal); }
+  .theme-toggle{
+    font-family: var(--font-mono); font-size: 12px; letter-spacing:.03em;
+    border: 1px solid var(--line-strong); background: var(--paper-raised); color: var(--ink);
+    padding: 7px 13px; border-radius: 999px; cursor: pointer;
+  }
+  .theme-toggle:hover{ border-color: var(--accent-jade); }
+
+  .intro{ padding: 56px 0 40px; border-bottom: 1px solid var(--line); }
+  .eyebrow{
+    font-family: var(--font-mono); font-size: 12.5px; letter-spacing:.09em; text-transform: uppercase;
+    color: var(--accent-seal); display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow::before{ content:""; width:7px; height:7px; background: var(--accent-seal); transform: rotate(45deg); }
+  h1{ font-family: var(--font-display); font-weight:400; font-size: clamp(30px,4vw,42px); margin:14px 0 12px; text-wrap:balance; }
+  .lede{ color: var(--ink-muted); font-size: 16px; max-width: 62ch; margin:0; }
+
+  section{ padding: 56px 0; border-bottom: 1px solid var(--line); }
+  h2{ font-family: var(--font-display); font-weight:400; font-size: 24px; margin: 0 0 6px; }
+  .section-desc{ color: var(--ink-muted); font-size: 14.5px; margin: 0 0 28px; max-width: 60ch; }
+
+  /* Colors */
+  .swatch-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap:14px; }
+  .swatch{ border-radius: 10px; overflow:hidden; border:1px solid var(--line); }
+  .swatch .fill{ height: 64px; }
+  .swatch .label{ padding: 10px 12px; background: var(--paper-raised); }
+  .swatch .name{ font-family: var(--font-mono); font-size: 12px; font-weight:600; }
+  .swatch .hex{ font-family: var(--font-mono); font-size: 11px; color: var(--ink-muted); }
+
+  /* Type */
+  .type-row{ display:flex; align-items:baseline; gap: 20px; padding: 16px 0; border-top: 1px solid var(--line); flex-wrap:wrap; }
+  .type-row:first-of-type{ border-top:none; }
+  .type-tag{ font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); width: 90px; flex:none; }
+  .t-display1{ font-family: var(--font-display); font-size: 40px; }
+  .t-display2{ font-family: var(--font-display); font-size: 28px; }
+  .t-body{ font-size: 16px; }
+  .t-caption{ font-size: 13px; color: var(--ink-muted); }
+  .t-mono{ font-family: var(--font-mono); font-size: 14px; font-variant-numeric: tabular-nums; }
+
+  /* Buttons */
+  .row{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom: 14px; }
+  .btn{ font-size: 14px; font-weight:600; padding: 10px 18px; border-radius: 8px; border:none; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
+  .btn-primary{ background: var(--accent-seal); color:#fff; }
+  .btn-primary:hover{ filter:brightness(1.06); }
+  .btn-secondary{ background: var(--accent-jade); color:#fff; }
+  .btn-ghost{ background: transparent; border:1px solid var(--line-strong); color: var(--ink); }
+  .btn-ghost:hover{ background: var(--paper-sunken); }
+  .btn-disabled{ background: var(--paper-sunken); color: var(--ink-faint); cursor:not-allowed; }
+
+  /* Badges */
+  .badge{ display:inline-flex; align-items:center; gap:6px; font-family: var(--font-mono); font-size: 11.5px; letter-spacing:.03em; padding:4px 10px 4px 7px; border-radius:999px; }
+  .badge .dot{ width:6px; height:6px; border-radius:50%; }
+  .badge.verified{ background: var(--accent-jade-soft); color: var(--accent-jade); }
+  .badge.verified .dot{ background: var(--accent-jade); }
+  .badge.pending{ background: var(--amber-pending-soft); color: var(--amber-pending); }
+  .badge.pending .dot{ background: var(--amber-pending); }
+  .badge.rejected{ background: var(--accent-seal-soft); color: var(--accent-seal); }
+  .badge.rejected .dot{ background: var(--accent-seal); }
+  .badge.neutral{ background: var(--paper-sunken); color: var(--ink-muted); }
+  .badge.neutral .dot{ background: var(--ink-faint); }
+
+  /* Cards */
+  .card-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:16px; }
+  .card{ background: var(--paper-raised); border:1px solid var(--line); border-radius:10px; padding:18px; box-shadow: var(--shadow); }
+  .card .k{ font-family: var(--font-mono); font-size:11px; color: var(--accent-jade); letter-spacing:.04em; }
+  .card .title{ font-weight:600; font-size:15px; margin: 6px 0 4px; }
+  .card .meta{ font-size:13px; color: var(--ink-muted); }
+
+  /* Icons */
+  .icon-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(120px,1fr)); gap: 14px; }
+  .icon-tile{ background: var(--paper-raised); border:1px solid var(--line); border-radius:10px; padding: 18px 12px; display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .icon-tile svg{ width:26px; height:26px; stroke: var(--accent-jade); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .icon-tile .icon-name{ font-family: var(--font-mono); font-size: 11px; color: var(--ink-muted); }
+
+  .footer-note{ padding-top: 40px; font-size:13.5px; color: var(--ink-muted); }
+  .footer-note a{ text-decoration:none; border-bottom:1px solid currentColor; }
+</style>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <span class="brand"><span class="dot">●</span> BlouseHiding — Style Guide</span>
+    <button class="theme-toggle" id="toggle">◐ Đổi theme</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="intro">
+    <span class="eyebrow">Design tokens</span>
+    <h1>Hệ thống thiết kế "Tin cậy lâm sàng"</h1>
+    <p class="lede">Tham chiếu trực quan cho toàn bộ token màu, kiểu chữ, trạng thái và thành phần dùng
+      chung — trích từ <code>THIET-KE-GIAO-DIEN.md</code>. Bấm "Đổi theme" để xem cả hai chế độ sáng/tối.</p>
+  </div>
+
+  <section>
+    <h2>01 · Bảng màu</h2>
+    <p class="section-desc">Mỗi màu gắn một vai trò nghiệp vụ cụ thể — không phải trang trí tự do.</p>
+    <div class="swatch-grid">
+      <div class="swatch"><div class="fill" style="background:var(--paper)"></div><div class="label"><div class="name">paper</div><div class="hex">nền trang</div></div></div>
+      <div class="swatch"><div class="fill" style="background:var(--paper-raised)"></div><div class="label"><div class="name">paper-raised</div><div class="hex">nền card</div></div></div>
+      <div class="swatch"><div class="fill" style="background:var(--ink)"></div><div class="label"><div class="name">ink</div><div class="hex">chữ chính</div></div></div>
+      <div class="swatch"><div class="fill" style="background:var(--ink-muted)"></div><div class="label"><div class="name">ink-muted</div><div class="hex">chữ phụ</div></div></div>
+      <div class="swatch"><div class="fill" style="background:var(--accent-seal)"></div><div class="label"><div class="name">accent-seal</div><div class="hex">đỏ triện — CTA, xác thực</div></div></div>
+      <div class="swatch"><div class="fill" style="background:var(--accent-jade)"></div><div class="label"><div class="name">accent-jade</div><div class="hex">xanh ngọc — chuyên môn</div></div></div>
+      <div class="swatch"><div class="fill" style="background:var(--amber-pending)"></div><div class="label"><div class="name">amber-pending</div><div class="hex">chờ duyệt</div></div></div>
+      <div class="swatch"><div class="fill" style="background:var(--line)"></div><div class="label"><div class="name">line</div><div class="hex">viền/hairline</div></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>02 · Kiểu chữ</h2>
+    <p class="section-desc">Serif dùng tiết chế cho tiêu đề lớn; phần còn lại dùng sans hệ thống (Be Vietnam Pro khi vào code thật) để tối ưu tốc độ đọc.</p>
+    <div class="type-row"><span class="type-tag">display / h1</span><span class="t-display1">Điều dưỡng ICU — Ca đêm</span></div>
+    <div class="type-row"><span class="type-tag">display / h2</span><span class="t-display2">Hồ sơ chứng chỉ hành nghề</span></div>
+    <div class="type-row"><span class="type-tag">body</span><span class="t-body">Chăm sóc, theo dõi bệnh nhân nặng tại khoa Hồi sức tích cực trong ca trực đêm.</span></div>
+    <div class="type-row"><span class="type-tag">caption</span><span class="t-caption">Cập nhật lần cuối 2 giờ trước</span></div>
+    <div class="type-row"><span class="type-tag">mono / số liệu</span><span class="t-mono">CCHN-0041892 · 18.000.000–25.000.000 ₫ · 12/03/2029</span></div>
+  </section>
+
+  <section>
+    <h2>03 · Nút &amp; trạng thái</h2>
+    <p class="section-desc">Trạng thái xác thực luôn mã hóa cả màu lẫn chấm tròn + nhãn chữ, không chỉ dựa vào màu sắc.</p>
+    <div class="row">
+      <button class="btn btn-primary">Ứng tuyển ngay</button>
+      <button class="btn btn-secondary">Nhắn tin</button>
+      <button class="btn btn-ghost">Lưu tin</button>
+      <button class="btn btn-disabled" disabled>Đã đóng tin</button>
+    </div>
+    <div class="row">
+      <span class="badge verified"><span class="dot"></span>verified</span>
+      <span class="badge pending"><span class="dot"></span>pending</span>
+      <span class="badge rejected"><span class="dot"></span>rejected</span>
+      <span class="badge neutral"><span class="dot"></span>draft</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>04 · Thẻ (card)</h2>
+    <p class="section-desc">Mẫu card dùng chung cho tin tuyển dụng, hồ sơ ứng viên rút gọn, sự kiện.</p>
+    <div class="card-grid">
+      <div class="card">
+        <span class="k">Điều dưỡng · ICU</span>
+        <div class="title">Điều dưỡng ICU — Ca đêm</div>
+        <div class="meta">Bệnh viện Tâm Anh · Hà Nội · 18–25 triệu/tháng</div>
+      </div>
+      <div class="card">
+        <span class="k">Hồi sức cấp cứu</span>
+        <div class="title">T. Thị B — 5 năm kinh nghiệm</div>
+        <div class="meta">CCHN đã xác thực · điểm hồ sơ 92</div>
+      </div>
+      <div class="card">
+        <span class="k">CME · Sự kiện</span>
+        <div class="title">Hội thảo Cấp cứu Nhi khoa 2026</div>
+        <div class="meta">Trực tuyến · 14/09/2026</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>05 · Icon</h2>
+    <p class="section-desc">Phong cách nét đơn, bo tròn đầu nét — theo chuẩn bộ icon Lucide sẽ dùng trong code thật.</p>
+    <div class="icon-grid">
+      <div class="icon-tile"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span class="icon-name">verified</span></div>
+      <div class="icon-tile"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><span class="icon-name">pending</span></div>
+      <div class="icon-tile"><svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/></svg><span class="icon-name">shield / license</span></div>
+      <div class="icon-tile"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg><span class="icon-name">clinical / vitals</span></div>
+      <div class="icon-tile"><svg viewBox="0 0 24 24"><path d="M4 4h16v12H8l-4 4z"/></svg><span class="icon-name">message</span></div>
+      <div class="icon-tile"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.6H19l-4.6 3.4L16 18l-4-3-4 3 1.6-6-4.6-3.4h5.2z"/></svg><span class="icon-name">featured</span></div>
+    </div>
+  </section>
+
+  <div class="footer-note">
+    Nguồn: <a href="../THIET-KE-GIAO-DIEN.md">THIET-KE-GIAO-DIEN.md</a> ·
+    Áp dụng trong: <a href="man-hinh-cot-loi.html">wireframe 3 màn hình cốt lõi</a>
+  </div>
+</div>
+
+<script>
+  var root = document.documentElement;
+  var btn = document.getElementById('toggle');
+  btn.addEventListener('click', function(){
+    var current = root.getAttribute('data-theme');
+    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var isDark = current ? current === 'dark' : prefersDark;
+    root.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  });
+</script>

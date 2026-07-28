@@ -13,6 +13,8 @@ xác thực chứng chỉ hành nghề, phân loại chuyên khoa, loại hình 
 - [Thiết kế API](docs/API-DESIGN.md) — endpoint REST theo từng module, phân quyền RBAC.
 - [Wireframe màn hình cốt lõi](docs/wireframes/man-hinh-cot-loi.html) — bố cục 3 màn hình chính (mở bằng trình duyệt).
 - [Lựa chọn công nghệ chi tiết](docs/TECH-STACK-CHI-TIET.md) — thư viện cụ thể theo từng lớp: backend, CSDL, frontend, giao thức kết nối, hạ tầng, dịch vụ VN.
+- [Định hướng thiết kế giao diện](docs/THIET-KE-GIAO-DIEN.md) — phong cách thiết kế, quyết định dùng mã nguồn mở ở đâu, thư viện UI cụ thể.
+- [Style Guide trực quan](docs/wireframes/style-guide.html) — bảng màu, kiểu chữ, nút/badge, thẻ, icon (mở bằng trình duyệt).
 
 ## Trạng thái
 
