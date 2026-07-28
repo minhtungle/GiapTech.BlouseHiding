@@ -1,0 +1,744 @@
+<title>BlouseHiding — Wireframe màn hình cốt lõi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper: #f2f4f1;
+    --paper-raised: #ffffff;
+    --paper-sunken: #e9ede8;
+    --ink: #16262a;
+    --ink-muted: #5b6e6c;
+    --ink-faint: #8a9997;
+    --accent-seal: #ba3b21;
+    --accent-seal-soft: #f4e2dc;
+    --accent-jade: #2f6e62;
+    --accent-jade-soft: #e2eeea;
+    --amber-pending: #a9761b;
+    --amber-pending-soft: #f5e9d2;
+    --line: #d9ded9;
+    --line-strong: #c1c9c0;
+    --shadow: 0 1px 2px rgba(22,38,42,.06), 0 8px 24px -12px rgba(22,38,42,.18);
+    --radius: 10px;
+    --font-display: Georgia, "Iowan Old Style", "Noto Serif", "Times New Roman", serif;
+    --font-body: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper: #101918;
+      --paper-raised: #16211f;
+      --paper-sunken: #0c1413;
+      --ink: #e8ede9;
+      --ink-muted: #93a6a2;
+      --ink-faint: #5f716e;
+      --accent-seal: #e1633f;
+      --accent-seal-soft: #3a231c;
+      --accent-jade: #59ab99;
+      --accent-jade-soft: #1c2e2a;
+      --amber-pending: #d9ab52;
+      --amber-pending-soft: #362a15;
+      --line: #263230;
+      --line-strong: #33413e;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 28px -14px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper: #101918; --paper-raised: #16211f; --paper-sunken: #0c1413;
+    --ink: #e8ede9; --ink-muted: #93a6a2; --ink-faint: #5f716e;
+    --accent-seal: #e1633f; --accent-seal-soft: #3a231c;
+    --accent-jade: #59ab99; --accent-jade-soft: #1c2e2a;
+    --amber-pending: #d9ab52; --amber-pending-soft: #362a15;
+    --line: #263230; --line-strong: #33413e;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 28px -14px rgba(0,0,0,.5);
+  }
+  :root[data-theme="light"]{
+    --paper: #f2f4f1; --paper-raised: #ffffff; --paper-sunken: #e9ede8;
+    --ink: #16262a; --ink-muted: #5b6e6c; --ink-faint: #8a9997;
+    --accent-seal: #ba3b21; --accent-seal-soft: #f4e2dc;
+    --accent-jade: #2f6e62; --accent-jade-soft: #e2eeea;
+    --amber-pending: #a9761b; --amber-pending-soft: #f5e9d2;
+    --line: #d9ded9; --line-strong: #c1c9c0;
+    --shadow: 0 1px 2px rgba(22,38,42,.06), 0 8px 24px -12px rgba(22,38,42,.18);
+  }
+
+  *{ box-sizing: border-box; }
+  html{ background: var(--paper); }
+  body{
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  }
+
+  a{ color: var(--accent-jade); }
+  :focus-visible{ outline: 2px solid var(--accent-jade); outline-offset: 2px; border-radius: 4px; }
+
+  .wrap{ max-width: 1120px; margin: 0 auto; padding: 0 24px 96px; }
+
+  /* ---------- Intro ---------- */
+  .intro{
+    padding: 64px 0 40px;
+    border-bottom: 1px solid var(--line);
+  }
+  .eyebrow{
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--accent-seal);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .eyebrow::before{
+    content: "";
+    width: 7px; height: 7px; border-radius: 1px;
+    background: var(--accent-seal);
+    transform: rotate(45deg);
+    flex: none;
+  }
+  h1.title{
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(32px, 4.4vw, 46px);
+    line-height: 1.12;
+    letter-spacing: -.01em;
+    margin: 14px 0 16px;
+    text-wrap: balance;
+    max-width: 16ch;
+  }
+  .lede{
+    font-size: 17px;
+    color: var(--ink-muted);
+    max-width: 62ch;
+    margin: 0 0 22px;
+  }
+  .lede code, .callout code, .refnote code{
+    font-family: var(--font-mono);
+    font-size: .92em;
+    background: var(--paper-sunken);
+    border: 1px solid var(--line);
+    padding: .05em .4em;
+    border-radius: 5px;
+  }
+  .nav-jump{
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-top: 8px;
+  }
+  .nav-jump a{
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    text-decoration: none;
+    color: var(--ink-muted);
+    border: 1px solid var(--line);
+    background: var(--paper-raised);
+    padding: 7px 12px;
+    border-radius: 999px;
+    letter-spacing: .02em;
+  }
+  .nav-jump a:hover{ color: var(--ink); border-color: var(--line-strong); }
+  .nav-jump .num{ color: var(--accent-jade); margin-right: 6px; }
+
+  /* ---------- Legend ---------- */
+  .legend{
+    display: flex; flex-wrap: wrap; gap: 18px;
+    padding: 22px 0 0;
+    font-size: 13.5px;
+    color: var(--ink-muted);
+  }
+  .legend .item{ display:flex; align-items:center; gap:7px; }
+  .badge{
+    display:inline-flex; align-items:center; gap:5px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: .03em;
+    padding: 3px 8px 3px 6px;
+    border-radius: 999px;
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+  .badge .dot{ width:6px; height:6px; border-radius:50%; flex:none; }
+  .badge.verified{ background: var(--accent-jade-soft); color: var(--accent-jade); }
+  .badge.verified .dot{ background: var(--accent-jade); }
+  .badge.pending{ background: var(--amber-pending-soft); color: var(--amber-pending); }
+  .badge.pending .dot{ background: var(--amber-pending); }
+  .badge.rejected{ background: var(--accent-seal-soft); color: var(--accent-seal); }
+  .badge.rejected .dot{ background: var(--accent-seal); }
+  .badge.neutral{ background: var(--paper-sunken); color: var(--ink-muted); }
+  .badge.neutral .dot{ background: var(--ink-faint); }
+
+  /* ---------- Section scaffolding ---------- */
+  section.screen{
+    padding: 72px 0 8px;
+    border-bottom: 1px solid var(--line);
+    opacity: 0;
+    transform: translateY(10px);
+    animation: rise .5s ease forwards;
+  }
+  section.screen:nth-of-type(2){ animation-delay: .05s; }
+  section.screen:nth-of-type(3){ animation-delay: .1s; }
+  @keyframes rise{ to{ opacity:1; transform:none; } }
+  @media (prefers-reduced-motion: reduce){ section.screen{ opacity:1; transform:none; } }
+
+  .screen-head{
+    display:flex; justify-content: space-between; align-items: flex-end;
+    gap: 24px; margin-bottom: 22px; flex-wrap: wrap;
+  }
+  .screen-head .idx{
+    font-family: var(--font-mono);
+    color: var(--accent-jade);
+    font-size: 13px;
+    letter-spacing: .06em;
+  }
+  h2.screen-title{
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 27px;
+    margin: 4px 0 6px;
+  }
+  .screen-desc{ color: var(--ink-muted); font-size: 15px; max-width: 56ch; margin: 0; }
+  .screen-tags{ display:flex; gap:8px; flex-wrap:wrap; }
+  .tag{
+    font-family: var(--font-mono);
+    font-size: 11px; letter-spacing:.03em;
+    color: var(--ink-muted);
+    border: 1px solid var(--line);
+    padding: 4px 9px; border-radius: 6px;
+    background: var(--paper-raised);
+  }
+
+  /* ---------- Device frame ---------- */
+  .frame{
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .frame-bar{
+    display:flex; align-items:center; gap: 8px;
+    padding: 11px 14px;
+    background: var(--paper-sunken);
+    border-bottom: 1px solid var(--line);
+  }
+  .frame-bar .dot{ width:9px; height:9px; border-radius:50%; background: var(--line-strong); }
+  .frame-url{
+    margin-left: 8px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 4px 10px;
+    flex: 1;
+    max-width: 460px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .frame-body{ display: grid; }
+
+  .brand{
+    font-family: var(--font-display);
+    font-size: 15px;
+    letter-spacing: .01em;
+  }
+  .brand .dot-seal{ color: var(--accent-seal); }
+
+  /* ---------- Screen 1: job detail ---------- */
+  .app-nav{
+    display:flex; align-items:center; justify-content: space-between;
+    padding: 14px 26px; border-bottom: 1px solid var(--line);
+  }
+  .app-nav-links{ display:flex; gap: 22px; font-size: 13.5px; color: var(--ink-muted); }
+  .app-nav-links a{ text-decoration:none; color:inherit; }
+  .cta-mini{
+    font-size: 13px; font-weight: 600; color: var(--paper-raised);
+    background: var(--ink); padding: 8px 15px; border-radius: 7px; text-decoration:none;
+  }
+  .job-layout{ display:grid; grid-template-columns: 1.7fr 1fr; gap: 0; }
+  .job-main{ padding: 30px 30px 36px; border-right: 1px solid var(--line); }
+  .job-side{ padding: 30px; background: var(--paper-sunken); }
+  .job-eyebrow{ font-size: 12.5px; color: var(--accent-jade); font-family: var(--font-mono); letter-spacing:.04em; }
+  .job-title{ font-family: var(--font-display); font-size: 24px; margin: 8px 0 6px; text-wrap: balance; }
+  .job-org{ font-size: 14.5px; color: var(--ink-muted); margin: 0 0 16px; }
+  .job-org strong{ color: var(--ink); font-weight: 600; }
+  .chip-row{ display:flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+  .chip{
+    font-size: 12.5px; padding: 6px 11px; border-radius: 999px;
+    border: 1px solid var(--line); color: var(--ink-muted); display:flex; align-items:center; gap:6px;
+  }
+  .chip.salary{ color: var(--ink); font-family: var(--font-mono); font-variant-numeric: tabular-nums; border-color: var(--line-strong); }
+  .chip.license-req{ color: var(--accent-seal); border-color: var(--accent-seal-soft); background: var(--accent-seal-soft); }
+  .seal-mark{ display:inline-block; width:12px; height:12px; }
+  h3.block-title{ font-size: 13px; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-faint); margin: 26px 0 10px; }
+  .job-main p{ font-size: 14.8px; color: var(--ink); margin: 0 0 10px; }
+  .job-main ul{ margin: 0; padding-left: 20px; font-size: 14.8px; }
+  .job-main li{ margin-bottom: 6px; }
+  .company-card{
+    background: var(--paper-raised); border: 1px solid var(--line); border-radius: 10px;
+    padding: 18px; margin-bottom: 18px;
+  }
+  .company-card .logo{
+    width: 40px; height: 40px; border-radius: 9px; background: var(--accent-jade);
+    color: var(--paper-raised); display:flex; align-items:center; justify-content:center;
+    font-family: var(--font-display); font-size: 16px; margin-bottom: 10px;
+  }
+  .company-card .name{ font-weight: 600; font-size: 14.5px; margin-bottom: 3px; }
+  .company-card .meta{ font-size: 12.5px; color: var(--ink-muted); }
+  .btn{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    width: 100%; padding: 12px 16px; border-radius: 8px;
+    font-size: 14.5px; font-weight: 600; border: none; cursor: pointer; text-decoration:none;
+  }
+  .btn-primary{ background: var(--accent-seal); color: #fff; margin-bottom: 10px; }
+  .btn-primary:hover{ filter: brightness(1.06); }
+  .btn-ghost{ background: transparent; border: 1px solid var(--line-strong); color: var(--ink); }
+  .btn-ghost:hover{ background: var(--paper-raised); }
+
+  /* ---------- Screen 2: candidate profile ---------- */
+  .app-shell{ display:grid; grid-template-columns: 210px 1fr; min-height: 460px; }
+  .side-nav{ background: var(--paper-sunken); border-right: 1px solid var(--line); padding: 22px 0; }
+  .side-nav .brand{ padding: 0 20px 18px; }
+  .side-nav a{
+    display:flex; align-items:center; gap: 10px;
+    padding: 9px 20px; font-size: 13.5px; color: var(--ink-muted); text-decoration:none;
+    border-left: 2px solid transparent;
+  }
+  .side-nav a.active{ color: var(--ink); background: var(--paper-raised); border-left-color: var(--accent-seal); font-weight: 600; }
+  .side-nav .glyph{ width:15px; text-align:center; opacity:.75; font-size: 12px; }
+
+  .profile-main{ padding: 28px 32px 36px; }
+  .profile-head{ display:flex; align-items:center; justify-content: space-between; margin-bottom: 22px; flex-wrap: wrap; gap: 14px; }
+  .profile-progress{ display:flex; align-items:center; gap: 12px; }
+  .ring{
+    width: 46px; height: 46px; border-radius: 50%;
+    background: conic-gradient(var(--accent-jade) 0 288deg, var(--line) 288deg 360deg);
+    display:flex; align-items:center; justify-content:center;
+    font-family: var(--font-mono); font-size: 11.5px; color: var(--ink);
+  }
+  .ring::after{
+    content: "80%"; width: 36px; height: 36px; border-radius: 50%; background: var(--paper-raised);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .profile-progress .label{ font-size: 13px; color: var(--ink-muted); max-width: 22ch; }
+
+  h3.section-label{
+    font-size: 13px; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-faint);
+    display:flex; align-items:center; justify-content:space-between; margin: 30px 0 12px;
+  }
+  .add-link{ font-family: var(--font-mono); font-size: 11.5px; color: var(--accent-jade); text-decoration:none; letter-spacing: 0; text-transform:none; }
+
+  .specialty-chips{ display:flex; flex-wrap:wrap; gap:9px; }
+  .specialty-chip{
+    background: var(--accent-jade-soft); color: var(--accent-jade);
+    border-radius: 8px; padding: 8px 12px; font-size: 13px; display:flex; flex-direction:column; gap:2px;
+  }
+  .specialty-chip .lvl{ font-size: 11px; opacity: .8; font-family: var(--font-mono); }
+
+  .license-card{
+    display:grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items:center;
+    background: var(--paper-raised); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 10px;
+  }
+  .license-card .doc-thumb{
+    width: 44px; height: 56px; border-radius: 6px; background: var(--paper-sunken);
+    border: 1px solid var(--line); display:flex; align-items:center; justify-content:center;
+    font-size: 16px; color: var(--ink-faint);
+  }
+  .license-card .no{ font-family: var(--font-mono); font-size: 13.5px; font-weight: 600; }
+  .license-card .meta{ font-size: 12.5px; color: var(--ink-muted); margin-top: 2px; }
+  .license-card.expanded{ grid-template-columns: 1fr; }
+  .reject-note{
+    margin-top: 12px; padding: 12px 14px; border-radius: 8px;
+    background: var(--accent-seal-soft); color: var(--accent-seal); font-size: 13px;
+    border: 1px solid transparent;
+  }
+  .reject-note strong{ font-weight: 700; }
+
+  /* ---------- Screen 3: ATS kanban ---------- */
+  .ats-top{
+    display:flex; align-items:center; justify-content: space-between; padding: 18px 26px;
+    border-bottom: 1px solid var(--line); flex-wrap: wrap; gap: 12px;
+  }
+  .job-select{
+    display:flex; align-items:center; gap: 10px; font-size: 15px; font-weight: 600;
+  }
+  .job-select .caret{ color: var(--ink-faint); font-size: 11px; }
+  .ats-stats{ display:flex; gap: 18px; font-size: 12.5px; color: var(--ink-muted); font-family: var(--font-mono); }
+  .ats-stats b{ color: var(--ink); font-weight: 600; }
+
+  .board-scroll{ overflow-x: auto; padding: 20px 26px 28px; }
+  .board{ display:flex; gap: 16px; min-width: max-content; }
+  .column{ width: 232px; flex: none; }
+  .column-head{
+    display:flex; align-items:center; justify-content:space-between;
+    font-size: 12.5px; font-weight: 600; color: var(--ink-muted);
+    padding: 0 4px 10px; text-transform: uppercase; letter-spacing: .04em;
+  }
+  .column-head .count{
+    font-family: var(--font-mono); font-weight: 400; background: var(--paper-sunken);
+    border-radius: 999px; padding: 1px 8px; font-size: 11.5px;
+  }
+  .column-drop{
+    background: var(--paper-sunken); border-radius: 10px; padding: 8px; min-height: 60px;
+    display:flex; flex-direction:column; gap: 8px;
+  }
+  .candidate-card{
+    background: var(--paper-raised); border: 1px solid var(--line); border-radius: 9px;
+    padding: 12px 13px; box-shadow: 0 1px 0 rgba(22,38,42,.02);
+  }
+  .candidate-card .row1{ display:flex; align-items:center; gap: 9px; margin-bottom: 8px; }
+  .avatar{
+    width: 26px; height: 26px; border-radius: 50%; background: var(--accent-jade);
+    color: #fff; font-size: 11px; display:flex; align-items:center; justify-content:center; flex: none;
+    font-weight: 600;
+  }
+  .candidate-card .name{ font-size: 13.5px; font-weight: 600; }
+  .candidate-card .spec{ font-size: 12px; color: var(--ink-muted); margin-bottom: 8px; }
+  .card-foot{ display:flex; align-items:center; justify-content: space-between; }
+  .score-pill{
+    font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+    background: var(--paper-sunken); border-radius: 6px; padding: 2px 7px;
+  }
+  .candidate-card.dragging{ transform: rotate(-2deg); opacity: .85; box-shadow: var(--shadow); }
+  .candidate-card.unlocked-tag{ position: relative; }
+  .credit-flag{
+    font-size: 10.5px; font-family: var(--font-mono); color: var(--amber-pending);
+    display:flex; align-items:center; gap: 4px; margin-top: 6px;
+  }
+
+  /* ---------- Annotation callouts ---------- */
+  .callouts{
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 24px;
+  }
+  @media (max-width: 860px){ .callouts{ grid-template-columns: 1fr; } }
+  .callout{
+    border-left: 2px solid var(--accent-jade); padding: 4px 0 4px 14px;
+  }
+  .callout .k{ font-family: var(--font-mono); font-size: 11.5px; color: var(--accent-jade); display:block; margin-bottom: 3px; }
+  .callout .v{ font-size: 13px; color: var(--ink-muted); }
+
+  .refnote{
+    margin-top: 56px; padding-top: 22px; border-top: 1px solid var(--line);
+    font-size: 13.5px; color: var(--ink-muted);
+  }
+  .refnote a{ text-decoration: none; border-bottom: 1px solid currentColor; }
+
+  @media (max-width: 760px){
+    .job-layout{ grid-template-columns: 1fr; }
+    .job-main{ border-right: none; border-bottom: 1px solid var(--line); }
+    .app-shell{ grid-template-columns: 1fr; }
+    .side-nav{ display:none; }
+  }
+</style>
+
+<div class="wrap">
+
+  <div class="intro">
+    <span class="eyebrow">BlouseHiding · Thiết kế màn hình</span>
+    <h1 class="title">Ba màn hình cốt lõi, trước khi có một dòng code giao diện</h1>
+    <p class="lede">
+      Wireframe mức bố cục cho luồng quan trọng nhất của nền tảng: ứng viên xem và ứng tuyển một tin,
+      hồ sơ chứng chỉ hành nghề (<code>licenses</code>) mà toàn bộ độ tin cậy của hệ thống dựa vào, và
+      bảng quản lý ứng viên (ATS) mà nhà tuyển dụng dùng hằng ngày. Mỗi khung hình chú thích ánh xạ tới
+      bảng dữ liệu và endpoint tương ứng trong <code>ERD-CHI-TIET.md</code> / <code>API-DESIGN.md</code>.
+    </p>
+    <div class="nav-jump">
+      <a href="#screen-job"><span class="num">01</span>Chi tiết tin tuyển dụng</a>
+      <a href="#screen-profile"><span class="num">02</span>Hồ sơ CCHN &amp; chuyên khoa</a>
+      <a href="#screen-ats"><span class="num">03</span>Bảng quản lý ứng viên (ATS)</a>
+    </div>
+    <div class="legend" aria-label="Chú giải trạng thái xác thực">
+      <span class="item"><span class="badge verified"><span class="dot"></span>verified</span> đã xác thực</span>
+      <span class="item"><span class="badge pending"><span class="dot"></span>pending</span> chờ duyệt</span>
+      <span class="item"><span class="badge rejected"><span class="dot"></span>rejected</span> bị từ chối</span>
+      <span class="item"><span class="badge neutral"><span class="dot"></span>draft</span> bản nháp / chưa gửi</span>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 1 — JOB DETAIL ============ -->
+  <section class="screen" id="screen-job">
+    <div class="screen-head">
+      <div>
+        <span class="idx">Màn hình 01 · Public</span>
+        <h2 class="screen-title">Chi tiết tin tuyển dụng</h2>
+        <p class="screen-desc">Ứng viên xem và quyết định ứng tuyển. Yêu cầu CCHN và mức lương phải rõ ràng ngay phần trên, không ẩn trong mô tả dài.</p>
+      </div>
+      <div class="screen-tags">
+        <span class="tag">GET /jobs/{id}</span>
+        <span class="tag">bảng jobs</span>
+      </div>
+    </div>
+
+    <div class="frame">
+      <div class="frame-bar">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="frame-url">blousehiding.vn/viec-lam/dieu-duong-icu-ca-dem-benh-vien-tam-anh</span>
+      </div>
+      <div class="frame-body">
+        <div class="app-nav">
+          <span class="brand"><span class="dot-seal">●</span> BlouseHiding</span>
+          <div class="app-nav-links">
+            <a href="#">Tìm việc</a>
+            <a href="#">Đăng tin tuyển dụng</a>
+            <a href="#">Góc nghề y</a>
+          </div>
+          <a class="cta-mini" href="#">Đăng nhập</a>
+        </div>
+        <div class="job-layout">
+          <div class="job-main">
+            <span class="job-eyebrow">Điều dưỡng · Hồi sức cấp cứu (ICU)</span>
+            <h3 class="job-title">Điều dưỡng ICU — Ca đêm</h3>
+            <p class="job-org">tại <strong>Bệnh viện Đa khoa Tâm Anh</strong> · Hà Nội</p>
+            <div class="chip-row">
+              <span class="chip salary">18–25 triệu/tháng</span>
+              <span class="chip">Trực ca · Toàn thời gian</span>
+              <span class="chip">Tuyến trung ương</span>
+              <span class="chip license-req"><span class="seal-mark">🩺</span>Yêu cầu CCHN Điều dưỡng</span>
+            </div>
+
+            <h3 class="block-title">Mô tả công việc</h3>
+            <p>Chăm sóc, theo dõi bệnh nhân nặng tại khoa Hồi sức tích cực trong ca trực đêm (22h–6h), phối hợp bác sĩ trực xử trí cấp cứu, ghi hồ sơ điều dưỡng theo quy định Bộ Y tế.</p>
+
+            <h3 class="block-title">Yêu cầu</h3>
+            <ul>
+              <li>CCHN Điều dưỡng còn hiệu lực, phạm vi hoạt động phù hợp ICU/HSCC.</li>
+              <li>Tối thiểu 2 năm kinh nghiệm tại khoa Hồi sức hoặc Cấp cứu.</li>
+              <li>Có thể trực đêm luân phiên 10–12 ca/tháng.</li>
+            </ul>
+
+            <h3 class="block-title">Quyền lợi</h3>
+            <ul>
+              <li>Phụ cấp trực đêm + độc hại theo quy định, BHXH đầy đủ.</li>
+              <li>Đào tạo CME định kỳ, lộ trình lên Điều dưỡng trưởng.</li>
+            </ul>
+          </div>
+          <div class="job-side">
+            <div class="company-card">
+              <div class="logo">TA</div>
+              <div class="name">Bệnh viện Đa khoa Tâm Anh</div>
+              <div class="meta">Bệnh viện tư · 200–1000 nhân sự</div>
+            </div>
+            <a class="btn btn-primary" href="#">Ứng tuyển ngay</a>
+            <a class="btn btn-ghost" href="#">☆ Lưu tin</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callouts">
+      <div class="callout"><span class="k">chip.license-req</span><span class="v">từ <code>jobs.required_license</code> — cảnh báo sớm, tránh ứng viên nộp hồ sơ không đủ điều kiện.</span></div>
+      <div class="callout"><span class="k">Ứng tuyển ngay</span><span class="v">gọi <code>POST /jobs/{jobId}/applications</code> — chặn lại nếu chưa đăng nhập, không chặn nếu CCHN chưa xác thực (mục 1.4).</span></div>
+      <div class="callout"><span class="k">company-card</span><span class="v">chỉ hiển thị khi <code>organizations.verify_status = verified</code>.</span></div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 2 — CANDIDATE PROFILE / LICENSE ============ -->
+  <section class="screen" id="screen-profile">
+    <div class="screen-head">
+      <div>
+        <span class="idx">Màn hình 02 · Candidate</span>
+        <h2 class="screen-title">Hồ sơ CCHN &amp; chuyên khoa</h2>
+        <p class="screen-desc">Nơi tạo ra "rào cản tin cậy" cốt lõi của hệ thống — mỗi CCHN có trạng thái xác thực độc lập, hiển thị cả lý do khi bị từ chối.</p>
+      </div>
+      <div class="screen-tags">
+        <span class="tag">POST /candidates/me/licenses</span>
+        <span class="tag">bảng licenses</span>
+      </div>
+    </div>
+
+    <div class="frame">
+      <div class="frame-bar">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="frame-url">blousehiding.vn/ho-so/chung-chi-hanh-nghe</span>
+      </div>
+      <div class="frame-body">
+        <div class="app-shell">
+          <nav class="side-nav">
+            <div class="brand"><span class="dot-seal">●</span> BlouseHiding</div>
+            <a href="#"><span class="glyph">▢</span> Tổng quan</a>
+            <a href="#" class="active"><span class="glyph">🩺</span> Hồ sơ &amp; CCHN</a>
+            <a href="#"><span class="glyph">▤</span> CV Builder</a>
+            <a href="#"><span class="glyph">↗</span> Việc đã ứng tuyển</a>
+            <a href="#"><span class="glyph">✉</span> Tin nhắn</a>
+          </nav>
+          <div class="profile-main">
+            <div class="profile-head">
+              <div class="profile-progress">
+                <div class="ring" role="img" aria-label="Hoàn thiện hồ sơ 80%"></div>
+                <span class="label">Hồ sơ hoàn thiện 80% — còn thiếu chứng chỉ CME</span>
+              </div>
+            </div>
+
+            <h3 class="section-label">Chuyên khoa <a class="add-link" href="#">+ thêm chuyên khoa</a></h3>
+            <div class="specialty-chips">
+              <div class="specialty-chip">Hồi sức cấp cứu (ICU)<span class="lvl">senior</span></div>
+              <div class="specialty-chip">Điều dưỡng nội khoa<span class="lvl">mid</span></div>
+            </div>
+
+            <h3 class="section-label">Chứng chỉ hành nghề <a class="add-link" href="#">+ thêm CCHN</a></h3>
+
+            <div class="license-card">
+              <div class="doc-thumb">📄</div>
+              <div>
+                <div class="no">CCHN-0041892/HN-CCHN</div>
+                <div class="meta">Sở Y tế Hà Nội cấp · 12/03/2019 · hết hạn 12/03/2029</div>
+              </div>
+              <span class="badge verified"><span class="dot"></span>verified</span>
+            </div>
+
+            <div class="license-card expanded">
+              <div style="display:flex; gap:16px; align-items:center;">
+                <div class="doc-thumb">📄</div>
+                <div style="flex:1">
+                  <div class="no">CCHN-0058231/HN-CCHN</div>
+                  <div class="meta">Sở Y tế Hà Nội cấp · 03/06/2024 · phạm vi: Hồi sức cấp cứu</div>
+                </div>
+                <span class="badge rejected"><span class="dot"></span>rejected</span>
+              </div>
+              <div class="reject-note">
+                <strong>Lý do từ chối:</strong> Ảnh scan mờ ở phần số CCHN, vui lòng chụp lại rõ nét và tải lên lại.
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callouts">
+      <div class="callout"><span class="k">badge verified/rejected</span><span class="v">ánh xạ trực tiếp <code>licenses.verify_status</code> — mỗi CCHN xác thực độc lập, không phải cờ chung của hồ sơ.</span></div>
+      <div class="callout"><span class="k">reject-note</span><span class="v">từ <code>licenses.reject_reason</code> — luôn hiển thị lý do cụ thể, không chỉ nói "không hợp lệ".</span></div>
+      <div class="callout"><span class="k">progress ring</span><span class="v"><code>candidate_profiles.completion_pct</code> — khuyến khích hoàn thiện hồ sơ, không chặn thao tác khác.</span></div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 3 — ATS KANBAN ============ -->
+  <section class="screen" id="screen-ats">
+    <div class="screen-head">
+      <div>
+        <span class="idx">Màn hình 03 · Employer</span>
+        <h2 class="screen-title">Bảng quản lý ứng viên (ATS)</h2>
+        <p class="screen-desc">HR kéo-thả ứng viên qua từng bước pipeline. Cuộn ngang khi nhiều cột — bảng không bao giờ làm tràn trang.</p>
+      </div>
+      <div class="screen-tags">
+        <span class="tag">PATCH /applications/{id}/stage</span>
+        <span class="tag">bảng applications</span>
+      </div>
+    </div>
+
+    <div class="frame">
+      <div class="frame-bar">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="frame-url">tuyendung.blousehiding.vn/tin/dieu-duong-icu/ung-vien</span>
+      </div>
+      <div class="frame-body">
+        <div class="ats-top">
+          <div class="job-select">Điều dưỡng ICU — Ca đêm <span class="caret">▾</span></div>
+          <div class="ats-stats">
+            <span><b>12</b> ứng viên</span>
+            <span><b>3</b> mới hôm nay</span>
+            <span><b>428</b> credit còn lại</span>
+          </div>
+        </div>
+        <div class="board-scroll">
+          <div class="board">
+
+            <div class="column">
+              <div class="column-head">Mới <span class="count">4</span></div>
+              <div class="column-drop">
+                <div class="candidate-card">
+                  <div class="row1"><span class="avatar">NA</span><span class="name">N. Văn A</span></div>
+                  <div class="spec">ICU · 3 năm KN</div>
+                  <div class="card-foot"><span class="badge verified"><span class="dot"></span>CCHN</span><span class="score-pill">87</span></div>
+                </div>
+                <div class="candidate-card dragging">
+                  <div class="row1"><span class="avatar">TB</span><span class="name">T. Thị B</span></div>
+                  <div class="spec">Hồi sức · 5 năm KN</div>
+                  <div class="card-foot"><span class="badge verified"><span class="dot"></span>CCHN</span><span class="score-pill">92</span></div>
+                  <div class="credit-flag">◆ mở bằng credit</div>
+                </div>
+                <div class="candidate-card">
+                  <div class="row1"><span class="avatar">LC</span><span class="name">L. Văn C</span></div>
+                  <div class="spec">Nội khoa · 1 năm KN</div>
+                  <div class="card-foot"><span class="badge pending"><span class="dot"></span>CCHN</span><span class="score-pill">61</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="column">
+              <div class="column-head">Đang xem <span class="count">3</span></div>
+              <div class="column-drop">
+                <div class="candidate-card">
+                  <div class="row1"><span class="avatar">PD</span><span class="name">P. Thị D</span></div>
+                  <div class="spec">ICU · 4 năm KN</div>
+                  <div class="card-foot"><span class="badge verified"><span class="dot"></span>CCHN</span><span class="score-pill">84</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="column">
+              <div class="column-head">Phù hợp <span class="count">2</span></div>
+              <div class="column-drop">
+                <div class="candidate-card">
+                  <div class="row1"><span class="avatar">VE</span><span class="name">V. Thị E</span></div>
+                  <div class="spec">ICU · 6 năm KN</div>
+                  <div class="card-foot"><span class="badge verified"><span class="dot"></span>CCHN</span><span class="score-pill">95</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="column">
+              <div class="column-head">Hẹn phỏng vấn <span class="count">1</span></div>
+              <div class="column-drop">
+                <div class="candidate-card">
+                  <div class="row1"><span class="avatar">HG</span><span class="name">H. Văn G</span></div>
+                  <div class="spec">Cấp cứu · 2 năm KN</div>
+                  <div class="card-foot"><span class="badge verified"><span class="dot"></span>CCHN</span><span class="score-pill">78</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="column">
+              <div class="column-head">Offer <span class="count">1</span></div>
+              <div class="column-drop">
+                <div class="candidate-card">
+                  <div class="row1"><span class="avatar">KH</span><span class="name">K. Thị H</span></div>
+                  <div class="spec">ICU · 5 năm KN</div>
+                  <div class="card-foot"><span class="badge verified"><span class="dot"></span>CCHN</span><span class="score-pill">90</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="column">
+              <div class="column-head">Trúng tuyển <span class="count">1</span></div>
+              <div class="column-drop">
+                <div class="candidate-card">
+                  <div class="row1"><span class="avatar">MI</span><span class="name">M. Văn I</span></div>
+                  <div class="spec">ICU · 4 năm KN</div>
+                  <div class="card-foot"><span class="badge verified"><span class="dot"></span>CCHN</span><span class="score-pill">88</span></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callouts">
+      <div class="callout"><span class="k">cột pipeline</span><span class="v">6 cột cố định theo <code>applications.stage</code> — không cho HR tự thêm cột để giữ báo cáo thống nhất toàn hệ thống.</span></div>
+      <div class="callout"><span class="k">score-pill</span><span class="v"><code>applications.score</code> — CV Scoring theo CCHN + chuyên khoa + kinh nghiệm, hiển thị ngay trên thẻ để lướt nhanh.</span></div>
+      <div class="callout"><span class="k">credit-flag</span><span class="v">đánh dấu ứng viên đến từ <code>profile_unlocks</code> (Employer chủ động tìm), phân biệt với người tự ứng tuyển.</span></div>
+    </div>
+  </section>
+
+  <div class="refnote">
+    Đối chiếu chi tiết bảng dữ liệu tại <a href="../ERD-CHI-TIET.md">ERD-CHI-TIET.md</a>,
+    endpoint tại <a href="../API-DESIGN.md">API-DESIGN.md</a>, luồng nghiệp vụ đầy đủ tại
+    <a href="../LUONG-NGHIEP-VU-MAN-HINH.md">LUONG-NGHIEP-VU-MAN-HINH.md</a>.
+  </div>
+
+</div>

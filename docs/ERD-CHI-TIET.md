@@ -1,0 +1,664 @@
+# GiapTech.BlouseHiding — ERD chi tiết
+
+> Cụ thể hóa mục 8 (Mô hình dữ liệu cốt lõi) của [`PHUONG-AN-THUC-HIEN.md`](./PHUONG-AN-THUC-HIEN.md)
+> và mục 1 (Luồng nghiệp vụ) của [`LUONG-NGHIEP-VU-MAN-HINH.md`](./LUONG-NGHIEP-VU-MAN-HINH.md).
+> Kiểu dữ liệu viết theo PostgreSQL. Mỗi bảng đều có `id UUID PK`, `created_at`, `updated_at` trừ khi ghi chú khác.
+
+---
+
+## 1. Sơ đồ quan hệ theo nhóm (Mermaid ER)
+
+### 1.1 Identity & Hồ sơ ứng viên
+
+```mermaid
+erDiagram
+    USER ||--o| CANDIDATE_PROFILE : "1-1"
+    CANDIDATE_PROFILE ||--o{ LICENSE : has
+    CANDIDATE_PROFILE ||--o{ PROFILE_SPECIALTY : has
+    CANDIDATE_PROFILE ||--o{ EXPERIENCE : has
+    CANDIDATE_PROFILE ||--o{ EDUCATION : has
+    CANDIDATE_PROFILE ||--o{ CONTINUING_CERTIFICATE : has
+    CANDIDATE_PROFILE ||--o{ CV : has
+    SPECIALTY ||--o{ PROFILE_SPECIALTY : "referenced by"
+
+    USER {
+        uuid id PK
+        string email UK
+        string phone UK
+        string password_hash
+        enum role
+        enum status
+        timestamp email_verified_at
+        timestamp phone_verified_at
+    }
+    CANDIDATE_PROFILE {
+        uuid id PK
+        uuid user_id FK
+        string full_name
+        date dob
+        enum gender
+        string headline
+        text summary
+        int completion_pct
+    }
+    LICENSE {
+        uuid id PK
+        uuid profile_id FK
+        string license_no UK
+        string issued_by
+        string scope
+        date issued_at
+        date expired_at
+        enum verify_status
+        uuid verified_by FK
+        text reject_reason
+        string document_url
+    }
+    SPECIALTY {
+        uuid id PK
+        string code UK
+        string name
+        uuid parent_id FK
+    }
+    PROFILE_SPECIALTY {
+        uuid id PK
+        uuid profile_id FK
+        uuid specialty_id FK
+        enum level
+    }
+```
+
+### 1.2 Employer & Job
+
+```mermaid
+erDiagram
+    ORGANIZATION ||--o{ EMPLOYER_MEMBER : has
+    USER ||--o{ EMPLOYER_MEMBER : "is member"
+    ORGANIZATION ||--o{ JOB : posts
+    ORGANIZATION ||--o{ ORGANIZATION_DOCUMENT : has
+    JOB ||--o{ JOB_PURCHASE : "purchased with"
+    JOB_PACKAGE ||--o{ JOB_PURCHASE : "used in"
+    JOB }o--|| SPECIALTY : "belongs to"
+    JOB }o--|| LOCATION : "located at"
+
+    ORGANIZATION {
+        uuid id PK
+        string name
+        enum org_type
+        string license_no
+        enum size
+        enum verify_status
+        uuid verified_by FK
+        text reject_reason
+    }
+    EMPLOYER_MEMBER {
+        uuid id PK
+        uuid org_id FK
+        uuid user_id FK
+        enum member_role
+        uuid invited_by FK
+        timestamp joined_at
+    }
+    JOB {
+        uuid id PK
+        uuid org_id FK
+        string title
+        uuid specialty_id FK
+        enum employment_type
+        int salary_min
+        int salary_max
+        bool salary_negotiable
+        uuid location_id FK
+        bool required_license
+        int min_experience_years
+        text description
+        text requirements
+        text benefits
+        enum status
+        text reject_reason
+        timestamp published_at
+        timestamp expires_at
+        uuid created_by FK
+    }
+    JOB_PACKAGE {
+        uuid id PK
+        enum tier
+        string name
+        int duration_days
+        numeric price
+        int max_active_jobs
+        jsonb perks
+    }
+    JOB_PURCHASE {
+        uuid id PK
+        uuid job_id FK
+        uuid package_id FK
+        uuid org_id FK
+        uuid payment_id FK
+        timestamp purchased_at
+        timestamp expires_at
+    }
+```
+
+### 1.3 Application, Credit & Messaging
+
+```mermaid
+erDiagram
+    JOB ||--o{ APPLICATION : receives
+    CANDIDATE_PROFILE ||--o{ APPLICATION : submits
+    APPLICATION ||--o{ APPLICATION_NOTE : has
+    APPLICATION ||--o{ APPLICATION_STAGE_HISTORY : has
+    ORGANIZATION ||--|| CREDIT_WALLET : owns
+    CREDIT_WALLET ||--o{ CREDIT_TRANSACTION : records
+    ORGANIZATION ||--o{ PROFILE_UNLOCK : unlocks
+    CANDIDATE_PROFILE ||--o{ PROFILE_UNLOCK : "unlocked by"
+    CANDIDATE_PROFILE ||--o{ CONVERSATION : participates
+    ORGANIZATION ||--o{ CONVERSATION : participates
+    CONVERSATION ||--o{ MESSAGE : contains
+
+    APPLICATION {
+        uuid id PK
+        uuid job_id FK
+        uuid candidate_id FK
+        uuid cv_id FK
+        text cover_letter
+        enum stage
+        int score
+        text rejected_reason
+        timestamp applied_at
+    }
+    CREDIT_WALLET {
+        uuid id PK
+        uuid org_id FK
+        int balance
+    }
+    CREDIT_TRANSACTION {
+        uuid id PK
+        uuid wallet_id FK
+        int amount
+        enum reason
+        uuid reference_id
+    }
+    PROFILE_UNLOCK {
+        uuid id PK
+        uuid org_id FK
+        uuid candidate_id FK
+        int credit_cost
+        uuid unlocked_by FK
+        timestamp unlocked_at
+    }
+    CONVERSATION {
+        uuid id PK
+        uuid job_id FK
+        uuid candidate_id FK
+        uuid org_id FK
+        timestamp last_message_at
+    }
+    MESSAGE {
+        uuid id PK
+        uuid conversation_id FK
+        uuid sender_user_id FK
+        text content
+        string attachment_url
+        timestamp sent_at
+        timestamp read_at
+    }
+```
+
+### 1.4 Admin, Events & Content (Giai đoạn 3)
+
+```mermaid
+erDiagram
+    EVENT ||--o{ EVENT_REGISTRATION : has
+    USER ||--o{ EVENT_REGISTRATION : registers
+    ORGANIZATION ||--o{ EVENT : organizes
+    ORGANIZATION ||--o{ ORGANIZATION_REVIEW : "reviewed"
+    CANDIDATE_PROFILE ||--o{ ORGANIZATION_REVIEW : writes
+    USER ||--o{ REPORT : files
+    USER ||--o{ AUDIT_LOG : performs
+
+    EVENT {
+        uuid id PK
+        enum event_type
+        string title
+        uuid organizer_org_id FK
+        timestamp start_at
+        timestamp end_at
+        string location
+        bool is_online
+        enum status
+    }
+    ORGANIZATION_REVIEW {
+        uuid id PK
+        uuid org_id FK
+        uuid candidate_id FK
+        int rating
+        text comment
+        enum status
+    }
+    REPORT {
+        uuid id PK
+        uuid reporter_user_id FK
+        enum target_type
+        uuid target_id
+        text reason
+        enum status
+        uuid resolved_by FK
+    }
+    AUDIT_LOG {
+        uuid id PK
+        uuid actor_user_id FK
+        string action
+        string entity_type
+        uuid entity_id
+        jsonb before_state
+        jsonb after_state
+        string ip_address
+    }
+```
+
+---
+
+## 2. Định nghĩa bảng đầy đủ
+
+### 2.1 Identity
+
+**`users`**
+| Cột | Kiểu | Ràng buộc | Ghi chú |
+|---|---|---|---|
+| id | uuid | PK | |
+| email | varchar(255) | UNIQUE, NOT NULL | |
+| phone | varchar(20) | UNIQUE | |
+| password_hash | varchar(255) | NOT NULL | bcrypt/argon2 |
+| role | enum | NOT NULL | `candidate`, `employer`, `admin`, `moderator` |
+| status | enum | NOT NULL DEFAULT `active` | `active`, `suspended`, `deleted` |
+| email_verified_at | timestamp | nullable | |
+| phone_verified_at | timestamp | nullable | |
+| created_at / updated_at | timestamp | NOT NULL | |
+
+**`refresh_tokens`**
+| Cột | Kiểu | Ràng buộc |
+|---|---|---|
+| id | uuid | PK |
+| user_id | uuid | FK → users |
+| token_hash | varchar(255) | NOT NULL |
+| expires_at | timestamp | NOT NULL |
+| revoked_at | timestamp | nullable |
+
+### 2.2 Hồ sơ ứng viên
+
+**`candidate_profiles`** (1-1 với `users`)
+| Cột | Kiểu | Ràng buộc | Ghi chú |
+|---|---|---|---|
+| id | uuid | PK | |
+| user_id | uuid | FK UNIQUE → users | |
+| full_name | varchar(255) | NOT NULL | |
+| dob | date | nullable | |
+| gender | enum | nullable | |
+| avatar_url | text | nullable | |
+| headline | varchar(255) | nullable | vd. "Điều dưỡng ICU 5 năm kinh nghiệm" |
+| summary | text | nullable | |
+| address, city_id | varchar / FK | nullable | |
+| completion_pct | int | DEFAULT 0 | tính toán, hiển thị thanh tiến độ hồ sơ |
+
+**`licenses`** (chứng chỉ hành nghề — **bảng lõi tạo tin cậy**)
+| Cột | Kiểu | Ràng buộc | Ghi chú |
+|---|---|---|---|
+| id | uuid | PK | |
+| profile_id | uuid | FK → candidate_profiles | |
+| license_no | varchar(100) | NOT NULL | số CCHN |
+| issued_by | varchar(255) | NOT NULL | Sở Y tế / Bộ Y tế cấp |
+| scope | text | nullable | phạm vi hoạt động chuyên môn |
+| issued_at | date | NOT NULL | |
+| expired_at | date | nullable | NULL = không thời hạn |
+| verify_status | enum | NOT NULL DEFAULT `pending` | `pending`, `verified`, `rejected`, `expired` |
+| verified_by | uuid | FK → users, nullable | admin duyệt |
+| verified_at | timestamp | nullable | |
+| reject_reason | text | nullable | |
+| document_url | text | NOT NULL | ảnh/scan chứng chỉ |
+
+*Ràng buộc nghiệp vụ:* `expired_at < now()` → job tự động chuyển `verify_status = expired` (xử lý ở worker định kỳ, không xóa dữ liệu).
+
+**`specialties`** (danh mục chuyên khoa, cây phân cấp)
+| Cột | Kiểu | Ràng buộc |
+|---|---|---|
+| id | uuid | PK |
+| code | varchar(50) | UNIQUE |
+| name | varchar(255) | NOT NULL |
+| parent_id | uuid | FK → specialties, nullable |
+
+**`profile_specialties`** (n-n giữa hồ sơ và chuyên khoa)
+| Cột | Kiểu | Ràng buộc |
+|---|---|---|
+| id | uuid | PK |
+| profile_id | uuid | FK → candidate_profiles |
+| specialty_id | uuid | FK → specialties |
+| level | enum | `junior`, `mid`, `senior`, `expert` |
+
+**`experiences`**
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| id | uuid | PK |
+| profile_id | uuid | FK |
+| organization_name | varchar(255) | |
+| position | varchar(255) | |
+| tier | enum | `trung_uong`, `tinh`, `huyen`, `tu_nhan` |
+| from_date / to_date | date | to_date NULL = đang làm |
+| description | text | |
+
+**`educations`**
+| Cột | Kiểu |
+|---|---|
+| id | uuid PK |
+| profile_id | uuid FK |
+| school_name | varchar(255) |
+| degree | varchar(100) |
+| major | varchar(255) |
+| from_year / to_year | int |
+
+**`continuing_certificates`** (CME)
+| Cột | Kiểu |
+|---|---|
+| id | uuid PK |
+| profile_id | uuid FK |
+| name | varchar(255) |
+| issuer | varchar(255) |
+| issued_at / expired_at | date |
+| document_url | text |
+
+**`cvs`**
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| id | uuid | PK |
+| profile_id | uuid | FK |
+| template_id | varchar(50) | nullable nếu upload |
+| is_primary | bool | DEFAULT false |
+| file_url | text | nullable |
+| data_json | jsonb | nullable, dữ liệu CV Builder |
+
+### 2.3 Cơ sở y tế (Employer)
+
+**`organizations`**
+| Cột | Kiểu | Ràng buộc | Ghi chú |
+|---|---|---|---|
+| id | uuid | PK | |
+| name | varchar(255) | NOT NULL | |
+| org_type | enum | NOT NULL | `benh_vien_cong`, `benh_vien_tu`, `phong_kham`, `nha_thuoc`, `cong_ty_duoc`, `phong_lab` |
+| license_no | varchar(100) | nullable | số giấy phép hoạt động |
+| size | enum | nullable | `<50`, `50-200`, `200-1000`, `>1000` |
+| description | text | nullable | |
+| logo_url / cover_url | text | nullable | |
+| address, city_id | varchar / FK | | |
+| verify_status | enum | NOT NULL DEFAULT `pending` | `pending`, `verified`, `rejected` |
+| verified_by | uuid | FK → users, nullable | |
+| reject_reason | text | nullable | |
+
+**`organization_documents`**
+| Cột | Kiểu |
+|---|---|
+| id | uuid PK |
+| org_id | uuid FK |
+| doc_type | varchar(100) |
+| file_url | text |
+
+**`employer_members`**
+| Cột | Kiểu | Ràng buộc | Ghi chú |
+|---|---|---|---|
+| id | uuid | PK | |
+| org_id | uuid | FK → organizations | |
+| user_id | uuid | FK → users | |
+| member_role | enum | NOT NULL | `owner`, `hr_manager`, `hr_member` |
+| invited_by | uuid | FK → users, nullable | |
+| joined_at | timestamp | | |
+| UNIQUE(org_id, user_id) | | | |
+
+### 2.4 Danh mục dùng chung
+
+**`locations`** (cây: tỉnh/thành → quận/huyện)
+| Cột | Kiểu |
+|---|---|
+| id | uuid PK |
+| name | varchar(255) |
+| parent_id | uuid FK nullable |
+
+### 2.5 Tin tuyển dụng & monetization
+
+**`jobs`**
+| Cột | Kiểu | Ràng buộc | Ghi chú |
+|---|---|---|---|
+| id | uuid | PK | |
+| org_id | uuid | FK → organizations | |
+| title | varchar(255) | NOT NULL | |
+| specialty_id | uuid | FK → specialties | |
+| employment_type | enum | NOT NULL | `full_time`, `part_time`, `truc_ca`, `locum`, `ctv` |
+| salary_min / salary_max | int | nullable | đơn vị VND |
+| salary_negotiable | bool | DEFAULT false | |
+| location_id | uuid | FK → locations | |
+| address_detail | varchar(255) | nullable | |
+| required_license | bool | DEFAULT true | |
+| min_experience_years | int | DEFAULT 0 | |
+| description / requirements / benefits | text | | |
+| status | enum | NOT NULL DEFAULT `draft` | `draft`, `pending`, `published`, `rejected`, `expired`, `closed` |
+| reject_reason | text | nullable | |
+| published_at / expires_at | timestamp | nullable | |
+| created_by | uuid | FK → users | |
+
+**`job_packages`** (danh mục gói — dữ liệu cấu hình, không phải giao dịch)
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| id | uuid PK | |
+| tier | enum | `free`, `eco`, `pro`, `max` |
+| name | varchar(100) | |
+| duration_days | int | vd. 14 |
+| price | numeric(12,2) | VND |
+| max_active_jobs | int | giới hạn cho gói free |
+| perks | jsonb | vd. `{"pin_top": true, "highlight": true}` |
+
+**`job_purchases`**
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| id | uuid PK | |
+| job_id | uuid FK → jobs | |
+| package_id | uuid FK → job_packages | |
+| org_id | uuid FK → organizations | |
+| payment_id | uuid FK → payments, nullable | null nếu gói free |
+| purchased_at | timestamp | |
+| expires_at | timestamp | |
+
+**`payments`**
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| id | uuid PK | |
+| org_id | uuid FK | |
+| type | enum | `job_package`, `credit_topup` |
+| amount | numeric(12,2) | |
+| provider | enum | `vnpay`, `momo`, `zalopay` |
+| provider_txn_id | varchar(255) | |
+| status | enum | `pending`, `success`, `failed` |
+
+### 2.6 Ứng tuyển & ATS
+
+**`applications`**
+| Cột | Kiểu | Ràng buộc | Ghi chú |
+|---|---|---|---|
+| id | uuid | PK | |
+| job_id | uuid | FK → jobs | |
+| candidate_id | uuid | FK → candidate_profiles | |
+| cv_id | uuid | FK → cvs | |
+| cover_letter | text | nullable | |
+| stage | enum | NOT NULL DEFAULT `new` | `new`, `reviewing`, `shortlisted`, `interview`, `offer`, `hired`, `rejected` |
+| score | int | nullable | CV Scoring tự động/thủ công |
+| rejected_reason | text | nullable | |
+| applied_at | timestamp | | |
+| UNIQUE(job_id, candidate_id) | | | 1 ứng viên/1 tin chỉ nộp 1 lần |
+
+**`application_notes`**
+| Cột | Kiểu |
+|---|---|
+| id | uuid PK |
+| application_id | uuid FK |
+| author_user_id | uuid FK |
+| note_text | text |
+
+**`application_stage_history`**
+| Cột | Kiểu |
+|---|---|
+| id | uuid PK |
+| application_id | uuid FK |
+| from_stage / to_stage | enum |
+| changed_by | uuid FK |
+| changed_at | timestamp |
+
+### 2.7 Credit & Profile Unlock
+
+**`credit_wallets`** (1-1 với organizations)
+| Cột | Kiểu |
+|---|---|
+| id | uuid PK |
+| org_id | uuid FK UNIQUE |
+| balance | int DEFAULT 0 |
+
+**`credit_transactions`**
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| id | uuid PK | |
+| wallet_id | uuid FK | |
+| amount | int | dương = nạp, âm = trừ |
+| reason | enum | `purchase`, `unlock_profile`, `refund`, `bonus` |
+| reference_id | uuid | trỏ tới `payments.id` hoặc `profile_unlocks.id` tùy `reason` |
+
+**`profile_unlocks`**
+| Cột | Kiểu | Ràng buộc |
+|---|---|---|
+| id | uuid | PK |
+| org_id | uuid | FK |
+| candidate_id | uuid | FK |
+| credit_cost | int | |
+| unlocked_by | uuid | FK → users |
+| unlocked_at | timestamp | |
+| UNIQUE(org_id, candidate_id) | | mở 1 lần, xem lại không mất thêm credit |
+
+### 2.8 Nhắn tin & thông báo
+
+**`conversations`**
+| Cột | Kiểu |
+|---|---|
+| id | uuid PK |
+| job_id | uuid FK nullable |
+| candidate_id | uuid FK |
+| org_id | uuid FK |
+| last_message_at | timestamp |
+
+**`messages`**
+| Cột | Kiểu |
+|---|---|
+| id | uuid PK |
+| conversation_id | uuid FK |
+| sender_user_id | uuid FK |
+| content | text |
+| attachment_url | text nullable |
+| sent_at | timestamp |
+| read_at | timestamp nullable |
+
+**`notifications`**
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| id | uuid PK | |
+| user_id | uuid FK | |
+| type | varchar(100) | vd. `job_match`, `application_stage_changed` |
+| title / body | varchar / text | |
+| payload | jsonb | deep-link data |
+| channel | enum | `in_app`, `email`, `sms`, `zalo` |
+| read_at | timestamp nullable | |
+
+### 2.9 Sự kiện, đánh giá, kiểm duyệt (đa số Giai đoạn 2–3)
+
+**`events`**
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| id | uuid PK | |
+| event_type | enum | `hoi_thao`, `cme`, `workshop`, `hoc_bong`, `cuoc_thi` |
+| title | varchar(255) | |
+| organizer_org_id | uuid FK nullable | |
+| start_at / end_at | timestamp | |
+| location | varchar(255) | |
+| is_online | bool | |
+| status | enum | `draft`, `published`, `cancelled` |
+
+**`event_registrations`**
+| Cột | Kiểu |
+|---|---|
+| id | uuid PK |
+| event_id | uuid FK |
+| user_id | uuid FK |
+| registered_at | timestamp |
+| attended | bool DEFAULT false |
+
+**`organization_reviews`**
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| id | uuid PK | |
+| org_id | uuid FK | |
+| candidate_id | uuid FK | |
+| rating | int | 1–5 |
+| comment | text | |
+| status | enum | `pending`, `approved`, `rejected` — kiểm duyệt trước khi hiển thị |
+
+**`reports`**
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| id | uuid PK | |
+| reporter_user_id | uuid FK | |
+| target_type | enum | `job`, `organization`, `profile`, `message` |
+| target_id | uuid | |
+| reason | text | |
+| status | enum | `pending`, `resolved`, `dismissed` |
+| resolved_by | uuid FK nullable | |
+
+**`audit_logs`** (tuân thủ NĐ 13/2023 — bất biến, không update/delete)
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| id | uuid PK | |
+| actor_user_id | uuid FK nullable | null nếu hệ thống tự động |
+| action | varchar(100) | vd. `license.verify`, `profile.delete` |
+| entity_type / entity_id | varchar / uuid | |
+| before_state / after_state | jsonb nullable | |
+| ip_address | inet | |
+| created_at | timestamp | |
+
+---
+
+## 3. Chỉ mục (index) quan trọng cho hiệu năng
+
+| Bảng | Index | Lý do |
+|---|---|---|
+| jobs | (status, specialty_id, location_id) | lọc tìm kiếm chính |
+| jobs | (org_id, status) | dashboard NTD |
+| applications | (job_id, stage) | ATS Kanban theo tin |
+| applications | (candidate_id) | "việc đã ứng tuyển" |
+| licenses | (verify_status) | hàng đợi kiểm duyệt |
+| profile_unlocks | (org_id, candidate_id) UNIQUE | idempotent unlock |
+| notifications | (user_id, read_at) | inbox chưa đọc |
+| messages | (conversation_id, sent_at) | load hội thoại theo thời gian |
+
+> Ở Giai đoạn 2, tìm kiếm chuyển sang Elasticsearch — các cột lọc trên vẫn giữ ở Postgres làm nguồn sự thật (source of truth), Elasticsearch chỉ là index phái sinh.
+
+---
+
+## 4. Ràng buộc nghiệp vụ quan trọng cần enforce ở tầng Application (không chỉ DB)
+
+1. `jobs.status = published` chỉ khi `organizations.verify_status = verified`.
+2. `applications` chỉ tạo được khi `licenses.verify_status` của ứng viên **không bắt buộc phải `verified`**
+   (theo quyết định ở mục 1.1 luồng nghiệp vụ — hồ sơ chưa xác thực vẫn ứng tuyển được), nhưng
+   `jobs.required_license = true` thì UI phải cảnh báo rõ trước khi NTD xem xét.
+3. `profile_unlocks` — trừ credit qua transaction DB (SERIALIZABLE hoặc row lock trên `credit_wallets`)
+   để tránh race condition khi trừ đồng thời.
+4. `licenses.expired_at` quá hạn → job định kỳ cập nhật `verify_status = expired`, không tự xóa liên kết.
+5. Xóa tài khoản (NĐ 13/2023) → soft-delete `users.status = deleted` + anonymize PII, giữ lại
+   `applications`/`audit_logs` ở dạng đã ẩn danh để không phá vỡ số liệu thống kê của NTD.
+
+---
+
+## 5. Bước tiếp theo
+
+→ Tiếp theo: **thiết kế API** (endpoint theo từng bảng/luồng ở trên, request/response, phân quyền RBAC).

@@ -9,6 +9,9 @@ xác thực chứng chỉ hành nghề, phân loại chuyên khoa, loại hình 
 
 - [Phương án thực hiện](docs/PHUONG-AN-THUC-HIEN.md) — phân tích nghiệp vụ, đối chiếu TopCV/Ybox, kiến trúc, công nghệ, lộ trình.
 - [Luồng nghiệp vụ & màn hình](docs/LUONG-NGHIEP-VU-MAN-HINH.md) — luồng chi tiết theo actor + danh sách màn hình.
+- [ERD chi tiết](docs/ERD-CHI-TIET.md) — schema đầy đủ: bảng, cột, khóa, ràng buộc nghiệp vụ.
+- [Thiết kế API](docs/API-DESIGN.md) — endpoint REST theo từng module, phân quyền RBAC.
+- [Wireframe màn hình cốt lõi](docs/wireframes/man-hinh-cot-loi.html) — bố cục 3 màn hình chính (mở bằng trình duyệt).
 
 ## Trạng thái
 
