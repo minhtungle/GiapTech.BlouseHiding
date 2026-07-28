@@ -92,7 +92,9 @@
 | PUT | `/organizations/{id}` | Employer (owner/hr_manager) | Cập nhật thông tin |
 | POST | `/organizations/{id}/documents` | Employer (owner) | Upload giấy phép hoạt động |
 | GET | `/organizations/{id}/members` | Employer (thành viên) | Danh sách HR trong tổ chức |
-| POST | `/organizations/{id}/members/invite` | Employer (owner/hr_manager) | Mời thành viên qua email |
+| POST | `/organizations/{id}/members/invite` | Employer (owner/hr_manager) | Tạo `organization_invitations` (role `hr_manager`/`hr_member`), gửi email chứa link token — hoạt động **kể cả khi email chưa có tài khoản** |
+| GET | `/organizations/invitations/{token}` | Public | Xem thông tin lời mời trước khi chấp nhận (tên tổ chức, vai trò) |
+| POST | `/organizations/invitations/{token}/accept` | Owner (đã đăng nhập bằng email khớp lời mời) | Chấp nhận → tạo `employer_members` thật, set `accepted_at` |
 | DELETE | `/organizations/{id}/members/{memberId}` | Employer (owner) | Xóa thành viên |
 | GET | `/organizations/{id}/reviews` | Public | Đánh giá đã duyệt (Giai đoạn 2) |
 | POST | `/organizations/{id}/reviews` | Candidate | Gửi đánh giá (vào hàng đợi kiểm duyệt) |
@@ -107,10 +109,11 @@
 | GET | `/jobs/{id}` | Public | Chi tiết tin (chỉ tin `published`, trừ khi là chủ sở hữu) |
 | POST | `/jobs` | Employer (member) | Tạo tin (status = `draft`) |
 | PUT | `/jobs/{id}` | Employer (member cùng org) | Sửa tin (chỉ khi `draft`/`rejected`) |
-| POST | `/jobs/{id}/submit` | Employer (member) | Nộp duyệt → `pending` (kèm `packageId` đã chọn) |
-| POST | `/jobs/{id}/close` | Employer (member) | Đóng tin sớm |
-| GET | `/jobs/{id}/applications` | Employer (member cùng org) | Danh sách ứng viên đã nộp (ATS) |
-| GET | `/organizations/{id}/jobs` | Employer (member) | Danh sách tin của tổ chức (mọi trạng thái) |
+| POST | `/jobs/{id}/submit` | Employer (member) | Nộp duyệt kèm `packageId`. Gói trả phí → `status = pending_payment` (chờ mục 6); gói free → thẳng `pending` (chờ duyệt nội dung) |
+| POST | `/jobs/{id}/close` | Employer (member) | Đóng tin sớm (`status → closed`) — **không khóa ATS**, `applications` của tin vẫn thao tác được bình thường (xem ERD mục 4.9) |
+| POST | `/jobs/{id}/renew` | Employer (member cùng org) | **Gia hạn = tạo `jobs` row MỚI** sao chép nội dung từ tin này, `expires_at` mới; tin gốc chuyển `closed`. Không tái sử dụng `job_id` cũ (xem ERD mục 4.7) |
+| GET | `/jobs/{id}/applications` | Employer (member cùng org) | Danh sách ứng viên đã nộp (ATS) — khả dụng bất kể `jobs.status` |
+| GET | `/organizations/{id}/jobs` | Employer (member) | Danh sách tin của tổ chức (mọi trạng thái, gồm `pending_payment`/`suspended`) |
 
 **Query tìm kiếm ví dụ:**
 `GET /jobs?specialty=DIEU_DUONG&location=ha-noi&employmentType=truc_ca&salaryMin=8000000&page=1`
@@ -119,14 +122,22 @@
 
 ## 6. Gói tin & thanh toán — `/job-packages`, `/payments`
 
+> ⚠️ **MVP dùng quy trình thủ công** (xem [ADR-0003](../kien-truc/adr/0003-hoan-cong-thanh-toan-tu-dong.md))
+> — chưa có cổng thanh toán tự động. Endpoint dưới đây phản ánh đúng luồng thủ công hiện tại; các dòng
+> đánh dấu 🔒 là **dự phòng cho tương lai**, chưa hoạt động ở MVP.
+
 | Method | Path | Quyền | Mô tả |
 |---|---|---|---|
 | GET | `/job-packages` | Public | Danh sách gói Eco/Pro/Max + giá |
-| POST | `/payments/job-package` | Employer | Khởi tạo thanh toán mua gói cho 1 job → trả URL cổng thanh toán |
-| POST | `/payments/webhook/{provider}` | Public (xác thực chữ ký) | Webhook callback từ VNPay/Momo/ZaloPay |
-| GET | `/payments/{id}` | Employer (owner) | Tra cứu trạng thái giao dịch |
+| POST | `/payments/job-package` | Employer | Gọi ngay sau `POST /jobs/{id}/submit` khi job đã ở `pending_payment` (mục 5) — tạo `payments` (`provider=manual_transfer`, `status=pending`) + sinh `reference_code` gắn với job đó. Response trả **thông tin chuyển khoản** (số tài khoản, nội dung ghi `reference_code`) — **không** trả URL cổng thanh toán ở MVP |
+| GET | `/payments/{id}` | Employer (owner) | Tra cứu trạng thái giao dịch (`pending`/`success`/`failed`) |
+| 🔒 POST | `/payments/webhook/{provider}` | Public (xác thực chữ ký) | Webhook callback cổng tự động — **chưa dùng ở MVP**, giữ chỗ endpoint/schema cho khi chọn cổng (xem `payments.provider` ở ERD) |
 
-> Sau khi webhook xác nhận `success`, backend tạo `job_purchases` + set `jobs.status = pending` (vào hàng đợi duyệt nội dung).
+**Xác nhận thanh toán thủ công** (đội Vận hành, xem mục 11): `POST /ops/payments/{id}/confirm` — đối
+soát sao kê ngân hàng theo `reference_code`, set `payments.status = success` + `confirmed_by`, tạo
+`job_purchases`, chuyển `jobs.status: pending_payment → pending` (vào hàng đợi duyệt nội dung).
+Nếu từ chối (sai số tiền/không nhận được) → `POST /ops/payments/{id}/reject` → `jobs.status → draft`
+để NTD sửa lại và nộp lại.
 
 ---
 
@@ -136,9 +147,13 @@
 |---|---|---|---|
 | GET | `/organizations/{id}/credit-wallet` | Employer (member) | Xem số dư |
 | GET | `/organizations/{id}/credit-transactions` | Employer (member) | Lịch sử giao dịch |
-| POST | `/payments/credit-topup` | Employer | Nạp Credit (qua cổng thanh toán) |
+| POST | `/payments/credit-topup` | Employer | Tạo `payments` (`provider=manual_transfer`) như mục 6 — trả thông tin chuyển khoản + `reference_code`, **chưa cộng credit** cho tới khi Vận hành xác nhận |
 | GET | `/candidates/search` | Employer (member) | Tìm ứng viên theo chuyên khoa/kinh nghiệm/khu vực — **kết quả ẩn liên hệ** |
 | POST | `/candidates/{id}/unlock` | Employer (member) | Trừ Credit, tạo `profile_unlocks`, trả hồ sơ đầy đủ |
+
+**Xác nhận nạp Credit thủ công** (Vận hành): dùng chung `POST /ops/payments/{id}/confirm` (mục 6) —
+khi `payments.type = credit_topup` thành công, cộng `amount` vào `credit_wallets.balance` + ghi
+`credit_transactions` (`reason = purchase`) trong cùng transaction.
 
 **Response khi chưa unlock (`GET /candidates/search`):**
 ```json
@@ -153,7 +168,7 @@
 
 | Method | Path | Quyền | Mô tả |
 |---|---|---|---|
-| POST | `/jobs/{jobId}/applications` | Candidate | Ứng tuyển (chọn `cvId`, `coverLetter`) |
+| POST | `/jobs/{jobId}/applications` | Candidate | Ứng tuyển (chọn `cvId`, `coverLetter`). Backend tự chụp `cv_snapshot` từ `cvId` tại thời điểm này và tính `score` ban đầu — cả hai **không đổi** dù ứng viên sửa CV/hồ sơ sau đó (xem ERD mục 4.8) |
 | GET | `/candidates/me/applications` | Candidate (Owner) | Danh sách đơn đã nộp + trạng thái |
 | GET | `/applications/{id}` | Candidate (Owner) / Employer (org liên quan) | Chi tiết 1 đơn |
 | PATCH | `/applications/{id}/stage` | Employer (member) | Chuyển trạng thái pipeline (`stage`, `silent: bool`) |
@@ -198,11 +213,14 @@
 | GET | `/ops/licenses?status=pending` | Admin/Moderator | Hàng đợi duyệt CCHN |
 | POST | `/ops/licenses/{id}/verify` | Admin/Moderator | Duyệt/từ chối kèm lý do |
 | GET | `/ops/organizations?status=pending` | Admin/Moderator | Hàng đợi duyệt tổ chức |
-| POST | `/ops/organizations/{id}/verify` | Admin/Moderator | Duyệt/từ chối |
-| GET | `/ops/jobs?status=pending` | Admin/Moderator | Hàng đợi duyệt tin |
+| POST | `/ops/organizations/{id}/verify` | Admin/Moderator | Duyệt/từ chối/rút xác thực (`verified→rejected` hoặc `verified→suspended`). Chuyển khỏi `verified` sẽ **tự động** chuyển mọi `jobs.status=published` của tổ chức sang `suspended` trong cùng transaction (xem ERD mục 4.6) — không cần thao tác riêng cho từng tin |
+| GET | `/ops/jobs?status=pending` | Admin/Moderator | Hàng đợi duyệt tin (không lẫn tin đang `pending_payment` — cột lọc riêng) |
 | POST | `/ops/jobs/{id}/moderate` | Admin/Moderator | Duyệt/từ chối kèm lý do |
+| POST | `/ops/payments/{id}/confirm` | Admin/Moderator | **Xác nhận đã nhận chuyển khoản** theo `reference_code` — set `payments.status=success` + `confirmed_by`; nếu `type=job_package` → tạo `job_purchases` + `jobs.status: pending_payment→pending`; nếu `type=credit_topup` → cộng `credit_wallets.balance` (mục 6, 7) |
+| POST | `/ops/payments/{id}/reject` | Admin/Moderator | Không nhận được/sai số tiền → `payments.status=failed`, `jobs.status: pending_payment→draft` để NTD sửa & nộp lại |
+| POST | `/ops/organizations/{id}/credit-refund` | Admin | Hoàn Credit thủ công khi có tranh chấp — ghi `credit_transactions` (`reason=refund`, `created_by`) |
 | GET | `/ops/reports?status=pending` | Admin/Moderator | Danh sách báo cáo vi phạm |
-| POST | `/ops/reports/{id}/resolve` | Admin/Moderator | Xử lý report |
+| POST | `/ops/reports/{id}/resolve` | Admin/Moderator | Xử lý report — hành động "gỡ nội dung" phải gọi kèm state change tương ứng của entity bị báo cáo (đóng tin/rút xác thực tổ chức) trong cùng thao tác, không tách 2 bước thủ công (xem ERD mục 4.10) |
 | GET | `/ops/users` | Admin | Tìm kiếm/quản lý người dùng |
 | POST | `/ops/users/{id}/suspend` | Admin | Khóa tài khoản |
 | CRUD | `/ops/catalog/specialties`, `/ops/catalog/locations` | Admin | Quản lý danh mục |
@@ -229,10 +247,10 @@
 |---|---|
 | 1.1 Đăng ký & xác thực CCHN | `POST /auth/register` → `POST /auth/verify-otp` → `POST /candidates/me/licenses` → (Vận hành) `POST /ops/licenses/{id}/verify` |
 | 1.2 Xác minh cơ sở y tế | `POST /organizations` → `POST /organizations/{id}/documents` → (Vận hành) `POST /ops/organizations/{id}/verify` |
-| 1.3 Đăng tin + mua gói | `POST /jobs` → `POST /payments/job-package` → webhook → `POST /jobs/{id}/submit` → (Vận hành) `POST /ops/jobs/{id}/moderate` |
+| 1.3 Đăng tin + mua gói | `POST /jobs` → `PUT /jobs/{id}` → `POST /jobs/{id}/submit` (kèm packageId, → `pending_payment` nếu trả phí) → `POST /payments/job-package` (chuyển khoản thủ công) → (Vận hành) `POST /ops/payments/{id}/confirm` (→ `pending`) → (Vận hành) `POST /ops/jobs/{id}/moderate` (→ `published`) |
 | 1.4 Tìm & ứng tuyển | `GET /jobs` → `GET /jobs/{id}` → `POST /jobs/{jobId}/applications` |
 | 1.5 ATS pipeline | `GET /jobs/{id}/applications` → `PATCH /applications/{id}/stage` → `POST /applications/{id}/notes` |
-| 1.6 Credit mở hồ sơ | `GET /candidates/search` → `POST /payments/credit-topup` (nếu thiếu) → `POST /candidates/{id}/unlock` |
+| 1.6 Credit mở hồ sơ | `GET /candidates/search` → `POST /payments/credit-topup` (nếu thiếu) → (Vận hành) `POST /ops/payments/{id}/confirm` → `POST /candidates/{id}/unlock` |
 | 1.7 Kiểm duyệt (trang Vận hành) | `GET /ops/licenses|organizations|jobs|reports?status=pending` → `POST .../verify|moderate|resolve` |
 
 ---

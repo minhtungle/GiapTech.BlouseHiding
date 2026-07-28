@@ -57,15 +57,27 @@ flowchart TD
     A[HR tạo tin tuyển dụng] --> B[Điền: vị trí, chuyên khoa, loại hình, lương, yêu cầu CCHN]
     B --> C[Lưu nháp Draft]
     C --> D[Chọn gói đăng tin: Free giới hạn / Eco / Pro / Max]
-    D -- Chọn gói trả phí --> E[Thanh toán qua cổng thanh toán]
-    E -- Thành công --> F[Trạng thái: Pending duyệt]
+    D -- Chọn gói trả phí --> E[Trạng thái: Pending_payment — hiển thị số TK + mã tham chiếu]
+    E --> E2[NTD chuyển khoản theo mã tham chiếu]
+    E2 --> E3{Vận hành đối soát sao kê ngân hàng}
+    E3 -- Khớp --> F[Trạng thái: Pending duyệt nội dung]
+    E3 -- Không khớp/sai số tiền --> B
     D -- Chọn Free --> F
     F --> G{Moderator duyệt nội dung}
     G -- Đạt --> H[Published — hiển thị công khai & lên kết quả tìm kiếm]
     G -- Không đạt --> I[Từ chối kèm lý do — vi phạm nội dung/thiếu minh bạch lương]
     I --> B
-    H --> J[Hết hạn theo gói / hết hạn thủ công → Expired/Closed]
+    H --> J[Hết hạn theo gói / đóng thủ công → Expired/Closed]
+    J --> K{NTD gia hạn?}
+    K -- Có --> A2[Tạo tin MỚI sao chép nội dung — không dùng lại job cũ]
 ```
+
+**Điểm cần lưu ý:**
+- `Pending_payment` là trạng thái **chờ đối soát chuyển khoản thủ công** (xem
+  [ADR-0003](../kien-truc/adr/0003-hoan-cong-thanh-toan-tu-dong.md)) — khác với `Pending` (chờ duyệt
+  nội dung). Không gộp 2 ý nghĩa vào 1 trạng thái để tránh Vận hành nhầm lẫn hàng đợi.
+- **"Gia hạn" luôn tạo tin mới**, không dùng lại tin cũ — nhờ vậy ứng viên từng bị từ chối ở đợt tuyển
+  trước vẫn ứng tuyển được ở đợt mới (tin mới = `job_id` khác).
 
 ### 1.4 Tìm việc & ứng tuyển (Candidate)
 
@@ -97,6 +109,10 @@ flowchart LR
 ```
 - Mỗi chuyển trạng thái ghi log + gửi thông báo ứng viên (trừ khi HR chọn "âm thầm").
 - HR có thể gắn nhãn, ghi chú nội bộ, chấm điểm hồ sơ (CV Scoring) ở bất kỳ bước nào.
+- **CV Scoring tính 1 lần lúc ứng tuyển** (dựa trên bản chụp hồ sơ tại thời điểm đó), không tự tính lại
+  khi ứng viên sửa hồ sơ sau này — tránh thứ hạng trong bảng Kanban nhảy loạn không báo trước cho HR.
+- Bảng ATS **vẫn thao tác được bình thường** dù tin đã Hết hạn/Đóng/bị Vận hành ẩn (`suspended`) — chỉ
+  phần hiển thị công khai của tin bị ảnh hưởng, không khóa việc xử lý ứng viên đang dở dang.
 
 ### 1.6 Tìm & mở hồ sơ ứng viên chủ động (Credit — tham khảo TopCV)
 
@@ -124,7 +140,16 @@ flowchart TD
     D --> G
     E --> G
     F --> G
+    F -- Gỡ nội dung --> H{Loại entity bị báo cáo}
+    H -- Tổ chức --> I[verify_status → suspended — TỰ ĐỘNG ẩn mọi tin published của tổ chức]
+    H -- Tin tuyển dụng --> J[status → closed]
 ```
+
+**Điểm cần lưu ý:**
+- Rút xác thực tổ chức (`verified → suspended/rejected`, dù từ hàng đợi báo cáo hay do Vận hành tự phát
+  hiện) **luôn kéo theo** tự động ẩn (`suspended`) mọi tin đang `published` của tổ chức đó trong cùng
+  thao tác — không phải bước thủ công riêng dễ quên. Muốn tin hiện lại: tổ chức phải được `verified`
+  lại **và** từng tin phải được duyệt lại thủ công (không tự động published lại).
 
 ---
 
@@ -163,10 +188,10 @@ flowchart TD
 | Dashboard NTD | Số liệu: tin đang chạy, số ứng tuyển mới, số dư Credit |
 | Hồ sơ tổ chức | Thông tin cơ sở y tế, trạng thái xác minh, upload giấy phép |
 | Quản lý thành viên HR | Mời/xóa thành viên, phân quyền trong tổ chức |
-| Danh sách tin tuyển dụng | Draft / Pending / Published / Expired — thao tác sửa, gia hạn, đóng tin |
+| Danh sách tin tuyển dụng | Draft / Chờ thanh toán / Pending / Published / Expired / Suspended — thao tác sửa, gia hạn (tạo tin mới), đóng tin |
 | Tạo/sửa tin tuyển dụng | Form đầy đủ trường + chọn gói đăng tin |
-| Mua gói tin | Bảng so sánh Eco/Pro/Max, thanh toán |
-| Ví Credit | Số dư, nạp thêm, lịch sử giao dịch |
+| Mua gói tin | Bảng so sánh Eco/Pro/Max — hiển thị số TK chuyển khoản + mã tham chiếu (thủ công ở MVP) |
+| Ví Credit | Số dư, nạp thêm (chuyển khoản + mã tham chiếu), lịch sử giao dịch |
 | Tìm kiếm ứng viên chủ động | Bộ lọc theo chuyên khoa/kinh nghiệm/khu vực, mở hồ sơ bằng Credit |
 | ATS — Bảng ứng viên (Kanban) | Theo từng tin: cột trạng thái Mới → Trúng tuyển, kéo-thả, ghi chú, chấm điểm |
 | Chi tiết ứng viên | Hồ sơ đầy đủ (sau khi mở), CV, ghi chú nội bộ, lịch sử tương tác |
@@ -180,11 +205,12 @@ flowchart TD
 | Dashboard tổng quan | Số liệu toàn hệ thống: người dùng, tin, doanh thu |
 | Hàng đợi duyệt CCHN | Danh sách hồ sơ chờ duyệt, xem ảnh chứng chỉ, duyệt/từ chối kèm lý do |
 | Hàng đợi duyệt doanh nghiệp | Duyệt giấy phép hoạt động |
-| Hàng đợi duyệt tin tuyển dụng | Duyệt nội dung tin trước khi publish |
+| Hàng đợi duyệt tin tuyển dụng | Duyệt nội dung tin trước khi publish (riêng biệt với hàng đợi chờ thanh toán) |
+| Đối soát thanh toán thủ công | Danh sách giao dịch `pending` kèm mã tham chiếu, xác nhận/từ chối theo sao kê ngân hàng |
 | Quản lý danh mục | Chuyên khoa, tuyến, địa điểm, loại hình làm việc |
 | Quản lý gói dịch vụ | Cấu hình tier Eco/Pro/Max, giá Credit |
 | Quản lý người dùng | Tìm kiếm, khóa/mở khóa tài khoản |
-| Xử lý báo cáo/spam | Danh sách report, hành động xử lý |
+| Xử lý báo cáo/spam | Danh sách report, hành động xử lý (gỡ nội dung tự động kéo theo ẩn tin/rút xác thực tổ chức) |
 | Nhật ký kiểm toán (Audit log) | Tra cứu lịch sử thao tác nhạy cảm (NĐ 13/2023) |
 
 ---

@@ -25,6 +25,7 @@
 - ⬜ OAuth Zalo
 - ⬜ RBAC (`candidate`/`employer`/`admin`/`moderator` — site Client/Admin/Vận hành)
 - ⬜ Đa thành viên HR trong 1 tổ chức
+- ⬜ Mời thành viên HR qua email (kể cả email chưa có tài khoản — `organization_invitations`)
 
 ### Hồ sơ ứng viên
 - ⬜ Hồ sơ cơ bản (học vấn, kinh nghiệm, kỹ năng)
@@ -42,15 +43,20 @@
 ### Tin tuyển dụng
 - ⬜ Tạo/sửa tin (draft)
 - ⬜ Gói đăng tin Eco/Pro/Max
-- ⬜ Quy trình thanh toán thủ công (chuyển khoản + Vận hành đối soát)
+- ⬜ Trạng thái `pending_payment` riêng biệt với `pending` (chờ thanh toán ≠ chờ duyệt nội dung)
+- ⬜ Quy trình thanh toán thủ công (mã tham chiếu + Vận hành xác nhận/từ chối qua `/ops/payments/{id}`)
 - ⬜ Hàng đợi duyệt nội dung tin (Vận hành: Admin/Moderator)
+- ⬜ Gia hạn tin = tạo tin mới (clone), không tái sử dụng `job_id`
+- ⬜ Rút xác thực tổ chức tự động ẩn (`suspended`) mọi tin `published` của tổ chức đó
 - ⬜ Tìm kiếm & lọc (Postgres full-text)
 
 ### Ứng tuyển & ATS
 - ⬜ Ứng tuyển bằng CV nền tảng/upload
-- ⬜ ATS Kanban (6 trạng thái pipeline)
+- ⬜ Chụp `cv_snapshot` + tính `score` 1 lần lúc ứng tuyển (không đổi khi hồ sơ gốc thay đổi sau này)
+- ⬜ ATS Kanban (6 trạng thái pipeline) — vẫn thao tác được sau khi tin hết hạn/đóng/suspended
 - ⬜ Ghi chú nội bộ + chấm điểm hồ sơ (CV Scoring)
 - ⬜ Hệ thống Credit + tìm kiếm ứng viên chủ động + Profile Unlock
+- ⬜ Hoàn Credit thủ công khi có tranh chấp (`/ops/organizations/{id}/credit-refund`)
 
 ### Thông báo
 - ⬜ Thông báo trong ứng dụng

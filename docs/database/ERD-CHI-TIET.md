@@ -403,7 +403,7 @@ erDiagram
 | description | text | nullable | |
 | logo_url / cover_url | text | nullable | |
 | address, city_id | varchar / FK | | |
-| verify_status | enum | NOT NULL DEFAULT `pending` | `pending`, `verified`, `rejected` |
+| verify_status | enum | NOT NULL DEFAULT `pending` | `pending`, `verified`, `rejected`, `suspended` (rút xác thực sau khi đã verified — xem mục 4 điểm 6) |
 | verified_by | uuid | FK → users, nullable | |
 | reject_reason | text | nullable | |
 
@@ -425,6 +425,22 @@ erDiagram
 | invited_by | uuid | FK → users, nullable | |
 | joined_at | timestamp | | |
 | UNIQUE(org_id, user_id) | | | |
+
+**`organization_invitations`** (mời thành viên HR — kể cả người **chưa có tài khoản**)
+| Cột | Kiểu | Ràng buộc | Ghi chú |
+|---|---|---|---|
+| id | uuid | PK | |
+| org_id | uuid | FK → organizations | |
+| email | varchar(255) | NOT NULL | email người được mời — chưa cần tồn tại `users` |
+| invited_role | enum | NOT NULL | `hr_manager`, `hr_member` (không mời thêm `owner` qua đây) |
+| invited_by | uuid | FK → users | |
+| token_hash | varchar(255) | NOT NULL | token xác nhận gửi qua email, hash lưu DB |
+| expires_at | timestamp | NOT NULL | vd. 7 ngày |
+| accepted_at | timestamp | nullable | NULL = chưa chấp nhận |
+
+*Luồng:* mời → tạo dòng này + gửi email link chứa token → người được mời bấm link, nếu **chưa có tài
+khoản** thì đăng ký trước (email khớp lời mời) → chấp nhận → hệ thống tạo `employer_members` thật và
+set `accepted_at`. Không tạo `employer_members` với `user_id` rỗng ở bất kỳ bước nào.
 
 ### 2.4 Danh mục dùng chung
 
@@ -452,7 +468,7 @@ erDiagram
 | required_license | bool | DEFAULT true | |
 | min_experience_years | int | DEFAULT 0 | |
 | description / requirements / benefits | text | | |
-| status | enum | NOT NULL DEFAULT `draft` | `draft`, `pending`, `published`, `rejected`, `expired`, `closed` |
+| status | enum | NOT NULL DEFAULT `draft` | `draft`, `pending_payment`, `pending`, `published`, `rejected`, `expired`, `closed`, `suspended` — xem mục 4 điểm 6-7 |
 | reject_reason | text | nullable | |
 | published_at / expires_at | timestamp | nullable | |
 | created_by | uuid | FK → users | |
@@ -486,9 +502,11 @@ erDiagram
 | org_id | uuid FK | |
 | type | enum | `job_package`, `credit_topup` |
 | amount | numeric(12,2) | |
-| provider | enum | `vnpay`, `momo`, `zalopay` |
-| provider_txn_id | varchar(255) | |
+| provider | enum | `manual_transfer` (MVP — xem [ADR-0003](../kien-truc/adr/0003-hoan-cong-thanh-toan-tu-dong.md)), `vnpay`, `momo`, `zalopay` (dự phòng khi có cổng tự động) |
+| reference_code | varchar(20) UNIQUE | **Bắt buộc với `provider = manual_transfer`** — mã hiển thị cho NTD ghi vào nội dung chuyển khoản, dùng để đối soát thủ công. Sinh ngẫu nhiên, dễ đọc (vd `PAY-7F3K2Q`) |
+| provider_txn_id | varchar(255) | nullable — chỉ có khi `provider` là cổng tự động |
 | status | enum | `pending`, `success`, `failed` |
+| confirmed_by | uuid FK → users, nullable | nhân viên Vận hành xác nhận thủ công (NULL nếu do webhook tự động xác nhận sau này) |
 
 ### 2.6 Ứng tuyển & ATS
 
@@ -498,13 +516,14 @@ erDiagram
 | id | uuid | PK | |
 | job_id | uuid | FK → jobs | |
 | candidate_id | uuid | FK → candidate_profiles | |
-| cv_id | uuid | FK → cvs | |
+| cv_id | uuid | FK → cvs | trỏ tới CV gốc — chỉ để truy vết, **không dùng để hiển thị** (xem `cv_snapshot`) |
+| cv_snapshot | jsonb | NOT NULL | **Bản chụp CV tại thời điểm ứng tuyển** (nội dung CV Builder hoặc URL file lúc đó). NTD luôn xem bản này, không phải bản `cv_id` hiện tại — tránh việc ứng viên sửa CV sau khi nộp làm thay đổi ngược những gì NTD đã thấy/đánh giá |
 | cover_letter | text | nullable | |
 | stage | enum | NOT NULL DEFAULT `new` | `new`, `reviewing`, `shortlisted`, `interview`, `offer`, `hired`, `rejected` |
-| score | int | nullable | CV Scoring tự động/thủ công |
-| rejected_reason | text | nullable | |
+| score | int | nullable | CV Scoring — tính **1 lần** ngay khi tạo `application` (dựa trên `cv_snapshot` + CCHN + chuyên khoa lúc đó), không tính lại khi hồ sơ gốc thay đổi sau này; HR có thể ghi đè thủ công |
+| rejected_reason | text | nullable | khuyến khích nhập khi từ chối (không bắt buộc NOT NULL — HR có thể từ chối hàng loạt) |
 | applied_at | timestamp | | |
-| UNIQUE(job_id, candidate_id) | | | 1 ứng viên/1 tin chỉ nộp 1 lần |
+| UNIQUE(job_id, candidate_id) | | | 1 ứng viên/1 tin chỉ nộp 1 lần — không áp dụng khi tin được tạo mới do "gia hạn" (xem mục 4 điểm 7), vì đó là `job_id` khác |
 
 **`application_notes`**
 | Cột | Kiểu |
@@ -540,6 +559,11 @@ erDiagram
 | amount | int | dương = nạp, âm = trừ |
 | reason | enum | `purchase`, `unlock_profile`, `refund`, `bonus` |
 | reference_id | uuid | trỏ tới `payments.id` hoặc `profile_unlocks.id` tùy `reason` |
+| created_by | uuid FK → users, nullable | NULL nếu hệ thống tự động trừ (vd `unlock_profile`); có giá trị khi Vận hành thao tác thủ công (`refund`, `bonus`) |
+
+*`refund` chỉ tạo qua* `POST /ops/organizations/{id}/credit-refund` (xem
+[`../backend/API-DESIGN.md`](../backend/API-DESIGN.md) mục 11) — dùng khi có tranh chấp (vd hồ sơ mở
+ra sai/trùng, lỗi hệ thống trừ nhầm). Không có luồng tự động hoàn credit.
 
 **`profile_unlocks`**
 | Cột | Kiểu | Ràng buộc |
@@ -654,6 +678,8 @@ erDiagram
 | profile_unlocks | (org_id, candidate_id) UNIQUE | idempotent unlock |
 | notifications | (user_id, read_at) | inbox chưa đọc |
 | messages | (conversation_id, sent_at) | load hội thoại theo thời gian |
+| payments | (reference_code) UNIQUE | Vận hành tra cứu đối soát chuyển khoản thủ công |
+| organization_invitations | (email, accepted_at) | kiểm tra lời mời đang chờ khi user đăng ký |
 
 > Ở Giai đoạn 2, tìm kiếm chuyển sang Elasticsearch — các cột lọc trên vẫn giữ ở Postgres làm nguồn sự thật (source of truth), Elasticsearch chỉ là index phái sinh.
 
@@ -670,6 +696,24 @@ erDiagram
 4. `licenses.expired_at` quá hạn → job định kỳ cập nhật `verify_status = expired`, không tự xóa liên kết.
 5. Xóa tài khoản (NĐ 13/2023) → soft-delete `users.status = deleted` + anonymize PII, giữ lại
    `applications`/`audit_logs` ở dạng đã ẩn danh để không phá vỡ số liệu thống kê của NTD.
+6. **`organizations.verify_status` chuyển từ `verified` sang bất kỳ giá trị khác (`rejected`/`suspended`)**
+   → **tự động** (không phải thao tác thủ công riêng) chuyển toàn bộ `jobs.status = published` của tổ
+   chức đó sang `suspended` trong cùng transaction. Tin `suspended` bị ẩn khỏi tìm kiếm/trang công khai
+   nhưng **không xóa dữ liệu**; muốn hiện lại phải chờ tổ chức được `verified` lại **và** Vận hành duyệt
+   lại từng tin thủ công (không tự động published lại). Quyết định tại mục thảo luận thiết kế.
+7. **"Gia hạn" tin tuyển dụng luôn tạo `jobs` row MỚI** (sao chép nội dung, `expires_at` mới), **không**
+   tái sử dụng `job_id` cũ. Nhờ vậy ràng buộc `UNIQUE(job_id, candidate_id)` ở `applications` không
+   chặn ứng viên từng bị từ chối ứng tuyển lại ở đợt tuyển mới — vì đó là `job_id` khác. Tin cũ chuyển
+   `status = closed` khi tin mới được tạo từ nó.
+8. `applications.cv_snapshot` được ghi **1 lần duy nhất** lúc tạo application (copy từ CV đang chọn tại
+   thời điểm đó) — sửa CV gốc (`cvs`) sau này **không** ảnh hưởng tới các application đã nộp trước đó.
+   `applications.score` tính dựa trên `cv_snapshot`, cũng không tự tính lại khi hồ sơ gốc đổi.
+9. Chuyển `jobs.status` sang `expired`/`closed`/`suspended` **không khóa thao tác ATS** — NTD vẫn xem,
+   chuyển `stage`, ghi chú, chấm điểm các `applications` đã có của tin đó bình thường; chỉ tin công khai
+   (search, trang chi tiết) bị ảnh hưởng.
+10. Report được Vận hành xử lý với hành động "gỡ nội dung" → phải trigger đúng state change tương ứng
+    của entity bị báo cáo trong cùng thao tác (vd tin → `closed`, tổ chức → `suspended` theo điểm 6),
+    không phải 2 bước thủ công tách rời dễ quên.
 
 ---
 

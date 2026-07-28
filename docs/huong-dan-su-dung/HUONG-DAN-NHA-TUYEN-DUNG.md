@@ -13,7 +13,9 @@
 2. Tạo **Hồ sơ tổ chức**: tên, loại hình (bệnh viện công/tư, phòng khám, nhà thuốc, công ty dược...),
    quy mô, mô tả.
 3. Upload **giấy phép hoạt động** — đội ngũ kiểm duyệt sẽ xác minh trước khi tổ chức được phép đăng tin.
-4. Mời thêm thành viên HR khác vào tổ chức nếu cần (mỗi thành viên có vai trò owner/quản lý/thành viên).
+4. Mời thêm thành viên HR khác vào tổ chức nếu cần (mỗi thành viên có vai trò owner/quản lý/thành viên)
+   — có thể mời bằng email **kể cả người đó chưa có tài khoản trên hệ thống**, họ đăng ký xong sẽ tự
+   động vào đúng tổ chức khi bấm link mời.
 
 ## 2. Đăng tin tuyển dụng
 1. Vào **Danh sách tin tuyển dụng** → **Tạo tin mới**.
@@ -21,16 +23,24 @@
    CCHN, kinh nghiệm, phúc lợi.
 3. Chọn **gói đăng tin**: Eco/Pro/Max — khác nhau về thời gian hiển thị và vị trí ưu tiên trong kết quả
    tìm kiếm.
-4. **Thanh toán (hiện tại là quy trình thủ công):** chuyển khoản theo thông tin hiển thị kèm **mã tham
-   chiếu**, sau đó chờ đội Vận hành đối soát và duyệt gói (thường trong ngày làm việc). ⚠️ Thanh toán tự động sẽ
-   được bổ sung sau, xem [ADR-0003](../kien-truc/adr/0003-hoan-cong-thanh-toan-tu-dong.md).
-5. Sau khi thanh toán được duyệt, tin vào hàng đợi kiểm duyệt nội dung trước khi hiển thị công khai.
+4. **Thanh toán (hiện tại là quy trình thủ công):** tin chuyển sang trạng thái **"Chờ thanh toán"** —
+   chuyển khoản theo thông tin hiển thị kèm **mã tham chiếu** (ghi đúng mã vào nội dung chuyển khoản để
+   đối soát tự động khớp được), sau đó chờ đội Vận hành xác nhận (thường trong ngày làm việc). Nếu sai
+   số tiền/không khớp được, tin quay lại "Nháp" để bạn sửa và nộp lại. ⚠️ Thanh toán tự động sẽ được bổ
+   sung sau, xem [ADR-0003](../kien-truc/adr/0003-hoan-cong-thanh-toan-tu-dong.md).
+5. Sau khi thanh toán được xác nhận, tin chuyển "Chờ duyệt" — vào hàng đợi kiểm duyệt nội dung trước
+   khi hiển thị công khai.
+6. **Gia hạn tin:** khi tin hết hạn, bấm "Gia hạn" sẽ tạo **một tin mới** sao chép nội dung tin cũ (tin
+   cũ tự đóng lại) — nhờ vậy ứng viên từng bị bạn từ chối vẫn có thể ứng tuyển lại ở đợt tuyển mới này.
 
 ## 3. Quản lý ứng viên (ATS)
 1. Vào tin đã đăng → tab **Ứng viên** để xem bảng Kanban theo 6 cột trạng thái: Mới → Đang xem → Phù
    hợp → Hẹn phỏng vấn → Offer → Trúng tuyển (kéo-thả để chuyển trạng thái).
-2. Xem chi tiết từng ứng viên, ghi chú nội bộ, xem điểm chấm hồ sơ (CV Scoring) để sàng lọc nhanh.
+2. Xem chi tiết từng ứng viên, ghi chú nội bộ, xem điểm chấm hồ sơ (CV Scoring — tính một lần lúc ứng
+   viên nộp đơn, không đổi dù họ sửa hồ sơ sau đó) để sàng lọc nhanh.
 3. Nhắn tin trực tiếp với ứng viên qua mục **Tin nhắn**.
+4. Bảng Kanban vẫn xử lý được bình thường **kể cả sau khi tin đã hết hạn/đóng** — chỉ phần hiển thị
+   công khai của tin bị ảnh hưởng, ứng viên đang dở dang trong pipeline không bị mất.
 
 ## 4. Tìm & liên hệ ứng viên chủ động (Credit)
 1. Vào **Tìm kiếm ứng viên**, lọc theo chuyên khoa/kinh nghiệm/khu vực — kết quả hiển thị hồ sơ rút
