@@ -19,5 +19,6 @@ xác thực chứng chỉ hành nghề, phân loại chuyên khoa, loại hình 
 ## Trạng thái
 
 Dự án đang ở giai đoạn thiết kế/lập kế hoạch.
-- Đã chốt: backend .NET (ASP.NET Core), triển khai Web trước với MVP đầy đủ.
+- Đã chốt: backend **.NET 10 (ASP.NET Core)**, Web trước với MVP đầy đủ, hạ tầng **self-host VPS**,
+  thanh toán tự động **hoãn lại** (MVP dùng quy trình thủ công).
 - Xem [mục 11 của phương án thực hiện](docs/PHUONG-AN-THUC-HIEN.md#11-quyết-định--việc-còn-lại) cho các quyết định còn lại.

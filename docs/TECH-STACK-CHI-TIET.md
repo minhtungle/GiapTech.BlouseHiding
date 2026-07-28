@@ -12,7 +12,7 @@
 ### 1.1 Nền tảng
 | Thành phần | Lựa chọn | Lý do |
 |---|---|---|
-| Runtime | **.NET 10 (LTS)** | LTS mới nhất tại thời điểm bắt đầu — hỗ trợ dài hạn phù hợp dự án chạy nhiều năm. Nếu môi trường CI/hosting chưa hỗ trợ, dùng **.NET 8 (LTS)** làm phương án lùi. |
+| Runtime | **.NET 10 (LTS)** — đã chốt | Hỗ trợ dài hạn (LTS), phù hợp dự án chạy nhiều năm; VPS self-host tự cài nên không bị giới hạn bởi hosting managed |
 | Ngôn ngữ | C# (nullable reference types bật, `ImplicitUsings`) | Chuẩn của hệ sinh thái .NET hiện đại |
 | Kiến trúc solution | Clean Architecture: `Domain` / `Application` / `Infrastructure` / `Api` (+ `Web` nếu BFF) | Đã chốt ở phương án thực hiện mục 6 |
 | Pattern nghiệp vụ | CQRS nhẹ với **MediatR** (Command/Query + Handler) | Tách rõ luồng ghi/đọc, dễ test, dễ thêm behavior pipeline (validation, logging) mà không rải code |
@@ -49,8 +49,8 @@
 | Logging | **Serilog** → sink Console (dev) + Seq (dev/staging) + Application Insights/CloudWatch (prod) | Structured logging, dễ truy vết theo `correlationId` |
 | Observability | **OpenTelemetry** (traces + metrics), export sang Prometheus/Grafana hoặc APM có sẵn của cloud | Chuẩn mở, không khóa vào 1 vendor |
 | API docs | **Swashbuckle** (Swagger/OpenAPI) | Tự sinh tài liệu từ code, dùng luôn để test thủ công |
-| File lưu trữ | `AWSSDK.S3` hoặc `Azure.Storage.Blobs` (tùy hạ tầng chốt ở mục 5) | Upload ảnh CCHN, giấy phép, logo qua presigned URL |
-| Email | **MailKit** gửi qua SMTP hoặc SDK của SendGrid/Amazon SES | Email xác thực, thông báo |
+| File lưu trữ | `AWSSDK.S3` trỏ endpoint vào **MinIO tự host** (API tương thích S3) | Upload ảnh CCHN, giấy phép, logo qua presigned URL — không cần đổi SDK dù đổi hạ tầng lưu trữ sau này |
+| Email | **MailKit** gửi qua SMTP (Amazon SES hoặc SMTP relay như Mailgun/Brevo — không cần VPS tự host SMTP vì dễ bị đánh spam) | Email xác thực, thông báo |
 | Testing | **xUnit** + **FluentAssertions** + **Testcontainers** (Postgres/Redis thật trong test) + **Bogus** (sinh dữ liệu giả) | Test tích hợp sát thực tế thay vì mock DB |
 | Contract test bên ngoài | **WireMock.Net** | Giả lập VNPay/eSMS khi test, không gọi thật |
 
@@ -64,8 +64,8 @@
 | Full-text MVP | Extension **`pg_trgm`** + `tsvector` trên `jobs`, `candidate_profiles` | Đủ dùng cho tìm kiếm ở Giai đoạn 1, tránh vận hành Elasticsearch quá sớm |
 | Search nâng cao (GĐ2) | **OpenSearch** (thay vì Elasticsearch) | License Apache 2.0 rõ ràng hơn Elastic License, tương thích API Elasticsearch cũ |
 | Cache | **Redis 7+** qua `StackExchange.Redis` | Cache kết quả tìm kiếm, session SignalR backplane, rate-limit counter |
-| Object storage | S3-compatible (AWS S3 / Cloudflare R2 / MinIO tự host) | Ảnh CCHN, giấy phép, CV PDF, logo — không lưu trong Postgres |
-| Backup | `pg_dump` định kỳ + point-in-time recovery (WAL archiving) nếu managed DB hỗ trợ | Dữ liệu CCHN/doanh nghiệp là dữ liệu nhạy cảm, cần khôi phục được |
+| Object storage | **MinIO** tự host (API tương thích S3) | Ảnh CCHN, giấy phép, CV PDF, logo — không lưu trong Postgres; MinIO chạy tốt trên VPS, API giống hệt S3 nên dễ chuyển sang cloud object storage sau này nếu cần |
+| Backup | `pg_dump`/`pg_basebackup` định kỳ (cron) + WAL archiving, đẩy bản backup ra **ngoài VPS chính** (VPS phụ hoặc Backblaze B2/S3-compatible) | Tự host thì không có snapshot managed của cloud — **bắt buộc** có bản sao ngoài máy chủ chính + diễn tập khôi phục (restore drill) định kỳ, vì dữ liệu CCHN/doanh nghiệp rất nhạy cảm |
 
 ---
 
@@ -103,30 +103,67 @@
 
 ---
 
-## 5. Hạ tầng & vận hành (DevOps)
+## 5. Hạ tầng & vận hành — Self-host VPS (đã chốt)
+
+Toàn bộ hạ tầng tự vận hành trên VPS, không dùng dịch vụ managed của cloud lớn. Hệ quả trực tiếp:
+mọi thứ Azure/AWS managed từng đề xuất (SignalR Service, Key Vault, RDS...) được thay bằng thành phần
+**mã nguồn mở tự host tương đương** — đúng tinh thần "ưu tiên mã nguồn mở" đã thống nhất ở phần frontend.
+
+### 5.1 Kiến trúc triển khai (single VPS cho MVP)
+
+```
+                    Internet
+                        │
+                 ┌──────▼───────┐
+                 │  Caddy        │  reverse proxy + auto HTTPS (Let's Encrypt)
+                 └──────┬───────┘
+                        │
+        ┌───────────────┼───────────────┐
+        │               │               │
+ ┌──────▼─────┐  ┌──────▼─────┐  ┌──────▼─────┐
+ │ Next.js     │  │ ASP.NET     │  │ Admin       │   (docker compose services,
+ │ (web)       │  │ Core API    │  │ (nếu tách)  │    cùng 1 docker network nội bộ)
+ └─────────────┘  └──────┬─────┘  └─────────────┘
+                        │
+   ┌───────────┬────────┼────────┬────────────┐
+┌──▼───┐   ┌────▼───┐ ┌──▼───┐ ┌──▼────┐  ┌────▼────┐
+│Postgres│  │ Redis  │ │RabbitMQ│ │MinIO │  │Hangfire │  ← tất cả container riêng,
+└────────┘  └────────┘ └────────┘ └──────┘  │dashboard│    KHÔNG expose port ra ngoài
+                                              └─────────┘    (chỉ Caddy expose 443)
+```
+
+### 5.2 Bảng thành phần
 
 | Thành phần | Lựa chọn | Lý do |
 |---|---|---|
-| Container | **Docker** + `docker-compose` cho môi trường dev (Postgres, Redis, RabbitMQ, MinIO local) | Đồng bộ môi trường giữa các dev, không cần cài từng service thủ công |
-| CI/CD | **GitHub Actions** | Build, test, lint, build image, deploy theo nhánh |
-| Container registry | GitHub Container Registry (ghcr.io) hoặc registry của cloud đã chọn | |
-| Orchestration | Chưa cần Kubernetes ở MVP — dùng **Azure App Service / AWS ECS Fargate** (container đơn giản, tự scale) | Modular Monolith chưa cần K8s; tránh over-engineering hạ tầng theo đúng nguyên tắc đã chốt |
-| Secrets | .NET **User Secrets** (dev) → **Azure Key Vault**/**AWS Secrets Manager** (staging/prod) | Không commit secret vào repo |
-| Error tracking | **Sentry** (backend + frontend cùng dashboard) | Theo dõi lỗi runtime thực tế, không chỉ log |
-| Uptime/monitoring | Cloud-native (Azure Monitor / CloudWatch) + Grafana nếu cần dashboard tùy biến | |
+| Hệ điều hành | **Ubuntu Server 24.04 LTS** | Phổ biến nhất, tài liệu/cộng đồng nhiều, hỗ trợ dài hạn |
+| Reverse proxy + TLS | **Caddy** | Tự động cấp & gia hạn HTTPS (Let's Encrypt) — ít cấu hình hơn Nginx + Certbot đáng kể, phù hợp team nhỏ tự vận hành |
+| Container | **Docker + Docker Compose** | Đủ dùng cho quy mô Modular Monolith 1–2 VPS; chưa cần Kubernetes (đúng nguyên tắc tránh over-engineering đã chốt) |
+| Container registry | **GitHub Container Registry (ghcr.io)** | Miễn phí cho repo, tích hợp thẳng GitHub Actions |
+| CI/CD deploy | **GitHub Actions** build image → push ghcr.io → SSH vào VPS chạy `docker compose pull && up -d` | Không cần runner tự host, đơn giản cho quy mô hiện tại |
+| Object storage | **MinIO** (self-host, container riêng) | Thay S3/Azure Blob — API tương thích hoàn toàn, SDK phía backend không đổi (mục 1.5) |
+| Secrets | File `.env` **không commit**, quyền đọc giới hạn (`chmod 600`) trên VPS; cân nhắc **Infisical** (self-host, mã nguồn mở) khi team lớn hơn | VPS không có Key Vault managed — cần kỷ luật vận hành thay thế |
+| Log tập trung | **Grafana Loki** + **Promtail** (self-host) | Bộ ba mã nguồn mở Grafana/Loki/Prometheus phổ biến nhất cho self-host, không phụ thuộc cloud |
+| Metrics/dashboard | **Prometheus + Grafana** (self-host), nhận dữ liệu qua OpenTelemetry exporter | Đồng bộ với lựa chọn OpenTelemetry ở mục 1.5 |
+| Uptime/alerting | **Uptime Kuma** (self-host, mã nguồn mở, có UI đẹp) | Nhẹ, dễ cài qua Docker, cảnh báo Telegram/email khi service down |
+| Error tracking | **Sentry (bản cloud, gói free/nhỏ)** dù hạ tầng còn lại self-host | Tự host Sentry cần cụm Postgres/Redis/Clickhouse riêng — chi phí vận hành không đáng cho team nhỏ; đây là ngoại lệ hợp lý, không phải mâu thuẫn với chủ trương self-host |
+| Bảo mật VPS | `ufw` (firewall, chỉ mở 22/80/443), SSH key-only (tắt password login), `fail2ban`, `unattended-upgrades` (vá bảo mật tự động) | VPS tự quản lý phải tự chịu trách nhiệm phần cloud vốn lo sẵn (patching, network ACL) |
 
-> **Còn cần chốt** (đã nêu ở mục 11 phương án thực hiện): Azure hay AWS hay self-host. Bảng dưới hỗ trợ quyết định.
+### 5.3 Chọn nhà cung cấp VPS — còn cần bạn chốt
 
-### 5.1 So sánh nhanh Azure vs AWS cho stack .NET này
-
-| Tiêu chí | Azure | AWS |
+| Hướng | Ưu điểm | Nhược điểm |
 |---|---|---|
-| Độ khớp với .NET | Cao nhất — App Service, Azure SQL/Postgres Flexible Server, SignalR Service quản lý sẵn | Tốt, cần tự cấu hình nhiều hơn cho .NET |
-| Chi phí khởi điểm | Có gói cho startup (Azure for Startups) | Có gói tương tự (AWS Activate) |
-| SignalR managed | **Azure SignalR Service** — bỏ luôn việc tự quản lý backplane Redis | Không có dịch vụ tương đương, phải tự vận hành Redis backplane |
-| Elasticsearch/OpenSearch managed | Azure không có OpenSearch managed chính chủ (dùng Elastic Cloud) | **Amazon OpenSearch Service** managed sẵn |
+| VPS Việt Nam (Vietnix, VNG Cloud, Viettel IDC, FPT Cloud) | Độ trễ thấp cho người dùng VN; dữ liệu lưu trong nước — thuận lợi hơn khi cần chứng minh tuân thủ NĐ 13/2023 | Giá/hiệu năng thường kém hơn quốc tế cùng tầm giá |
+| VPS quốc tế (Hetzner, DigitalOcean, Vultr — có datacenter Singapore) | Giá/hiệu năng tốt, Singapore cho độ trễ chấp nhận được | Dữ liệu cá nhân người Việt lưu ngoài lãnh thổ — cần đánh giá lại khi làm rõ yêu cầu tuân thủ chi tiết |
 
-→ Với trọng số backend .NET + SignalR realtime là ưu tiên, **nghiêng về Azure**; nếu đội ngũ đã quen AWS hoặc cần OpenSearch managed sớm, AWS vẫn hợp lý. Đây vẫn là quyết định cần bạn chốt.
+→ Với dữ liệu CCHN/hồ sơ y tế là dữ liệu cá nhân nhạy cảm, **nghiêng nhẹ về VPS trong nước hoặc ít nhất Singapore** để giảm rủi ro pháp lý — nhưng đây vẫn là lựa chọn nhà cung cấp cụ thể cần bạn xác nhận.
+
+### 5.4 Lộ trình scale khi cần (tránh phải quyết định lại từ đầu)
+
+1. **MVP**: 1 VPS chạy toàn bộ (app + DB + cache + queue) qua Docker Compose.
+2. **Khi tải tăng**: tách VPS thứ 2 riêng cho PostgreSQL (giảm cạnh tranh CPU/IO với app).
+3. **Khi cần HA**: thêm VPS thứ 3 chạy replica Postgres (streaming replication) + load balancer đứng trước 2 VPS app.
+4. Chỉ cân nhắc quay lại managed cloud/Kubernetes nếu vượt quá khả năng vận hành thủ công của team — chưa phải lo ở giai đoạn này.
 
 ---
 
@@ -134,7 +171,7 @@
 
 | Nhu cầu | Đề xuất | Ghi chú |
 |---|---|---|
-| Thanh toán (gói tin, credit) | **PayOS** hoặc tích hợp trực tiếp **VNPay + Momo + ZaloPay** | PayOS là cổng tổng hợp của Việt Nam — 1 lần tích hợp, hỗ trợ nhiều phương thức, giảm công sức hơn tự nối từng cổng. Tự nối trực tiếp VNPay/Momo cho kiểm soát tốt hơn nhưng tốn công gấp 3 lần. **Cần bạn xác nhận hướng nào** (đã nêu ở mục 11 phương án thực hiện). |
+| Thanh toán (gói tin, credit) | **Chưa quyết — để sau** | Quyết định đã hoãn theo yêu cầu. MVP xử lý tạm bằng **quy trình thủ công**: NTD chuyển khoản ngân hàng theo thông tin hiển thị kèm mã tham chiếu, Admin đối soát và duyệt gói/nạp credit qua `POST /admin/...` thủ công (xem mục 8). `payments` (ERD) và `POST /payments/*` (API) giữ nguyên schema/endpoint đã thiết kế — khi chọn cổng tự động sau này chỉ cần cắm thêm `provider` mới, không phải đổi model dữ liệu. |
 | SMS OTP | **eSMS.vn** hoặc **SpeedSMS** | Giá tốt hơn Twilio cho số điện thoại Việt Nam, độ trễ thấp trong nước |
 | OAuth đăng nhập | Google (chuẩn), **Zalo** (phổ biến tại VN, tự implement REST vì không có SDK .NET chính thức) | |
 | Bản đồ/địa chỉ (hiển thị vị trí cơ sở y tế) | **Goong Maps** (bản đồ Việt hóa, giá tốt hơn Google Maps cho use case cơ bản) hoặc Google Maps nếu cần độ phủ toàn cầu | Không cấp thiết ở MVP |
@@ -148,21 +185,26 @@ Backend:    .NET 10 (LTS) · ASP.NET Core Web API · MediatR · FluentValidation
 Data:       EF Core 10 (Npgsql) + Dapper (đọc nặng) · PostgreSQL 16+ · Redis 7+
 Search:     pg_trgm/tsvector (MVP) → OpenSearch (GĐ2)
 Queue/RT:   RabbitMQ + MassTransit · SignalR (Redis backplane) · Hangfire
-Storage:    S3-compatible qua presigned URL
+Storage:    MinIO (self-host, S3-compatible) qua presigned URL
 Frontend:   Next.js (App Router) + React 19 + TypeScript
 UI:         shadcn/ui (Radix + Tailwind) · dnd-kit · Tiptap · Recharts
 State:      TanStack Query + Zustand · React Hook Form + Zod
-DevOps:     Docker + GitHub Actions · Azure App Service (đề xuất) · Sentry · OpenTelemetry
-VN services: PayOS/VNPay/Momo (thanh toán) · eSMS/SpeedSMS (OTP) · Zalo OAuth
+Hạ tầng:    Self-host VPS · Docker Compose + Caddy · GitHub Actions ·
+            Grafana/Loki/Prometheus + Uptime Kuma (self-host) · Sentry (cloud)
+VN services: Thanh toán thủ công tạm thời (chưa chọn cổng) · eSMS/SpeedSMS (OTP) · Zalo OAuth
 ```
 
 ---
 
-## 8. Việc cần bạn xác nhận (kế thừa mục 11 phương án thực hiện + phát sinh mới)
+## 8. Việc cần bạn xác nhận (còn lại)
 
-1. **Hạ tầng**: Azure (đề xuất) hay AWS hay self-host?
-2. **Cổng thanh toán**: PayOS (tổng hợp, nhanh) hay tự nối trực tiếp từng cổng VNPay/Momo/ZaloPay?
-3. **.NET 10 hay .NET 8**: nếu môi trường CI/hosting hiện có chưa hỗ trợ .NET 10, dùng .NET 8 LTS.
-4. **OpenSearch vs Elasticsearch** ở Giai đoạn 2 — đã nghiêng OpenSearch, chốt nếu không có ràng buộc khác.
+**Đã chốt:** Hạ tầng self-host VPS · .NET 10 · Thanh toán tự động hoãn lại (dùng quy trình thủ công ở MVP).
 
-> Sau khi chốt các mục trên, đủ điều kiện khởi tạo solution theo Clean Architecture (Giai đoạn 0 của roadmap).
+1. **Nhà cung cấp VPS cụ thể**: VPS Việt Nam (Vietnix/VNG Cloud/Viettel IDC/FPT Cloud) hay quốc tế
+   (Hetzner/DigitalOcean/Vultr, ưu tiên datacenter Singapore)? Xem phân tích mục 5.3.
+2. **OpenSearch vs Elasticsearch** ở Giai đoạn 2 — đã nghiêng OpenSearch, chốt nếu không có ràng buộc khác.
+3. **Cổng thanh toán tự động** — cần chốt trước khi triển khai tính năng gói tin/credit thật (không
+   chặn việc khởi tạo solution, vì MVP đã có phương án thủ công tạm thời ở mục 6).
+
+> Đủ điều kiện khởi tạo solution theo Clean Architecture (Giai đoạn 0 của roadmap) — các mục còn lại
+> không chặn tiến độ, có thể chốt song song trong lúc phát triển Giai đoạn 0–1.

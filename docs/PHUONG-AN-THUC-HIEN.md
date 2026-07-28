@@ -274,7 +274,7 @@ ProfileUnlock(id, orgId, candidateId, creditCost, unlockedAt)   // NTD "mở" h�
 - Identity + RBAC (Candidate/Employer/Admin).
 - Hồ sơ ứng viên (gồm CCHN & chuyên khoa) + xác thực CCHN thủ công qua Admin.
 - Hồ sơ & xác minh doanh nghiệp.
-- Đăng tin + kiểm duyệt + đăng tin công khai + **gói đăng tin theo tier (Eco/Pro/Max) + thanh toán**.
+- Đăng tin + kiểm duyệt + đăng tin công khai + **gói đăng tin theo tier (Eco/Pro/Max)**.
 - Tìm kiếm & lọc (giai đoạn đầu dùng Postgres full-text).
 - Ứng tuyển + ATS pipeline cơ bản + chấm điểm hồ sơ (CV Scoring).
 - **Hệ thống Credit** để NTD chủ động mở hồ sơ ứng viên.
@@ -282,6 +282,9 @@ ProfileUnlock(id, orgId, candidateId, creditCost, unlockedAt)   // NTD "mở" h�
 
 > MVP giữ **đầy đủ hạng mục** theo quyết định đã chốt — không cắt bớt; monetization (gói tin + credit)
 > được đưa vào ngay từ MVP thay vì để Giai đoạn 2, vì đây là nguồn doanh thu chính (xem mục 4.1, 4.3).
+> **Thanh toán tự động (cổng VNPay/Momo/...) chưa chốt** — MVP xử lý gói tin/credit bằng quy trình
+> thủ công (chuyển khoản + Admin đối soát), không chặn tiến độ; schema/API giữ nguyên để cắm cổng tự
+> động sau mà không phải đổi model (xem `TECH-STACK-CHI-TIET.md` mục 6).
 
 ### Giai đoạn 2 — Hoàn thiện
 - Elasticsearch cho tìm kiếm nâng cao.
@@ -313,13 +316,17 @@ ProfileUnlock(id, orgId, candidateId, creditCost, unlockedAt)   // NTD "mở" h�
 ## 11. Quyết định & việc còn lại
 
 **Đã chốt:**
-1. Tech stack backend: **.NET (ASP.NET Core)**.
+1. Tech stack backend: **.NET 10 (ASP.NET Core, LTS)**.
 2. Nền tảng đầu tiên: **Web trước, MVP đầy đủ** (không cắt bớt hạng mục Giai đoạn 1).
+3. Hạ tầng: **Self-host VPS** (Docker Compose + Caddy + MinIO + Grafana/Loki/Prometheus, chi tiết ở
+   `TECH-STACK-CHI-TIET.md` mục 5).
+4. Cổng thanh toán tự động: **hoãn lại** — MVP dùng quy trình thủ công (chuyển khoản + Admin đối soát),
+   schema/API giữ nguyên để cắm cổng sau (mục 9, `TECH-STACK-CHI-TIET.md` mục 6).
 
-**Còn cần chốt:**
-3. **Hạ tầng**: Azure / AWS / self-host?
-4. **Cổng thanh toán** cho gói tin & credit: VNPay / Momo / ZaloPay / khác?
-5. Phạm vi chính xác của "CV Scoring" ở MVP — quy tắc tính điểm tự động hay chỉ gắn nhãn thủ công trước?
+**Còn cần chốt (không chặn tiến độ):**
+5. **Nhà cung cấp VPS cụ thể** (VN hay quốc tế) — xem phân tích `TECH-STACK-CHI-TIET.md` mục 5.3.
+6. Phạm vi chính xác của "CV Scoring" ở MVP — quy tắc tính điểm tự động hay chỉ gắn nhãn thủ công trước?
+7. Cổng thanh toán tự động cụ thể — cần chốt trước khi triển khai tính năng thanh toán thật (Giai đoạn 1
+   vẫn chạy được bằng quy trình thủ công trong lúc chờ).
 
-> Bước tiếp theo (đang thực hiện theo yêu cầu): thiết kế chi tiết — ERD, luồng nghiệp vụ/wireframe, hoặc
-> thiết kế API — trước khi khởi tạo solution.
+> Đủ điều kiện khởi tạo solution theo Clean Architecture (Giai đoạn 0 của roadmap) khi bạn sẵn sàng.
