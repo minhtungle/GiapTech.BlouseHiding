@@ -15,8 +15,9 @@
 - ⬜ Khởi tạo Next.js + shadcn/ui
 - ⬜ Docker Compose môi trường dev (Postgres, Redis, RabbitMQ, MinIO)
 - ⬜ CI/CD cơ bản (build, test, lint)
-- ⬜ Danh mục chuẩn: `specialties`, `locations`, `employment_types` (kèm cột `name_en`)
-- ⬜ Khung đa ngôn ngữ: routing `next-intl` (vi/en), file dịch theo route group, middleware `Accept-Language` phía backend
+- ⬜ Danh mục chuẩn: `specialties`, `locations`, `employment_types`, `job_packages` + bảng `*_translations`
+- ⬜ Khung đa ngôn ngữ: routing `next-intl` 6 locale (vi/en/ja/zh/ko/es, `localePrefix: always`), file
+  dịch theo route group, middleware `Accept-Language` phía backend, bộ chọn ngôn ngữ (header + footer)
 
 ## Giai đoạn 1 — MVP
 

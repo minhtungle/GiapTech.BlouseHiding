@@ -165,6 +165,7 @@ flowchart TD
 | Trang cơ sở y tế | Giới thiệu tổ chức, danh sách tin đang tuyển, đánh giá (Giai đoạn 2) |
 | Đăng ký / Đăng nhập | Chọn vai trò Ứng viên hay NTD, OAuth Google/Zalo, OTP |
 | Góc nghề y (Giai đoạn 3) | Bài viết, sự kiện/CME, học bổng |
+| Bộ chọn ngôn ngữ | Dropdown ở header (+ link phụ ở footer) — 6 ngôn ngữ hiển thị tên bản ngữ, đổi tiền tố URL + lưu cookie, có mặt trên **mọi trang** không riêng Public |
 
 ### 2.2 Ứng viên (Candidate)
 

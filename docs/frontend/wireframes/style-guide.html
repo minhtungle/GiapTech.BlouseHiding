@@ -139,6 +139,35 @@
 
   .footer-note{ padding-top: 40px; font-size:13.5px; color: var(--ink-muted); }
   .footer-note a{ text-decoration:none; border-bottom:1px solid currentColor; }
+
+  /* Language switcher */
+  .lang-demo-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    background: var(--paper-raised); border:1px solid var(--line); border-radius: 10px 10px 0 0;
+    padding: 12px 18px;
+  }
+  .lang-demo-bar .brand-mini{ font-family: var(--font-display); font-size:14px; }
+  .lang-btn{
+    display:flex; align-items:center; gap:7px;
+    font-family: var(--font-mono); font-size:12.5px; color: var(--ink);
+    background: var(--paper-sunken); border:1px solid var(--line-strong);
+    border-radius:999px; padding:6px 12px 6px 10px; cursor:pointer;
+  }
+  .lang-btn:hover{ border-color: var(--accent-jade); }
+  .lang-btn .globe{ width:14px; height:14px; stroke: var(--accent-jade); fill:none; stroke-width:1.6; }
+  .lang-btn .caret{ color: var(--ink-faint); font-size:9px; }
+  .lang-panel{
+    background: var(--paper-raised); border:1px solid var(--line); border-top:none;
+    border-radius: 0 0 10px 10px; padding: 8px; box-shadow: var(--shadow);
+  }
+  .lang-option{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:9px 12px; border-radius:7px; font-size:13.5px; cursor:pointer;
+  }
+  .lang-option:hover{ background: var(--paper-sunken); }
+  .lang-option.active{ background: var(--accent-jade-soft); color: var(--accent-jade); font-weight:600; }
+  .lang-option .code{ font-family: var(--font-mono); font-size:11px; color: var(--ink-faint); }
+  .lang-option.active .code{ color: var(--accent-jade); }
 </style>
 
 <div class="topbar">
@@ -230,6 +259,28 @@
       <div class="icon-tile"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg><span class="icon-name">clinical / vitals</span></div>
       <div class="icon-tile"><svg viewBox="0 0 24 24"><path d="M4 4h16v12H8l-4 4z"/></svg><span class="icon-name">message</span></div>
       <div class="icon-tile"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.6H19l-4.6 3.4L16 18l-4-3-4 3 1.6-6-4.6-3.4h5.2z"/></svg><span class="icon-name">featured</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>06 · Bộ chọn ngôn ngữ</h2>
+    <p class="section-desc">Đặt ở header (góc phải, cạnh tài khoản) — 6 ngôn ngữ hiển thị bằng tên bản ngữ, không dịch chéo. Chọn xong chỉ đổi tiền tố URL (<code>/vi/</code> → <code>/en/</code>...), giữ nguyên trang đang xem.</p>
+    <div style="max-width:280px;">
+      <div class="lang-demo-bar">
+        <span class="brand-mini">BlouseHiding</span>
+        <span class="lang-btn">
+          <svg class="globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15.5 0 18M12 3c-2.5 2.5-2.5 15.5 0 18"/></svg>
+          VI <span class="caret">▾</span>
+        </span>
+      </div>
+      <div class="lang-panel">
+        <div class="lang-option active">Tiếng Việt <span class="code">vi</span></div>
+        <div class="lang-option">English <span class="code">en</span></div>
+        <div class="lang-option">日本語 <span class="code">ja</span></div>
+        <div class="lang-option">中文 <span class="code">zh</span></div>
+        <div class="lang-option">한국어 <span class="code">ko</span></div>
+        <div class="lang-option">Español <span class="code">es</span></div>
+      </div>
     </div>
   </section>
 

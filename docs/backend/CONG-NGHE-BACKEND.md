@@ -73,16 +73,17 @@ tự dựng từ đầu — đã có sẵn MediatR, FluentValidation, EF Core, S
 
 ## 7. Đa ngôn ngữ (i18n)
 
-> Quyết định & phạm vi: [ADR-0006](../kien-truc/adr/0006-da-ngon-ngu.md) — Tiếng Việt + Tiếng Anh, chỉ
-> dịch giao diện/danh mục, không dịch nội dung tự viết. Phía frontend: [`../frontend/CONG-NGHE-FRONTEND.md`](../frontend/CONG-NGHE-FRONTEND.md)
-> mục "Đa ngôn ngữ".
+> Quyết định & phạm vi: [ADR-0006](../kien-truc/adr/0006-da-ngon-ngu.md) — 6 ngôn ngữ (vi/en/ja/zh/ko/es),
+> chỉ dịch giao diện/danh mục, không dịch nội dung tự viết. Phía frontend:
+> [`../frontend/CONG-NGHE-FRONTEND.md`](../frontend/CONG-NGHE-FRONTEND.md) mục "Đa ngôn ngữ".
 
 | Thành phần | Lựa chọn | Lý do |
 |---|---|---|
 | Phát hiện locale request | Middleware đọc header `Accept-Language` do frontend gửi kèm mỗi request (khớp locale đang hiển thị, không tự suy luận lại phía backend) | Tránh 2 nơi (FE/BE) tự đoán ngôn ngữ ra kết quả khác nhau |
-| Validation message (FluentValidation) | Resource file theo locale (`.resx` hoặc JSON), custom `IValidatorInterceptor`/message formatter đọc theo header ở trên | Lỗi validate trả về đúng ngôn ngữ người dùng đang thấy, không luôn tiếng Việt |
-| Email/thông báo | Template theo locale (thư mục `Templates/vi/`, `Templates/en/`), chọn template theo `users.locale` (không phải header request — vì email gửi bất đồng bộ, lúc gửi không còn request gốc) | Email/SMS phải đúng ngôn ngữ người nhận đã chọn, độc lập với request nào kích hoạt gửi |
-| Danh mục (specialties/locations/job_packages) | API trả cả `name` và `name_en` trong response — **không** tự chọn 1 trường theo header, để frontend tự quyết hiển thị (đơn giản hơn, tránh cache theo locale ở tầng API) | Xem ERD — cột `name_en` nullable, lùi về `name` khi thiếu |
+| Validation message (FluentValidation) | Resource file theo locale (JSON, 6 file), custom `IValidatorInterceptor`/message formatter đọc theo header ở trên, lùi về `vi` nếu thiếu key | Lỗi validate trả về đúng ngôn ngữ người dùng đang thấy, không luôn tiếng Việt |
+| Email/thông báo | Template theo locale (`Templates/vi/`, `Templates/en/`, `Templates/ja/`...), chọn theo `users.locale` (không phải header request — vì email gửi bất đồng bộ, lúc gửi không còn request gốc) | Email/SMS phải đúng ngôn ngữ người nhận đã chọn, độc lập với request nào kích hoạt gửi |
+| Danh mục (specialties/locations/job_packages) | Query Handler JOIN bảng `*_translations` theo `locale` từ `Accept-Language`, trả **1 trường `name` đã resolve** — JOIN không ra dòng nào (thiếu bản dịch) thì tự lùi về `name` gốc (tiếng Việt) của bảng chính, không trả null | Xem ERD mục ràng buộc nghiệp vụ — tránh trả 6 trường `name`/`nameJa`/`nameZh`... phình response không cần thiết |
+| Cache danh mục theo locale | Redis, key có kèm locale (vd `catalog:specialties:en`) | Danh mục ít đổi, tránh JOIN lặp lại mỗi request — xem ERD mục ràng buộc nghiệp vụ điểm 12 |
 | Nội dung tự do (`jobs.description`, hồ sơ ứng viên...) | Trả nguyên văn, **không xử lý locale** | Theo ADR-0006 — không dịch nội dung người dùng tự viết |
 
 ---

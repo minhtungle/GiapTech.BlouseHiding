@@ -111,8 +111,13 @@ thời gian tuyển trung bình (time-to-hire).
 - Dashboard số liệu, quản lý người dùng, cấu hình danh mục (chuyên khoa, tuyến, địa điểm).
 
 ### 3.11 Đa ngôn ngữ
-- Giao diện **Tiếng Việt (mặc định) + Tiếng Anh** — phục vụ ứng viên/tổ chức nước ngoài (BV vốn đầu tư
-  nước ngoài, NGO y tế, chuyên gia expat) bên cạnh người dùng trong nước là chủ đạo.
+- Giao diện **6 ngôn ngữ**: Tiếng Việt (mặc định), Tiếng Anh, Tiếng Nhật, Tiếng Trung, Tiếng Hàn, Tiếng
+  Tây Ban Nha — phục vụ ứng viên/tổ chức nước ngoài (BV vốn đầu tư nước ngoài, NGO y tế, chuyên gia
+  expat, đặc biệt từ Nhật/Hàn/Trung — các quốc gia đầu tư y tế/dược lớn tại VN) bên cạnh người dùng
+  trong nước là chủ đạo.
+- **Nhận diện ngôn ngữ qua tiền tố URL** (`/vi/...`, `/en/...`...), tự động gợi ý theo ngôn ngữ trình
+  duyệt khi truy cập lần đầu, có **nút chọn ngôn ngữ** trên giao diện (header, kiểu bố trí phổ biến ở
+  các trang lớn) để người dùng tự đổi bất kỳ lúc nào.
 - **Chỉ dịch giao diện + danh mục chuẩn** (chuyên khoa, địa điểm, loại hình làm việc, tên gói dịch vụ).
   **Không** dịch nội dung tự viết (mô tả tin, tiểu sử ứng viên) — hiển thị nguyên văn ngôn ngữ tác giả
   đã nhập, không dịch máy tự động (rủi ro sai thuật ngữ y khoa). Quyết định & lý do đầy đủ:

@@ -84,10 +84,12 @@ docs/                 — toàn bộ tài liệu (bản đồ ở mục 2)
    plaintext, không trả về API response nhiều hơn mức cần thiết cho từng role (xem RBAC ở
    `docs/backend/CONG-NGHE-BACKEND.md` mục 3). Trước khi merge thay đổi động vào các luồng này, chạy
    skill `security-review`.
-10. **Đa ngôn ngữ (VI + EN)** — không hardcode chuỗi tiếng Việt trực tiếp trong component/response lỗi.
-    Mọi text UI mới thêm phải có cả 2 khóa dịch (`vi`/`en`) trong cùng PR. Danh mục (chuyên khoa, địa
-    điểm, tên gói) luôn có cột `name`/`name_en`; nội dung tự do người dùng viết (mô tả tin, tiểu sử)
-    **không dịch**, hiển thị nguyên văn — xem [ADR-0006](docs/kien-truc/adr/0006-da-ngon-ngu.md).
+10. **Đa ngôn ngữ (6 ngôn ngữ: vi/en/ja/zh/ko/es)** — không hardcode chuỗi tiếng Việt trực tiếp trong
+    component/response lỗi. Mọi text UI mới thêm phải có đủ 6 khóa dịch trong cùng PR (file
+    `messages/{locale}/{namespace}.json`). Danh mục (chuyên khoa, địa điểm, tên gói) dịch qua bảng
+    `*_translations` riêng (không phải cột song song) — thêm danh mục mới phải thêm luôn bản dịch cho
+    cả 5 ngôn ngữ không phải `vi`, không để trống rồi tính sau. Nội dung tự do người dùng viết (mô tả
+    tin, tiểu sử) **không dịch**, hiển thị nguyên văn — xem [ADR-0006](docs/kien-truc/adr/0006-da-ngon-ngu.md).
 
 ## 5. Khi thêm tính năng mới — thứ tự làm việc
 

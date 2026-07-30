@@ -286,7 +286,7 @@ erDiagram
 | password_hash | varchar(255) | NOT NULL | bcrypt/argon2 |
 | role | enum | NOT NULL | `candidate`, `employer` (dùng trang **Admin**), `admin`/`moderator` (đội **Vận hành** — xem `../nghiep-vu/PHAN-TICH-NGHIEP-VU.md` mục 2) |
 | status | enum | NOT NULL DEFAULT `active` | `active`, `suspended`, `deleted` |
-| locale | enum | NOT NULL DEFAULT `vi` | `vi`, `en` — ngôn ngữ giao diện đã chọn, dùng để gửi email/thông báo đúng ngôn ngữ (xem [ADR-0006](../kien-truc/adr/0006-da-ngon-ngu.md)) |
+| locale | enum | NOT NULL DEFAULT `vi` | `vi`, `en`, `ja`, `zh`, `ko`, `es` — ngôn ngữ giao diện đã chọn, dùng để gửi email/thông báo đúng ngôn ngữ (xem [ADR-0006](../kien-truc/adr/0006-da-ngon-ngu.md)) |
 | email_verified_at | timestamp | nullable | |
 | phone_verified_at | timestamp | nullable | |
 | created_at / updated_at | timestamp | NOT NULL | |
@@ -339,9 +339,17 @@ erDiagram
 |---|---|---|
 | id | uuid | PK |
 | code | varchar(50) | UNIQUE |
-| name | varchar(255) | NOT NULL — tên tiếng Việt (mặc định) |
-| name_en | varchar(255) | nullable — tên tiếng Anh; NULL thì frontend hiển thị lùi về `name` (xem [ADR-0006](../kien-truc/adr/0006-da-ngon-ngu.md)) |
+| name | varchar(255) | NOT NULL — tên tiếng Việt, dùng làm giá trị dự phòng khi thiếu bản dịch |
 | parent_id | uuid | FK → specialties, nullable |
+
+**`specialty_translations`** (bản dịch tên chuyên khoa — xem [ADR-0006](../kien-truc/adr/0006-da-ngon-ngu.md))
+| Cột | Kiểu | Ràng buộc |
+|---|---|---|
+| id | uuid | PK |
+| specialty_id | uuid | FK → specialties |
+| locale | varchar(5) | `en`, `ja`, `zh`, `ko`, `es` (không lưu `vi` — đã có ở `specialties.name`) |
+| name | varchar(255) | NOT NULL |
+| UNIQUE(specialty_id, locale) | | |
 
 **`profile_specialties`** (n-n giữa hồ sơ và chuyên khoa)
 | Cột | Kiểu | Ràng buộc |
@@ -450,9 +458,17 @@ set `accepted_at`. Không tạo `employer_members` với `user_id` rỗng ở b�
 | Cột | Kiểu |
 |---|---|
 | id | uuid PK |
-| name | varchar(255) |
-| name_en | varchar(255) nullable — NULL thì lùi về `name` (ADR-0006) |
+| name | varchar(255) — tên tiếng Việt, giá trị dự phòng khi thiếu bản dịch |
 | parent_id | uuid FK nullable |
+
+**`location_translations`**
+| Cột | Kiểu |
+|---|---|
+| id | uuid PK |
+| location_id | uuid FK → locations |
+| locale | varchar(5) — `en`, `ja`, `zh`, `ko`, `es` |
+| name | varchar(255) NOT NULL |
+| UNIQUE(location_id, locale) | |
 
 ### 2.5 Tin tuyển dụng & monetization
 
@@ -481,12 +497,20 @@ set `accepted_at`. Không tạo `employer_members` với `user_id` rỗng ở b�
 |---|---|---|
 | id | uuid PK | |
 | tier | enum | `free`, `eco`, `pro`, `max` |
-| name | varchar(100) | |
-| name_en | varchar(100) | nullable — NULL thì lùi về `name` (ADR-0006) |
+| name | varchar(100) | tên tiếng Việt, giá trị dự phòng khi thiếu bản dịch |
 | duration_days | int | vd. 14 |
 | price | numeric(12,2) | VND |
 | max_active_jobs | int | giới hạn cho gói free |
 | perks | jsonb | vd. `{"pin_top": true, "highlight": true}` |
+
+**`job_package_translations`**
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| id | uuid PK | |
+| job_package_id | uuid FK → job_packages | |
+| locale | varchar(5) | `en`, `ja`, `zh`, `ko`, `es` |
+| name | varchar(100) | NOT NULL |
+| UNIQUE(job_package_id, locale) | | |
 
 **`job_purchases`**
 | Cột | Kiểu | Ghi chú |
@@ -718,9 +742,12 @@ ra sai/trùng, lỗi hệ thống trừ nhầm). Không có luồng tự động
 10. Report được Vận hành xử lý với hành động "gỡ nội dung" → phải trigger đúng state change tương ứng
     của entity bị báo cáo trong cùng thao tác (vd tin → `closed`, tổ chức → `suspended` theo điểm 6),
     không phải 2 bước thủ công tách rời dễ quên.
-11. Cột `name_en`/nội dung dịch **nullable có chủ đích** — khi NULL, tầng Application phải tự lùi về
-    cột tiếng Việt (`name`) khi trả API cho locale `en`, không để frontend nhận chuỗi rỗng. Không dịch
-    máy tự động để lấp khoảng trống (xem [ADR-0006](../kien-truc/adr/0006-da-ngon-ngu.md)).
+11. Thiếu bản dịch ở `*_translations` cho 1 locale nào đó **không phải lỗi** — tầng Application phải tự
+    lùi về cột `name` (tiếng Việt) của bảng gốc khi JOIN không tìm thấy dòng dịch tương ứng, không để
+    frontend nhận chuỗi rỗng/null. Không dịch máy tự động để lấp khoảng trống (xem
+    [ADR-0006](../kien-truc/adr/0006-da-ngon-ngu.md)).
+12. Danh mục ít thay đổi (`specialties`, `locations`, `job_packages` + bản dịch) nên **cache theo
+    locale** ở tầng Redis/Application — tránh JOIN bảng dịch lặp lại ở mọi request danh mục.
 
 ---
 

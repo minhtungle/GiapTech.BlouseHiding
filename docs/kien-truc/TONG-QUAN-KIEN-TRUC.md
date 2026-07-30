@@ -99,7 +99,8 @@ Storage:    MinIO (self-host, S3-compatible) qua presigned URL
 Frontend:   Next.js (App Router) + React 19 + TypeScript
 UI:         shadcn/ui (Radix + Tailwind) · dnd-kit · Tiptap · Recharts
 State:      TanStack Query + Zustand · React Hook Form + Zod
-i18n:       next-intl (VI mặc định + EN) · giao diện + danh mục dịch, nội dung tự viết không dịch
+i18n:       next-intl (vi/en/ja/zh/ko/es, vi mặc định) · routing tiền tố URL · giao diện + danh mục
+            dịch qua bảng `*_translations`, nội dung tự viết không dịch
 Hạ tầng:    Self-host VPS · Docker Compose + Caddy · GitHub Actions ·
             Grafana/Loki/Prometheus + Uptime Kuma (self-host) · Sentry (cloud)
 VN services: Thanh toán thủ công tạm thời (chưa chọn cổng) · eSMS/SpeedSMS (OTP) · Zalo OAuth
@@ -127,7 +128,7 @@ tránh tình trạng "sao lại chọn cái này" phải hỏi lại khi bàn gi
 | [0003](./adr/0003-hoan-cong-thanh-toan-tu-dong.md) | Hoãn chọn cổng thanh toán tự động, dùng quy trình thủ công ở MVP |
 | [0004](./adr/0004-tech-stack-net-nextjs.md) | Chọn .NET (backend) + Next.js/shadcn-ui (frontend) thay vì Node.js full-stack |
 | [0005](./adr/0005-dat-ten-3-khu-vuc-site.md) | Đặt tên 3 khu vực site: Client / Admin (NTD) / Vận hành (nội bộ) |
-| [0006](./adr/0006-da-ngon-ngu.md) | Đa ngôn ngữ: Tiếng Việt + Tiếng Anh, chỉ dịch giao diện/danh mục |
+| [0006](./adr/0006-da-ngon-ngu.md) | Đa ngôn ngữ: 6 ngôn ngữ (vi/en/ja/zh/ko/es), dịch qua bảng translation + routing tiền tố URL |
 
 ---
 
@@ -143,8 +144,10 @@ tránh tình trạng "sao lại chọn cái này" phải hỏi lại khi bàn gi
    bộ nền tảng) — cả 3 **cùng 1 codebase Next.js** (route group riêng), không tách app riêng dùng
    shadcn-admin trực tiếp — chỉ tham khảo bố cục. Xem [ADR-0005](./adr/0005-dat-ten-3-khu-vuc-site.md)
    và [`THUAT-NGU.md`](./THUAT-NGU.md).
-7. Đa ngôn ngữ: **Tiếng Việt + Tiếng Anh**, chỉ dịch giao diện và danh mục chuẩn (chuyên khoa, địa
-   điểm, loại hình), **không** dịch nội dung tự viết (mô tả tin, tiểu sử ứng viên). Xem
+7. Đa ngôn ngữ: **6 ngôn ngữ** — Tiếng Việt (mặc định), Anh, Nhật, Trung, Hàn, Tây Ban Nha. Routing
+   theo tiền tố URL (`/vi/`, `/en/`...), tự nhận diện qua `Accept-Language` lần đầu, có bộ chọn ngôn
+   ngữ trên giao diện. Chỉ dịch giao diện + danh mục chuẩn (qua bảng `*_translations`, không phải cột
+   song song), **không** dịch nội dung tự viết (mô tả tin, tiểu sử ứng viên). Xem
    [ADR-0006](./adr/0006-da-ngon-ngu.md).
 
 **Còn cần chốt (không chặn tiến độ):**
