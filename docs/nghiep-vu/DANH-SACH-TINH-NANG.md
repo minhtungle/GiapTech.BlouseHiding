@@ -15,7 +15,8 @@
 - ⬜ Khởi tạo Next.js + shadcn/ui
 - ⬜ Docker Compose môi trường dev (Postgres, Redis, RabbitMQ, MinIO)
 - ⬜ CI/CD cơ bản (build, test, lint)
-- ⬜ Danh mục chuẩn: `specialties`, `locations`, `employment_types`
+- ⬜ Danh mục chuẩn: `specialties`, `locations`, `employment_types` (kèm cột `name_en`)
+- ⬜ Khung đa ngôn ngữ: routing `next-intl` (vi/en), file dịch theo route group, middleware `Accept-Language` phía backend
 
 ## Giai đoạn 1 — MVP
 
@@ -26,6 +27,7 @@
 - ⬜ RBAC (`candidate`/`employer`/`admin`/`moderator` — site Client/Admin/Vận hành)
 - ⬜ Đa thành viên HR trong 1 tổ chức
 - ⬜ Mời thành viên HR qua email (kể cả email chưa có tài khoản — `organization_invitations`)
+- ⬜ Chọn/ghi nhớ ngôn ngữ giao diện (`users.locale`), email/thông báo gửi đúng ngôn ngữ đã chọn
 
 ### Hồ sơ ứng viên
 - ⬜ Hồ sơ cơ bản (học vấn, kinh nghiệm, kỹ năng)

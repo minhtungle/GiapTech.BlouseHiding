@@ -92,6 +92,8 @@ Ba nguyên tắc kiến trúc chi phối mọi quyết định công nghệ phí
 
 Về mặt công nghệ cụ thể: backend là **ASP.NET Core .NET 10**, khởi tạo từ khung Clean Architecture có sẵn của cộng đồng (Jason Taylor's Template) thay vì tự dựng lại — một ví dụ của nguyên tắc lớn hơn xuyên suốt dự án: **ưu tiên mã nguồn mở đã kiểm chứng ở tầng nền tảng, tự viết ở tầng tạo khác biệt**. Frontend là **Next.js + shadcn/ui** — shadcn/ui bản chất là mã nguồn mở dạng copy-code vào repo (không phải gói cài đóng kín), cho phép giữ 100% quyền tùy biến giao diện riêng trong khi vẫn thừa hưởng nền tảng accessibility đã được kiểm chứng.
 
+Hệ thống hỗ trợ **hai ngôn ngữ — Tiếng Việt (mặc định) và Tiếng Anh** — phục vụ nhóm ứng viên/tổ chức nước ngoài (bệnh viện có vốn đầu tư nước ngoài, NGO y tế, chuyên gia expat) tồn tại thật trong thị trường tuyển dụng y tế Việt Nam, dù không phải nhóm người dùng chủ đạo. Phạm vi dịch được **giới hạn có chủ đích**: chỉ dịch giao diện (nút, nhãn, thông báo, email) và danh mục chuẩn hóa do nền tảng quản lý (chuyên khoa, địa điểm, loại hình làm việc) — mỗi mục danh mục có sẵn cả tên tiếng Việt và tiếng Anh. Nội dung do NTD/ứng viên **tự viết** — mô tả tin tuyển dụng, tiểu sử — **không bị dịch**, hiển thị nguyên văn ngôn ngữ tác giả đã nhập dù người xem đang dùng giao diện ngôn ngữ nào. Quyết định không dịch máy tự động xuất phát từ một rủi ro cụ thể: dịch sai thuật ngữ y khoa (tên chuyên khoa, yêu cầu chứng chỉ) có thể gây hiểu nhầm nghiêm trọng hơn là hữu ích.
+
 ---
 
 ## 7. Mô hình dữ liệu, kể bằng lời thay vì liệt kê cột
@@ -138,7 +140,7 @@ Giai đoạn 0 khởi tạo solution và hạ tầng dev. Giai đoạn 1 (MVP) �
 
 ## 11. Những gì đã chốt, và những gì còn để ngỏ
 
-**Đã chốt, không cần bàn lại:** stack backend .NET 10/ASP.NET Core; Web trước, chưa làm mobile; hạ tầng self-host VPS; kiến trúc Clean Architecture + Modular Monolith; frontend Next.js + shadcn/ui, ba khu vực site trong một codebase; cổng thanh toán tự động hoãn lại, dùng quy trình thủ công có đầy đủ hỗ trợ kỹ thuật (mã tham chiếu, endpoint xác nhận); tổ chức bị rút xác thực thì tự động ẩn tin; gia hạn tin luôn tạo tin mới.
+**Đã chốt, không cần bàn lại:** stack backend .NET 10/ASP.NET Core; Web trước, chưa làm mobile; hạ tầng self-host VPS; kiến trúc Clean Architecture + Modular Monolith; frontend Next.js + shadcn/ui, ba khu vực site trong một codebase; đa ngôn ngữ Tiếng Việt + Tiếng Anh (chỉ giao diện + danh mục, không dịch nội dung tự viết); cổng thanh toán tự động hoãn lại, dùng quy trình thủ công có đầy đủ hỗ trợ kỹ thuật (mã tham chiếu, endpoint xác nhận); tổ chức bị rút xác thực thì tự động ẩn tin; gia hạn tin luôn tạo tin mới.
 
 **Còn để ngỏ, cần cân nhắc thêm trước hoặc trong lúc code:** chọn nhà cung cấp VPS cụ thể (trong nước hay quốc tế — có phân tích đánh đổi sẵn, nghiêng nhẹ về trong nước vì lý do tuân thủ dữ liệu); phạm vi chính xác của thuật toán chấm điểm CV (quy tắc tự động cụ thể ra sao, hay ban đầu chỉ gắn nhãn thủ công); và cổng thanh toán tự động cụ thể sẽ chọn khi tới lúc cần (PayOS hay tự nối từng cổng riêng) — không có mục nào trong số này chặn việc bắt đầu code.
 
@@ -151,7 +153,7 @@ Một câu hỏi đáng đặt ra khi đánh giá tài liệu này: **liệu quy
 | Muốn hiểu sâu về... | Đọc file |
 |---|---|
 | Toàn bộ kiến trúc & quyết định công nghệ, trạng thái quyết định | `docs/kien-truc/TONG-QUAN-KIEN-TRUC.md` |
-| Vì sao từng quyết định lớn được chọn | `docs/kien-truc/adr/` (5 ADR) |
+| Vì sao từng quyết định lớn được chọn | `docs/kien-truc/adr/` (6 ADR) |
 | Thuật ngữ nghiệp vụ & quy ước tên site | `docs/kien-truc/THUAT-NGU.md` |
 | Phân tích nghiệp vụ, đối chiếu TopCV/Ybox, roadmap, rủi ro | `docs/nghiep-vu/PHAN-TICH-NGHIEP-VU.md` |
 | Luồng nghiệp vụ chi tiết theo sơ đồ + danh sách màn hình | `docs/nghiep-vu/LUONG-NGHIEP-VU-MAN-HINH.md` |

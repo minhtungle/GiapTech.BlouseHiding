@@ -110,6 +110,14 @@ thời gian tuyển trung bình (time-to-hire).
 - Kiểm duyệt tin & doanh nghiệp, xác thực CCHN, xử lý report/spam.
 - Dashboard số liệu, quản lý người dùng, cấu hình danh mục (chuyên khoa, tuyến, địa điểm).
 
+### 3.11 Đa ngôn ngữ
+- Giao diện **Tiếng Việt (mặc định) + Tiếng Anh** — phục vụ ứng viên/tổ chức nước ngoài (BV vốn đầu tư
+  nước ngoài, NGO y tế, chuyên gia expat) bên cạnh người dùng trong nước là chủ đạo.
+- **Chỉ dịch giao diện + danh mục chuẩn** (chuyên khoa, địa điểm, loại hình làm việc, tên gói dịch vụ).
+  **Không** dịch nội dung tự viết (mô tả tin, tiểu sử ứng viên) — hiển thị nguyên văn ngôn ngữ tác giả
+  đã nhập, không dịch máy tự động (rủi ro sai thuật ngữ y khoa). Quyết định & lý do đầy đủ:
+  [ADR-0006](../kien-truc/adr/0006-da-ngon-ngu.md).
+
 ---
 
 ## 4. Phân tích đối chiếu TopCV & Ybox

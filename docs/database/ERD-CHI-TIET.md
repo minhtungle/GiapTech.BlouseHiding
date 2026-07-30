@@ -286,6 +286,7 @@ erDiagram
 | password_hash | varchar(255) | NOT NULL | bcrypt/argon2 |
 | role | enum | NOT NULL | `candidate`, `employer` (dùng trang **Admin**), `admin`/`moderator` (đội **Vận hành** — xem `../nghiep-vu/PHAN-TICH-NGHIEP-VU.md` mục 2) |
 | status | enum | NOT NULL DEFAULT `active` | `active`, `suspended`, `deleted` |
+| locale | enum | NOT NULL DEFAULT `vi` | `vi`, `en` — ngôn ngữ giao diện đã chọn, dùng để gửi email/thông báo đúng ngôn ngữ (xem [ADR-0006](../kien-truc/adr/0006-da-ngon-ngu.md)) |
 | email_verified_at | timestamp | nullable | |
 | phone_verified_at | timestamp | nullable | |
 | created_at / updated_at | timestamp | NOT NULL | |
@@ -338,7 +339,8 @@ erDiagram
 |---|---|---|
 | id | uuid | PK |
 | code | varchar(50) | UNIQUE |
-| name | varchar(255) | NOT NULL |
+| name | varchar(255) | NOT NULL — tên tiếng Việt (mặc định) |
+| name_en | varchar(255) | nullable — tên tiếng Anh; NULL thì frontend hiển thị lùi về `name` (xem [ADR-0006](../kien-truc/adr/0006-da-ngon-ngu.md)) |
 | parent_id | uuid | FK → specialties, nullable |
 
 **`profile_specialties`** (n-n giữa hồ sơ và chuyên khoa)
@@ -449,6 +451,7 @@ set `accepted_at`. Không tạo `employer_members` với `user_id` rỗng ở b�
 |---|---|
 | id | uuid PK |
 | name | varchar(255) |
+| name_en | varchar(255) nullable — NULL thì lùi về `name` (ADR-0006) |
 | parent_id | uuid FK nullable |
 
 ### 2.5 Tin tuyển dụng & monetization
@@ -467,7 +470,7 @@ set `accepted_at`. Không tạo `employer_members` với `user_id` rỗng ở b�
 | address_detail | varchar(255) | nullable | |
 | required_license | bool | DEFAULT true | |
 | min_experience_years | int | DEFAULT 0 | |
-| description / requirements / benefits | text | | |
+| description / requirements / benefits | text | | ngôn ngữ tự do theo tác giả nhập — **không dịch**, hiển thị nguyên văn bất kể locale người xem (ADR-0006) |
 | status | enum | NOT NULL DEFAULT `draft` | `draft`, `pending_payment`, `pending`, `published`, `rejected`, `expired`, `closed`, `suspended` — xem mục 4 điểm 6-7 |
 | reject_reason | text | nullable | |
 | published_at / expires_at | timestamp | nullable | |
@@ -479,6 +482,7 @@ set `accepted_at`. Không tạo `employer_members` với `user_id` rỗng ở b�
 | id | uuid PK | |
 | tier | enum | `free`, `eco`, `pro`, `max` |
 | name | varchar(100) | |
+| name_en | varchar(100) | nullable — NULL thì lùi về `name` (ADR-0006) |
 | duration_days | int | vd. 14 |
 | price | numeric(12,2) | VND |
 | max_active_jobs | int | giới hạn cho gói free |
@@ -714,6 +718,9 @@ ra sai/trùng, lỗi hệ thống trừ nhầm). Không có luồng tự động
 10. Report được Vận hành xử lý với hành động "gỡ nội dung" → phải trigger đúng state change tương ứng
     của entity bị báo cáo trong cùng thao tác (vd tin → `closed`, tổ chức → `suspended` theo điểm 6),
     không phải 2 bước thủ công tách rời dễ quên.
+11. Cột `name_en`/nội dung dịch **nullable có chủ đích** — khi NULL, tầng Application phải tự lùi về
+    cột tiếng Việt (`name`) khi trả API cho locale `en`, không để frontend nhận chuỗi rỗng. Không dịch
+    máy tự động để lấp khoảng trống (xem [ADR-0006](../kien-truc/adr/0006-da-ngon-ngu.md)).
 
 ---
 

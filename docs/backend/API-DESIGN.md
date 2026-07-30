@@ -26,6 +26,10 @@
   > ⚠️ Role backend tên là `Admin` nhưng **site tương ứng gọi là "Vận hành"**, không phải trang "Admin"
   > mà Nhà tuyển dụng dùng — 2 khái niệm khác nhau, tránh nhầm lẫn khi đọc bảng dưới.
 - **Idempotency**: các endpoint tạo giao dịch tiền/credit nhận header `Idempotency-Key`.
+- **Ngôn ngữ**: request gửi header `Accept-Language: vi` hoặc `en` — dùng để trả lỗi validate và chọn
+  ngôn ngữ email/thông báo đúng locale (xem [ADR-0006](../kien-truc/adr/0006-da-ngon-ngu.md)). Endpoint
+  danh mục (mục 10) luôn trả **cả 2 ngôn ngữ** trong response, không lọc theo header — frontend tự chọn
+  hiển thị trường nào.
 
 ---
 
@@ -196,9 +200,9 @@ khi `payments.type = credit_topup` thành công, cộng `amount` vào `credit_wa
 
 | Method | Path | Quyền | Mô tả |
 |---|---|---|---|
-| GET | `/catalog/specialties` | Public | Cây chuyên khoa |
-| GET | `/catalog/locations` | Public | Cây tỉnh/thành → quận/huyện |
-| GET | `/catalog/employment-types` | Public | Danh sách loại hình làm việc |
+| GET | `/catalog/specialties` | Public | Cây chuyên khoa — mỗi node trả `{ "name": "...", "nameEn": "..." }`, `nameEn` có thể `null` (frontend lùi về `name`) |
+| GET | `/catalog/locations` | Public | Cây tỉnh/thành → quận/huyện — cùng quy ước `name`/`nameEn` |
+| GET | `/catalog/employment-types` | Public | Danh sách loại hình làm việc — nhãn hiển thị lấy từ file dịch phía frontend (đây là enum cố định, không lưu bản dịch trong DB) |
 
 ---
 

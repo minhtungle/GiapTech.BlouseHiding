@@ -75,7 +75,7 @@ docs/                 — toàn bộ tài liệu (bản đồ ở mục 2)
    và [ADR-0005](docs/kien-truc/adr/0005-dat-ten-3-khu-vuc-site.md). Component nền tảng dùng shadcn/ui
    (copy-code vào repo), không cài package UI đóng gói khác thay thế.
 7. **Quyết định kiến trúc lớn/khó đảo ngược → viết ADR mới** trong `docs/kien-truc/adr/`, đánh số tiếp
-   theo, theo đúng format 4 ADR hiện có (Bối cảnh/Quyết định/Phương án đã cân nhắc/Hệ quả). Đừng chỉ
+   theo, theo đúng format các ADR hiện có (Bối cảnh/Quyết định/Phương án đã cân nhắc/Hệ quả). Đừng chỉ
    sửa trực tiếp tài liệu tổng quan mà không để lại dấu vết quyết định.
 8. **Đổi schema CSDL → cập nhật `docs/database/ERD-CHI-TIET.md` trong cùng PR.** Thêm/sửa endpoint →
    cập nhật `docs/backend/API-DESIGN.md` trong cùng PR. Tài liệu lệch khỏi code là nợ kỹ thuật, không
@@ -84,6 +84,10 @@ docs/                 — toàn bộ tài liệu (bản đồ ở mục 2)
    plaintext, không trả về API response nhiều hơn mức cần thiết cho từng role (xem RBAC ở
    `docs/backend/CONG-NGHE-BACKEND.md` mục 3). Trước khi merge thay đổi động vào các luồng này, chạy
    skill `security-review`.
+10. **Đa ngôn ngữ (VI + EN)** — không hardcode chuỗi tiếng Việt trực tiếp trong component/response lỗi.
+    Mọi text UI mới thêm phải có cả 2 khóa dịch (`vi`/`en`) trong cùng PR. Danh mục (chuyên khoa, địa
+    điểm, tên gói) luôn có cột `name`/`name_en`; nội dung tự do người dùng viết (mô tả tin, tiểu sử)
+    **không dịch**, hiển thị nguyên văn — xem [ADR-0006](docs/kien-truc/adr/0006-da-ngon-ngu.md).
 
 ## 5. Khi thêm tính năng mới — thứ tự làm việc
 

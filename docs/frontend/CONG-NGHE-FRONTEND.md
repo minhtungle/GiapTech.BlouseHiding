@@ -28,8 +28,32 @@ tự viết lại bằng chính component đã chọn dưới đây, để giữ
 | Rich text editor | **Tiptap** | Mô tả công việc, bài viết "Góc nghề y" (Giai đoạn 3) |
 | Biểu đồ (dashboard Admin/Vận hành) | **Tremor** (dựng trên Recharts) | Component biểu đồ + KPI card sẵn, phối màu theo CSS variable — khớp nhanh với token thiết kế |
 | Realtime client | **@microsoft/signalr** | Khớp SignalR backend |
-| i18n | **next-intl** | Tiếng Việt chính, để ngỏ tiếng Anh cho ứng viên/tổ chức nước ngoài sau này |
+| i18n | **next-intl** | Tiếng Việt + Tiếng Anh — xem chi tiết mục "Đa ngôn ngữ" bên dưới |
 | Testing | **Vitest** + **React Testing Library** (unit) + **Playwright** (e2e) | Playwright thay thế Cypress — nhanh hơn, chạy đa trình duyệt |
+
+---
+
+## Đa ngôn ngữ (i18n)
+
+> Quyết định & phạm vi: [ADR-0006](../kien-truc/adr/0006-da-ngon-ngu.md). Backend tương ứng:
+> [`../backend/CONG-NGHE-BACKEND.md`](../backend/CONG-NGHE-BACKEND.md) mục i18n. Schema: `users.locale`
+> + cột `*_en` ở danh mục, xem [`../database/ERD-CHI-TIET.md`](../database/ERD-CHI-TIET.md).
+
+**Ngôn ngữ hỗ trợ:** Tiếng Việt (mặc định) + Tiếng Anh. **Phạm vi dịch có giới hạn có chủ đích** — chỉ
+dịch giao diện (nút, nhãn, thông báo, email) và danh mục chuẩn hóa (chuyên khoa, địa điểm, loại hình
+làm việc). **Không** dịch tự động nội dung do người dùng tự viết (mô tả tin tuyển dụng, tiểu sử ứng
+viên) — nội dung đó hiển thị nguyên văn ngôn ngữ người viết đã nhập, kể cả khi xem ở giao diện tiếng
+Anh. Đây là đánh đổi có chủ đích để giữ MVP đơn giản, không phải thiếu sót.
+
+| Thành phần | Cách làm |
+|---|---|
+| Routing theo locale | `next-intl` với path prefix `/vi/...` / `/en/...` (locale mặc định `vi` không hiện prefix ở URL, theo cấu hình `localePrefix: 'as-needed'`) |
+| Phát hiện ngôn ngữ lần đầu | Header `Accept-Language` trình duyệt → gợi ý, không tự ép chuyển nếu người dùng đã chọn thủ công |
+| Ghi nhớ lựa chọn | Cookie + `users.locale` (khi đã đăng nhập) — đồng bộ để email/thông báo gửi đúng ngôn ngữ đã chọn dù đăng nhập từ thiết bị khác |
+| File dịch | `messages/vi.json`, `messages/en.json` theo namespace từng route group (`client.json`, `admin.json`, `ops.json`) — tránh 1 file khổng lồ khó bảo trì |
+| Danh mục (chuyên khoa/địa điểm/loại hình) | Component tự chọn `name` hay `name_en` từ API theo locale hiện tại của trang — dữ liệu đã có cả 2 cột sẵn từ backend, không dịch phía client |
+| Font & dấu | Be Vietnam Pro đã hỗ trợ tốt cả bảng chữ Latin mở rộng (tiếng Anh không cần font riêng) |
+| Quy tắc bắt buộc khi thêm text UI mới | Luôn thêm cả 2 khóa (`vi` + `en`) trong cùng PR — không hardcode chuỗi tiếng Việt trực tiếp trong component (xem `CLAUDE.md` mục 4) |
 
 ---
 
