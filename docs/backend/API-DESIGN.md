@@ -265,3 +265,5 @@ khi `payments.type = credit_topup` thành công, cộng `amount` vào `credit_wa
 → Xem [`../frontend/wireframes/man-hinh-cot-loi.html`](../frontend/wireframes/man-hinh-cot-loi.html) —
 wireframe trực quan cho 3 màn hình cốt lõi (Chi tiết tin, Hồ sơ CCHN, ATS Kanban), chú thích ánh xạ
 trực tiếp tới các endpoint ở trên và các bảng trong [`../database/ERD-CHI-TIET.md`](../database/ERD-CHI-TIET.md).
+Xem thêm [`../frontend/wireframes/trang-chu-3-vai-tro.html`](../frontend/wireframes/trang-chu-3-vai-tro.html)
+— trang chủ/dashboard của cả 3 vai trò cạnh nhau để đối chiếu.

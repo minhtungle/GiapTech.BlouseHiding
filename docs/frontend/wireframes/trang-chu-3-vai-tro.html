@@ -1,0 +1,445 @@
+<title>BlouseHiding — Trang chủ theo 3 vai trò</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper: #f2f4f1; --paper-raised: #ffffff; --paper-sunken: #e9ede8;
+    --ink: #16262a; --ink-muted: #5b6e6c; --ink-faint: #8a9997;
+    --accent-seal: #ba3b21; --accent-seal-soft: #f4e2dc;
+    --accent-jade: #2f6e62; --accent-jade-soft: #e2eeea;
+    --amber-pending: #a9761b; --amber-pending-soft: #f5e9d2;
+    --line: #d9ded9; --line-strong: #c1c9c0;
+    --shadow: 0 1px 2px rgba(22,38,42,.06), 0 8px 24px -12px rgba(22,38,42,.18);
+    --font-display: Georgia, "Iowan Old Style", "Noto Serif", "Times New Roman", serif;
+    --font-body: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper: #101918; --paper-raised: #16211f; --paper-sunken: #0c1413;
+      --ink: #e8ede9; --ink-muted: #93a6a2; --ink-faint: #5f716e;
+      --accent-seal: #e1633f; --accent-seal-soft: #3a231c;
+      --accent-jade: #59ab99; --accent-jade-soft: #1c2e2a;
+      --amber-pending: #d9ab52; --amber-pending-soft: #362a15;
+      --line: #263230; --line-strong: #33413e;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 28px -14px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper: #101918; --paper-raised: #16211f; --paper-sunken: #0c1413;
+    --ink: #e8ede9; --ink-muted: #93a6a2; --ink-faint: #5f716e;
+    --accent-seal: #e1633f; --accent-seal-soft: #3a231c;
+    --accent-jade: #59ab99; --accent-jade-soft: #1c2e2a;
+    --amber-pending: #d9ab52; --amber-pending-soft: #362a15;
+    --line: #263230; --line-strong: #33413e;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 28px -14px rgba(0,0,0,.5);
+  }
+  :root[data-theme="light"]{
+    --paper: #f2f4f1; --paper-raised: #ffffff; --paper-sunken: #e9ede8;
+    --ink: #16262a; --ink-muted: #5b6e6c; --ink-faint: #8a9997;
+    --accent-seal: #ba3b21; --accent-seal-soft: #f4e2dc;
+    --accent-jade: #2f6e62; --accent-jade-soft: #e2eeea;
+    --amber-pending: #a9761b; --amber-pending-soft: #f5e9d2;
+    --line: #d9ded9; --line-strong: #c1c9c0;
+    --shadow: 0 1px 2px rgba(22,38,42,.06), 0 8px 24px -12px rgba(22,38,42,.18);
+  }
+
+  *{ box-sizing: border-box; }
+  html{ background: var(--paper); }
+  body{
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: var(--font-body); line-height: 1.55; -webkit-font-smoothing: antialiased;
+  }
+  @media (prefers-reduced-motion: reduce){ *{ transition-duration:.001ms !important; animation-duration:.001ms !important; } }
+  a{ color: var(--accent-jade); }
+  :focus-visible{ outline: 2px solid var(--accent-jade); outline-offset: 2px; border-radius: 4px; }
+
+  .wrap{ max-width: 1160px; margin: 0 auto; padding: 0 24px 100px; }
+
+  .intro{ padding: 56px 0 36px; border-bottom: 1px solid var(--line); }
+  .eyebrow{
+    font-family: var(--font-mono); font-size: 12.5px; letter-spacing:.09em; text-transform: uppercase;
+    color: var(--accent-seal); display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow::before{ content:""; width:7px; height:7px; background: var(--accent-seal); transform: rotate(45deg); }
+  h1{ font-family: var(--font-display); font-weight:400; font-size: clamp(28px,4vw,40px); margin:14px 0 12px; text-wrap:balance; max-width: 18ch; }
+  .lede{ color: var(--ink-muted); font-size: 16px; max-width: 68ch; margin:0 0 20px; }
+  .nav-jump{ display:flex; flex-wrap:wrap; gap:10px; }
+  .nav-jump a{
+    font-family: var(--font-mono); font-size:12.5px; text-decoration:none; color: var(--ink-muted);
+    border:1px solid var(--line); background: var(--paper-raised); padding:7px 12px; border-radius:999px;
+  }
+  .nav-jump a:hover{ color: var(--ink); border-color: var(--line-strong); }
+  .nav-jump .num{ color: var(--accent-jade); margin-right:6px; }
+
+  section.screen{
+    padding: 64px 0 8px; border-bottom: 1px solid var(--line);
+    opacity:0; transform: translateY(10px); animation: rise .5s ease forwards;
+  }
+  section.screen:nth-of-type(2){ animation-delay:.05s; }
+  section.screen:nth-of-type(3){ animation-delay:.1s; }
+  @keyframes rise{ to{ opacity:1; transform:none; } }
+  @media (prefers-reduced-motion: reduce){ section.screen{ opacity:1; transform:none; } }
+
+  .screen-head{ display:flex; justify-content:space-between; align-items:flex-end; gap:20px; margin-bottom:20px; flex-wrap:wrap; }
+  .screen-head .idx{ font-family: var(--font-mono); color: var(--accent-jade); font-size:13px; letter-spacing:.06em; }
+  h2.screen-title{ font-family: var(--font-display); font-weight:400; font-size:25px; margin:4px 0 6px; }
+  .screen-desc{ color: var(--ink-muted); font-size:14.5px; max-width:58ch; margin:0; }
+  .tag{ font-family: var(--font-mono); font-size:11px; color: var(--ink-muted); border:1px solid var(--line); padding:4px 9px; border-radius:6px; background: var(--paper-raised); }
+
+  .frame{ background: var(--paper-raised); border:1px solid var(--line); border-radius:14px; box-shadow: var(--shadow); overflow:hidden; }
+  .frame-bar{ display:flex; align-items:center; gap:8px; padding:11px 14px; background: var(--paper-sunken); border-bottom:1px solid var(--line); }
+  .frame-bar .dot{ width:9px; height:9px; border-radius:50%; background: var(--line-strong); }
+  .frame-url{ margin-left:8px; font-family: var(--font-mono); font-size:12px; color: var(--ink-faint); background: var(--paper-raised); border:1px solid var(--line); border-radius:6px; padding:4px 10px; flex:1; max-width:460px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  .brand{ font-family: var(--font-display); font-size:15px; }
+  .dot-seal{ color: var(--accent-seal); }
+
+  .badge{ display:inline-flex; align-items:center; gap:5px; font-family: var(--font-mono); font-size:11px; letter-spacing:.02em; padding:3px 8px 3px 6px; border-radius:999px; white-space:nowrap; }
+  .badge .dot{ width:6px; height:6px; border-radius:50%; }
+  .badge.verified{ background: var(--accent-jade-soft); color: var(--accent-jade); }
+  .badge.verified .dot{ background: var(--accent-jade); }
+  .badge.pending{ background: var(--amber-pending-soft); color: var(--amber-pending); }
+  .badge.pending .dot{ background: var(--amber-pending); }
+  .badge.rejected{ background: var(--accent-seal-soft); color: var(--accent-seal); }
+  .badge.rejected .dot{ background: var(--accent-seal); }
+  .badge.neutral{ background: var(--paper-sunken); color: var(--ink-muted); }
+  .badge.neutral .dot{ background: var(--ink-faint); }
+
+  .btn{ display:inline-flex; align-items:center; gap:7px; font-size:13.5px; font-weight:600; padding:9px 16px; border-radius:8px; border:none; cursor:pointer; text-decoration:none; }
+  .btn-primary{ background: var(--accent-seal); color:#fff; }
+  .btn-ghost{ background: transparent; border:1px solid var(--line-strong); color: var(--ink); }
+  .btn-ghost:hover{ background: var(--paper-sunken); }
+
+  .lang-btn{ display:flex; align-items:center; gap:6px; font-family: var(--font-mono); font-size:11.5px; color: var(--ink-muted); background: var(--paper-sunken); border:1px solid var(--line); border-radius:999px; padding:5px 10px 5px 8px; }
+  .lang-btn svg{ width:12px; height:12px; stroke: var(--accent-jade); fill:none; stroke-width:1.6; }
+
+  /* ============ CLIENT: trang chủ ứng viên ============ */
+  .app-nav{ display:flex; align-items:center; justify-content:space-between; padding:14px 26px; border-bottom:1px solid var(--line); gap:20px; }
+  .app-nav-links{ display:flex; gap:20px; font-size:13.5px; color: var(--ink-muted); flex:1; }
+  .app-nav-links a{ text-decoration:none; color:inherit; }
+  .app-nav-right{ display:flex; align-items:center; gap:12px; }
+  .avatar-mini{ width:28px; height:28px; border-radius:50%; background: var(--accent-jade); color:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; }
+
+  .client-hero{ padding:26px 26px 6px; display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap; align-items:center; }
+  .client-hero .greet{ font-family: var(--font-display); font-size:21px; margin:0 0 4px; }
+  .client-hero .greet-sub{ color: var(--ink-muted); font-size:13.5px; margin:0; }
+  .progress-mini{ display:flex; align-items:center; gap:10px; background: var(--paper-sunken); border-radius:10px; padding:10px 14px; }
+  .ring-sm{ width:38px; height:38px; border-radius:50%; background: conic-gradient(var(--accent-jade) 0 252deg, var(--line) 252deg 360deg); display:flex; align-items:center; justify-content:center; flex:none; }
+  .ring-sm::after{ content:"70%"; width:29px; height:29px; border-radius:50%; background: var(--paper-raised); display:flex; align-items:center; justify-content:center; font-family: var(--font-mono); font-size:9.5px; }
+  .progress-mini .txt{ font-size:12.5px; color: var(--ink-muted); max-width:20ch; }
+  .progress-mini a{ font-size:12px; font-weight:600; text-decoration:none; }
+
+  .search-bar{ margin:18px 26px 0; display:flex; gap:10px; background: var(--paper-sunken); border:1px solid var(--line); border-radius:10px; padding:10px 14px; flex-wrap:wrap; }
+  .search-bar .field{ font-size:13px; color: var(--ink-muted); display:flex; align-items:center; gap:6px; }
+  .search-bar .divider{ width:1px; background: var(--line-strong); align-self:stretch; }
+
+  h3.block-title{ font-size:12.5px; text-transform:uppercase; letter-spacing:.06em; color: var(--ink-faint); margin:24px 26px 12px; display:flex; justify-content:space-between; align-items:center; }
+  h3.block-title a{ text-transform:none; letter-spacing:0; font-size:12px; text-decoration:none; }
+
+  .job-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(230px,1fr)); gap:14px; padding:0 26px; }
+  .job-card{ background: var(--paper-raised); border:1px solid var(--line); border-radius:10px; padding:15px; }
+  .job-card .org{ font-size:11.5px; color: var(--ink-faint); margin-bottom:5px; }
+  .job-card .title{ font-weight:600; font-size:14px; margin-bottom:8px; }
+  .job-card .meta-row{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .job-card .salary{ font-family: var(--font-mono); font-size:12px; font-variant-numeric: tabular-nums; color: var(--ink); }
+
+  .org-strip{ display:flex; gap:12px; padding: 4px 26px 26px; overflow-x:auto; }
+  .org-chip{ flex:none; display:flex; align-items:center; gap:8px; background: var(--paper-raised); border:1px solid var(--line); border-radius:999px; padding:8px 14px 8px 8px; }
+  .org-chip .logo{ width:24px; height:24px; border-radius:50%; background: var(--accent-jade); color:#fff; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+  .org-chip .name{ font-size:12.5px; }
+
+  /* ============ ADMIN / OPS: app shell + side nav ============ */
+  .app-shell{ display:grid; grid-template-columns: 208px 1fr; min-height: 480px; }
+  .side-nav{ background: var(--paper-sunken); border-right:1px solid var(--line); padding:20px 0; }
+  .side-nav .brand{ padding:0 20px 16px; }
+  .side-nav a{ display:flex; align-items:center; gap:10px; padding:9px 20px; font-size:13px; color: var(--ink-muted); text-decoration:none; border-left:2px solid transparent; }
+  .side-nav a.active{ color: var(--ink); background: var(--paper-raised); border-left-color: var(--accent-seal); font-weight:600; }
+  .side-nav .glyph{ width:14px; text-align:center; font-size:11px; opacity:.75; }
+  .side-nav .badge-count{ margin-left:auto; font-family: var(--font-mono); font-size:10px; background: var(--amber-pending-soft); color: var(--amber-pending); border-radius:999px; padding:1px 6px; }
+
+  .dash-main{ padding:26px 30px 34px; }
+  .dash-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; flex-wrap:wrap; gap:12px; }
+  .dash-head h3{ font-family: var(--font-display); font-size:19px; margin:0; font-weight:400; }
+
+  .kpi-row{ display:grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap:12px; margin-bottom:26px; }
+  .kpi-tile{ background: var(--paper-raised); border:1px solid var(--line); border-radius:10px; padding:16px; }
+  .kpi-tile .label{ font-size:11.5px; color: var(--ink-muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:8px; }
+  .kpi-tile .value{ font-family: var(--font-mono); font-size:24px; font-variant-numeric: tabular-nums; }
+  .kpi-tile .value.accent{ color: var(--accent-seal); }
+  .kpi-tile .delta{ font-size:11.5px; color: var(--accent-jade); margin-top:4px; }
+
+  table.data-table{ width:100%; border-collapse:collapse; font-size:13px; }
+  table.data-table th{ text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color: var(--ink-faint); padding:8px 10px; border-bottom:1px solid var(--line); }
+  table.data-table td{ padding:11px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  table.data-table tr:last-child td{ border-bottom:none; }
+  .table-wrap{ overflow-x:auto; background: var(--paper-raised); border:1px solid var(--line); border-radius:10px; margin-bottom:22px; }
+  .table-wrap table{ margin:0; }
+  .table-wrap th, .table-wrap td{ padding:11px 14px; }
+
+  .queue-list{ display:flex; flex-direction:column; gap:8px; }
+  .queue-item{ display:flex; align-items:center; justify-content:space-between; background: var(--paper-raised); border:1px solid var(--line); border-radius:9px; padding:12px 14px; }
+  .queue-item .left{ display:flex; align-items:center; gap:10px; }
+  .queue-item .ico{ width:30px; height:30px; border-radius:8px; background: var(--amber-pending-soft); display:flex; align-items:center; justify-content:center; font-size:14px; flex:none; }
+  .queue-item .name{ font-size:13.5px; font-weight:600; }
+  .queue-item .sub{ font-size:12px; color: var(--ink-muted); }
+  .queue-item .count{ font-family: var(--font-mono); font-size:13px; background: var(--amber-pending-soft); color: var(--amber-pending); border-radius:999px; padding:3px 10px; }
+
+  .two-col{ display:grid; grid-template-columns: 1.4fr 1fr; gap:20px; align-items:start; }
+  @media (max-width: 720px){ .two-col{ grid-template-columns: 1fr; } .app-shell{ grid-template-columns: 1fr; } .side-nav{ display:none; } }
+
+  .callouts{ display:grid; grid-template-columns: repeat(3,1fr); gap:14px; margin-top:22px; }
+  @media (max-width: 860px){ .callouts{ grid-template-columns: 1fr; } }
+  .callout{ border-left:2px solid var(--accent-jade); padding:4px 0 4px 14px; }
+  .callout .k{ font-family: var(--font-mono); font-size:11.5px; color: var(--accent-jade); display:block; margin-bottom:3px; }
+  .callout .v{ font-size:13px; color: var(--ink-muted); }
+  .callout code{ font-family: var(--font-mono); font-size:.92em; background: var(--paper-sunken); border:1px solid var(--line); padding:.05em .4em; border-radius:5px; }
+
+  .refnote{ margin-top:50px; padding-top:20px; border-top:1px solid var(--line); font-size:13.5px; color: var(--ink-muted); }
+  .refnote a{ text-decoration:none; border-bottom:1px solid currentColor; }
+</style>
+
+<div class="wrap">
+
+  <div class="intro">
+    <span class="eyebrow">BlouseHiding · Kiểm tra hướng thiết kế</span>
+    <h1>Trang chủ của 3 vai trò, cạnh nhau để đối chiếu</h1>
+    <p class="lede">
+      Mockup mức bố cục cho màn hình "home" của mỗi vai trò đã định nghĩa trong
+      <code>THUAT-NGU.md</code>: <strong>Client</strong> (ứng viên), <strong>Admin</strong> (Nhà tuyển
+      dụng), <strong>Vận hành</strong> (đội nội bộ nền tảng). Dùng chung 1 bộ token thiết kế với các
+      wireframe trước — nếu 3 màn hình cạnh nhau vẫn "nhận ra" là cùng 1 sản phẩm mà vai trò nào cũng
+      thấy đúng trọng tâm công việc của mình, hướng thiết kế đang đi đúng.
+    </p>
+    <div class="nav-jump">
+      <a href="#screen-client"><span class="num">01</span>Client — Trang chủ ứng viên</a>
+      <a href="#screen-admin"><span class="num">02</span>Admin — Dashboard Nhà tuyển dụng</a>
+      <a href="#screen-ops"><span class="num">03</span>Vận hành — Dashboard tổng quan</a>
+    </div>
+  </div>
+
+  <!-- ============ 01 CLIENT ============ -->
+  <section class="screen" id="screen-client">
+    <div class="screen-head">
+      <div>
+        <span class="idx">01 · Client</span>
+        <h2 class="screen-title">Trang chủ ứng viên</h2>
+        <p class="screen-desc">Trọng tâm: tìm việc nhanh + nhắc hoàn thiện hồ sơ. Không phải dashboard số liệu — ứng viên cần hành động (tìm, ứng tuyển), không cần biểu đồ.</p>
+      </div>
+      <span class="tag">docs/nghiep-vu/LUONG-NGHIEP-VU-MAN-HINH.md — mục 2.2</span>
+    </div>
+
+    <div class="frame">
+      <div class="frame-bar">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="frame-url">blousehiding.vn/vi/</span>
+      </div>
+      <div class="app-nav">
+        <span class="brand"><span class="dot-seal">●</span> BlouseHiding</span>
+        <div class="app-nav-links">
+          <a href="#">Tìm việc</a>
+          <a href="#">Việc đã ứng tuyển</a>
+          <a href="#">Góc nghề y</a>
+        </div>
+        <div class="app-nav-right">
+          <span class="lang-btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15.5 0 18M12 3c-2.5 2.5-2.5 15.5 0 18"/></svg>VI</span>
+          <span class="avatar-mini">TA</span>
+        </div>
+      </div>
+
+      <div class="client-hero">
+        <div>
+          <p class="greet">Chào buổi sáng, Trần Anh</p>
+          <p class="greet-sub">3 việc phù hợp mới với chuyên khoa Hồi sức cấp cứu của bạn</p>
+        </div>
+        <div class="progress-mini">
+          <div class="ring-sm" role="img" aria-label="Hoàn thiện hồ sơ 70%"></div>
+          <div class="txt">Hồ sơ 70% — thiếu chứng chỉ CME</div>
+          <a href="#">Hoàn thiện →</a>
+        </div>
+      </div>
+
+      <div class="search-bar">
+        <span class="field">🔍&nbsp; Vị trí, chuyên khoa...</span>
+        <span class="divider"></span>
+        <span class="field">📍&nbsp; Hà Nội</span>
+        <span class="divider"></span>
+        <span class="field">🕑&nbsp; Mọi loại hình</span>
+        <a class="btn btn-primary" href="#" style="margin-left:auto;">Tìm việc</a>
+      </div>
+
+      <h3 class="block-title">Gợi ý phù hợp với bạn <a href="#">Xem tất cả</a></h3>
+      <div class="job-grid">
+        <div class="job-card">
+          <div class="org">Bệnh viện Đa khoa Tâm Anh</div>
+          <div class="title">Điều dưỡng ICU — Ca đêm</div>
+          <div class="meta-row"><span class="badge verified"><span class="dot"></span>Đã xác minh</span><span class="badge neutral">Trực ca</span></div>
+          <div class="salary">18–25 triệu/tháng</div>
+        </div>
+        <div class="job-card">
+          <div class="org">Phòng khám Đa khoa Việt Đức</div>
+          <div class="title">Điều dưỡng Hồi sức cấp cứu</div>
+          <div class="meta-row"><span class="badge verified"><span class="dot"></span>Đã xác minh</span><span class="badge neutral">Toàn thời gian</span></div>
+          <div class="salary">15–20 triệu/tháng</div>
+        </div>
+        <div class="job-card">
+          <div class="org">Bệnh viện Quốc tế City</div>
+          <div class="title">Điều dưỡng trưởng ICU</div>
+          <div class="meta-row"><span class="badge verified"><span class="dot"></span>Đã xác minh</span><span class="badge neutral">Locum</span></div>
+          <div class="salary">Thỏa thuận</div>
+        </div>
+      </div>
+
+      <h3 class="block-title">Cơ sở y tế nổi bật</h3>
+      <div class="org-strip">
+        <div class="org-chip"><span class="logo">TA</span><span class="name">Tâm Anh</span></div>
+        <div class="org-chip"><span class="logo">VĐ</span><span class="name">Việt Đức</span></div>
+        <div class="org-chip"><span class="logo">CI</span><span class="name">City International</span></div>
+        <div class="org-chip"><span class="logo">BM</span><span class="name">Bạch Mai</span></div>
+      </div>
+    </div>
+
+    <div class="callouts">
+      <div class="callout"><span class="k">progress-mini</span><span class="v">Nhắc hoàn thiện hồ sơ ngay ở home — không chặn, chỉ nhắc; khớp quyết định "chưa xác thực CCHN vẫn dùng được" ở luồng 1.1.</span></div>
+      <div class="callout"><span class="k">job-card badge</span><span class="v">Chỉ hiện <code>verified</code> khi <code>organizations.verify_status = verified</code> — đúng ràng buộc ERD mục 4.1.</span></div>
+      <div class="callout"><span class="k">lang-btn</span><span class="v">Component bộ chọn ngôn ngữ đã có ở style-guide.html — tái dùng nguyên vẹn, không vẽ lại.</span></div>
+    </div>
+  </section>
+
+  <!-- ============ 02 ADMIN (NTD) ============ -->
+  <section class="screen" id="screen-admin">
+    <div class="screen-head">
+      <div>
+        <span class="idx">02 · Admin (Nhà tuyển dụng)</span>
+        <h2 class="screen-title">Dashboard NTD</h2>
+        <p class="screen-desc">Trọng tâm: tình trạng tin đang chạy + việc cần xử lý (ứng viên mới). Có số liệu, nhưng số liệu phục vụ hành động tiếp theo, không phải trang trí.</p>
+      </div>
+      <span class="tag">docs/nghiep-vu/LUONG-NGHIEP-VU-MAN-HINH.md — mục 2.3</span>
+    </div>
+
+    <div class="frame">
+      <div class="frame-bar">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="frame-url">tuyendung.blousehiding.vn/vi/dashboard</span>
+      </div>
+      <div class="app-shell">
+        <nav class="side-nav">
+          <div class="brand"><span class="dot-seal">●</span> BlouseHiding</div>
+          <a href="#" class="active"><span class="glyph">▢</span> Dashboard</a>
+          <a href="#"><span class="glyph">🏥</span> Hồ sơ tổ chức</a>
+          <a href="#"><span class="glyph">📋</span> Tin tuyển dụng</a>
+          <a href="#"><span class="glyph">💳</span> Ví Credit</a>
+          <a href="#"><span class="glyph">🔍</span> Tìm ứng viên</a>
+          <a href="#"><span class="glyph">✉</span> Tin nhắn</a>
+        </nav>
+        <div class="dash-main">
+          <div class="dash-head">
+            <h3>Chào Bệnh viện Đa khoa Tâm Anh</h3>
+            <a class="btn btn-primary" href="#">+ Đăng tin mới</a>
+          </div>
+
+          <div class="kpi-row">
+            <div class="kpi-tile"><div class="label">Tin đang published</div><div class="value">6</div></div>
+            <div class="kpi-tile"><div class="label">Ứng tuyển mới</div><div class="value accent">12</div><div class="delta">+4 hôm nay</div></div>
+            <div class="kpi-tile"><div class="label">Chờ thanh toán</div><div class="value">1</div></div>
+            <div class="kpi-tile"><div class="label">Số dư Credit</div><div class="value">428</div></div>
+          </div>
+
+          <div class="two-col">
+            <div>
+              <h3 class="block-title" style="margin:0 0 10px;">Tin tuyển dụng gần đây</h3>
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead><tr><th>Tin</th><th>Trạng thái</th><th>Ứng tuyển</th></tr></thead>
+                  <tbody>
+                    <tr><td>Điều dưỡng ICU — Ca đêm</td><td><span class="badge verified"><span class="dot"></span>Published</span></td><td>12</td></tr>
+                    <tr><td>Dược sĩ lâm sàng</td><td><span class="badge pending"><span class="dot"></span>Chờ duyệt</span></td><td>—</td></tr>
+                    <tr><td>KTV Xét nghiệm</td><td><span class="badge pending"><span class="dot"></span>Chờ thanh toán</span></td><td>—</td></tr>
+                    <tr><td>Điều dưỡng nội khoa</td><td><span class="badge neutral"><span class="dot"></span>Hết hạn</span></td><td>28</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div>
+              <h3 class="block-title" style="margin:0 0 10px;">Cần xử lý</h3>
+              <div class="queue-list">
+                <div class="queue-item"><div class="left"><span class="ico">📄</span><div><div class="name">Ứng viên mới cần xem</div><div class="sub">Điều dưỡng ICU — Ca đêm</div></div></div><span class="count">4</span></div>
+                <div class="queue-item"><div class="left"><span class="ico">💬</span><div><div class="name">Tin nhắn chưa đọc</div><div class="sub">2 cuộc trò chuyện</div></div></div><span class="count">2</span></div>
+                <div class="queue-item"><div class="left"><span class="ico">💳</span><div><div class="name">Chuyển khoản chờ đối soát</div><div class="sub">Mã PAY-7F3K2Q</div></div></div><span class="count">1</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callouts">
+      <div class="callout"><span class="k">KPI "Chờ thanh toán"</span><span class="v">Phản ánh đúng trạng thái <code>pending_payment</code> tách riêng khỏi <code>pending</code> sau rà soát — không gộp lẫn.</span></div>
+      <div class="callout"><span class="k">bảng tin + trạng thái</span><span class="v">6 trạng thái <code>jobs.status</code> đều có mặt (published/pending/pending_payment/expired) — dashboard không giấu trạng thái nào.</span></div>
+      <div class="callout"><span class="k">"Cần xử lý"</span><span class="v">Gộp việc cần hành động (ứng viên mới, tin nhắn, đối soát) thay vì chỉ số liệu thụ động — đúng vai trò site Admin là công cụ làm việc của NTD.</span></div>
+    </div>
+  </section>
+
+  <!-- ============ 03 VẬN HÀNH ============ -->
+  <section class="screen" id="screen-ops">
+    <div class="screen-head">
+      <div>
+        <span class="idx">03 · Vận hành</span>
+        <h2 class="screen-title">Dashboard tổng quan (đội nội bộ nền tảng)</h2>
+        <p class="screen-desc">Trọng tâm: hàng đợi cần duyệt — đây là công việc chính của Vận hành, không phải xem báo cáo. Số liệu tổng quan chỉ là ngữ cảnh phụ.</p>
+      </div>
+      <span class="tag">docs/nghiep-vu/LUONG-NGHIEP-VU-MAN-HINH.md — mục 2.4</span>
+    </div>
+
+    <div class="frame">
+      <div class="frame-bar">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span class="frame-url">van-hanh.blousehiding.vn/vi/dashboard</span>
+      </div>
+      <div class="app-shell">
+        <nav class="side-nav">
+          <div class="brand"><span class="dot-seal">●</span> BlouseHiding</div>
+          <a href="#" class="active"><span class="glyph">▢</span> Dashboard</a>
+          <a href="#"><span class="glyph">🩺</span> Duyệt CCHN <span class="badge-count">7</span></a>
+          <a href="#"><span class="glyph">🏥</span> Duyệt doanh nghiệp <span class="badge-count">2</span></a>
+          <a href="#"><span class="glyph">📋</span> Duyệt tin <span class="badge-count">5</span></a>
+          <a href="#"><span class="glyph">💳</span> Đối soát thanh toán <span class="badge-count">3</span></a>
+          <a href="#"><span class="glyph">⚠</span> Báo cáo vi phạm <span class="badge-count">1</span></a>
+          <a href="#"><span class="glyph">⚙</span> Danh mục &amp; người dùng</a>
+        </nav>
+        <div class="dash-main">
+          <div class="dash-head"><h3>Tổng quan hệ thống</h3><span class="tag">Cập nhật 2 phút trước</span></div>
+
+          <div class="kpi-row">
+            <div class="kpi-tile"><div class="label">Người dùng hoạt động</div><div class="value">4.812</div></div>
+            <div class="kpi-tile"><div class="label">Tin đang published</div><div class="value">356</div></div>
+            <div class="kpi-tile"><div class="label">Doanh thu tháng</div><div class="value">128tr</div></div>
+            <div class="kpi-tile"><div class="label">Việc cần xử lý</div><div class="value accent">18</div></div>
+          </div>
+
+          <h3 class="block-title" style="margin:0 0 10px;">Hàng đợi cần duyệt</h3>
+          <div class="queue-list">
+            <div class="queue-item"><div class="left"><span class="ico">🩺</span><div><div class="name">Chứng chỉ hành nghề (CCHN)</div><div class="sub">Chờ đối chiếu ảnh &amp; số CCHN</div></div></div><span class="count">7</span></div>
+            <div class="queue-item"><div class="left"><span class="ico">🏥</span><div><div class="name">Hồ sơ doanh nghiệp</div><div class="sub">Chờ xác minh giấy phép hoạt động</div></div></div><span class="count">2</span></div>
+            <div class="queue-item"><div class="left"><span class="ico">📋</span><div><div class="name">Tin tuyển dụng</div><div class="sub">Chờ duyệt nội dung trước khi publish</div></div></div><span class="count">5</span></div>
+            <div class="queue-item"><div class="left"><span class="ico">💳</span><div><div class="name">Đối soát thanh toán thủ công</div><div class="sub">Khớp mã tham chiếu với sao kê ngân hàng</div></div></div><span class="count">3</span></div>
+            <div class="queue-item"><div class="left"><span class="ico">⚠</span><div><div class="name">Báo cáo vi phạm</div><div class="sub">1 tin bị báo cáo nội dung sai lệch</div></div></div><span class="count">1</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callouts">
+      <div class="callout"><span class="k">badge-count trên sidebar</span><span class="v">Số đếm hàng đợi hiện ngay ở menu — Vận hành biết việc cần làm mà không cần vào từng trang.</span></div>
+      <div class="callout"><span class="k">"Đối soát thanh toán" tách riêng</span><span class="v">Không gộp vào "Duyệt tin" — đúng thiết kế <code>pending_payment</code> ≠ <code>pending</code> đã chốt sau rà soát luồng.</span></div>
+      <div class="callout"><span class="k">Không có nút "Đăng tin"</span><span class="v">Vận hành không tự đăng tin thay NTD — tránh lặp lại nhầm lẫn "Admin = trang nội bộ" đã sửa ở ADR-0005.</span></div>
+    </div>
+  </section>
+
+  <div class="refnote">
+    Đối chiếu: <a href="../../nghiep-vu/LUONG-NGHIEP-VU-MAN-HINH.md">LUONG-NGHIEP-VU-MAN-HINH.md</a> ·
+    <a href="../../kien-truc/THUAT-NGU.md">THUAT-NGU.md</a> (quy ước 3 khu vực site) ·
+    Token thiết kế: <a href="style-guide.html">style-guide.html</a> ·
+    Wireframe trước: <a href="man-hinh-cot-loi.html">man-hinh-cot-loi.html</a>
+  </div>
+
+</div>

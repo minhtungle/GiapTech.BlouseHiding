@@ -47,6 +47,7 @@ trình thủ công). Xem trạng thái đầy đủ + việc còn cần chốt �
 - [Công nghệ Frontend](docs/frontend/CONG-NGHE-FRONTEND.md) — thư viện cụ thể
 - [Định hướng thiết kế giao diện](docs/frontend/THIET-KE-GIAO-DIEN.md) — phong cách, quyết định dùng mã nguồn mở ở đâu
 - [Wireframe màn hình cốt lõi](docs/frontend/wireframes/man-hinh-cot-loi.html) (mở bằng trình duyệt)
+- [Trang chủ 3 vai trò](docs/frontend/wireframes/trang-chu-3-vai-tro.html) — Client/Admin/Vận hành đối chiếu (mở bằng trình duyệt)
 - [Style Guide trực quan](docs/frontend/wireframes/style-guide.html) (mở bằng trình duyệt)
 
 ### Hạ tầng triển khai
