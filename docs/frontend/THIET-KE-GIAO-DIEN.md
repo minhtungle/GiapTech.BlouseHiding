@@ -6,11 +6,17 @@
 
 ---
 
-## 1. Phong cách thiết kế: "Tin cậy lâm sàng" (Clinical Trust), không phải "SaaS chung chung"
+## 1. Phong cách thiết kế: "Tin cậy lâm sàng" cho Client, chuẩn shadcn/ui trung tính cho Admin/Vận hành
 
-**Vấn đề cần tránh:** đa số nền tảng tuyển dụng na ná nhau (xanh dương corporate như TopCV, hoặc
-màu mè trẻ trung như Ybox). Với ngành y, **niềm tin là tính năng số 1** — giao diện phải truyền tải
-được điều đó trước khi người dùng đọc một chữ nào.
+> ⚠️ Đã điều chỉnh (xem [ADR-0007](../kien-truc/adr/0007-shadcn-chuan-cho-admin-van-hanh.md)): bản sắc
+> "Tin cậy lâm sàng" đầy đủ ở mục này **chỉ áp dụng cho khu vực Client** (trang công khai + ứng viên).
+> **Admin (NTD) và Vận hành** dùng giao diện dashboard **chuẩn shadcn/ui trung tính** — xem mục 3.2.
+> Lý do: Client là bề mặt tiếp thị/khám phá việc làm (bản sắc quan trọng), còn Admin/Vận hành là công
+> cụ làm việc lặp lại nhiều lần/ngày (quen thuộc & tốc độ thao tác quan trọng hơn bản sắc).
+
+**Vấn đề cần tránh (khu vực Client):** đa số nền tảng tuyển dụng na ná nhau (xanh dương corporate như
+TopCV, hoặc màu mè trẻ trung như Ybox). Với ngành y, **niềm tin là tính năng số 1** — giao diện phải
+truyền tải được điều đó trước khi người dùng đọc một chữ nào.
 
 **3 nguyên tắc chỉ đạo:**
 
@@ -47,9 +53,13 @@ bảo vệ dữ liệu cá nhân đã nêu ở phương án thực hiện.
 
 ---
 
-## 3. Có dùng thẳng mã nguồn mở không? — Có, nhưng phân biệt rõ 2 khu vực
+## 3. Có dùng thẳng mã nguồn mở không? — Có, nhưng phân biệt rõ 2 nhóm khu vực
 
-### 3.1 Khu vực Client & Admin — nghiệp vụ chính (Candidate / Employer-facing)
+> ⚠️ Phân nhóm đã cập nhật theo [ADR-0007](../kien-truc/adr/0007-shadcn-chuan-cho-admin-van-hanh.md):
+> **Client** dùng bản sắc branded đầy đủ; **Admin (NTD) + Vận hành** dùng chuẩn shadcn/ui trung tính
+> — không còn nhóm Admin chung với Client như quyết định ban đầu.
+
+### 3.1 Khu vực Client — trang công khai + ứng viên (bề mặt tiếp thị/khám phá việc làm)
 → **Không lấy nguyên theme/template có sẵn.** Một template tải về (kiểu ThemeForest hay một Next.js
 SaaS starter) sẽ khiến trang trông giống hàng loạt sản phẩm khác, phá vỡ đúng thứ đang cố xây (niềm
 tin qua bản sắc riêng). Thay vào đó:
@@ -58,23 +68,34 @@ tin qua bản sắc riêng). Thay vào đó:
   không phải package đóng gói cài qua npm rồi bị khóa theo phiên bản của người khác. Nền tảng bên dưới
   (Radix UI primitives) đã được kiểm chứng về accessibility (focus trap, ARIA, keyboard nav) — thứ khó
   và tốn thời gian nhất nếu tự viết từ đầu — trong khi phần giao diện (màu/bo góc/khoảng cách) hoàn
-  toàn tùy biến theo token ở mục 5, không bị ép theo "trông giống shadcn mặc định".
+  toàn tùy biến theo token ở mục 5 (bản sắc "Tin cậy lâm sàng"), không bị ép theo "trông giống shadcn
+  mặc định".
 
-### 3.2 Khu vực Vận hành — đội nội bộ nền tảng (Admin/Moderator role, xem `../kien-truc/THUAT-NGU.md`)
-> ⚠️ Quyết định cuối (xem [ADR-0004](../kien-truc/adr/0004-tech-stack-net-nextjs.md)): **cùng 1
-> codebase Next.js** (route group riêng), **không** chạy shadcn-admin như 1 app tách biệt — chỉ tham
-> khảo bố cục rồi tự dựng lại bằng component đã chọn ở mục 4, để giữ 1 domain/1 bộ thiết kế nhất quán.
+### 3.2 Khu vực Admin (NTD) + Vận hành — công cụ làm việc nội bộ, dùng lặp lại nhiều lần/ngày
+> ⚠️ Quyết định cuối (xem [ADR-0004](../kien-truc/adr/0004-tech-stack-net-nextjs.md),
+> [ADR-0007](../kien-truc/adr/0007-shadcn-chuan-cho-admin-van-hanh.md)): **cùng 1 codebase Next.js**
+> (route group riêng cho mỗi khu vực), **không** chạy shadcn-admin như 1 app tách biệt — chỉ tham khảo
+> quy ước hình ảnh/bố cục (sidebar, bảng, card KPI) của shadcn/ui rồi dựng bằng đúng component đã chọn
+> ở mục 4, để giữ 1 codebase — nhưng **được phép** khác "ngôn ngữ hình ảnh" so với Client.
 
-Lý do cân nhắc ban đầu để tham khảo **shadcn-admin** (dự án cộng đồng, MIT, xây sẵn trên đúng
-shadcn/ui + Tailwind) thay vì tự vẽ layout từ đầu:
-- Rất ít người dùng (chỉ nội bộ đội Vận hành), không cần đầu tư thiết kế riêng như khu vực đối ngoại.
-- Ưu tiên tốc độ ra màn hình — tham khảo bố cục (sidebar, bảng, filter) từ shadcn-admin rút ngắn thời
-  gian dựng UI, nhưng vẫn build lại bằng component/token đã chọn để không phải học/duy trì 2 hệ UI.
+Cả **Admin** và **Vận hành** giờ dùng chung 1 kiểu: giao diện dashboard **chuẩn shadcn/ui, trung
+tính** — không dùng serif tiêu đề, không mảng màu trang trí rộng, sidebar/card/bảng theo đúng convention
+mặc định của shadcn (nền trắng/xám nhạt, viền hairline, active state là pill xám nhạt chứ không phải
+viền màu thương hiệu). Lý do:
+- Đây là công cụ NTD/Vận hành mở ra hàng chục lần mỗi ngày để xử lý công việc (đăng tin, ATS, duyệt
+  hồ sơ) — quen thuộc và tốc độ thao tác quan trọng hơn gây ấn tượng thương hiệu.
+- Tận dụng đúng pattern có sẵn của **shadcn-admin** (dự án cộng đồng, MIT, xây sẵn trên shadcn/ui +
+  Tailwind) để đi nhanh hơn, ít phải tùy biến layout.
+
+**Không bỏ hoàn toàn màu thương hiệu** — `accent-seal`/`accent-jade`/`amber-pending` vẫn giữ nguyên
+cho 2 việc duy nhất: **badge trạng thái** (verified/pending/rejected — ý nghĩa xuyên suốt cả 3 khu
+vực, không đổi theo từng nơi) và **nút CTA chính duy nhất mỗi màn hình** (vd "+ Đăng tin mới"). Đây là
+điểm nhấn màu duy nhất được phép, còn lại khung/chrome xung quanh giữ trung tính hoàn toàn.
 
 **Tóm lại — trả lời thẳng câu hỏi:** dùng mã nguồn mở ở tầng **nền tảng/hạ tầng component** (shadcn/ui,
-Radix, icon, font) chứ không dùng ở tầng **giao diện cuối cùng** cho bất kỳ khu vực nào, kể cả Vận
-hành — khác biệt duy nhất ở khu vực Vận hành là được phép **tham khảo bố cục** admin dashboard có sẵn
-để đi nhanh hơn.
+Radix, icon, font) cho cả 3 khu vực; **Client** tùy biến theo bản sắc riêng, **Admin/Vận hành** bám sát
+quy ước hình ảnh mặc định của shadcn/ui — khác nhau ở mức độ tùy biến, không phải khác nhau ở việc có
+dùng shadcn/ui hay không.
 
 ---
 
@@ -85,12 +106,12 @@ hành — khác biệt duy nhất ở khu vực Vận hành là được phép *
 | Component nền + theming | **shadcn/ui** (Radix + Tailwind) | Copy-code, tùy biến 100%, theming bằng CSS variable — khớp thẳng với token ở mục 5 |
 | Icon | **Lucide** | Đi kèm mặc định với shadcn/ui, nét vẽ nhất quán, mã nguồn mở, đủ icon y tế cơ bản (stethoscope, syringe, hospital...) |
 | Minh họa (empty state, onboarding) | **unDraw** | Mã nguồn mở, **tự đổi màu SVG theo bảng màu riêng** (khác hẳn ảnh stock chung chung) |
-| Bố cục tham khảo trang Vận hành | **shadcn-admin** (chỉ tham khảo, không cài làm dependency) | Xây trên shadcn/ui — bố cục sidebar/bảng quen thuộc, tự dựng lại bằng component đã chọn |
+| Bố cục tham khảo trang Admin + Vận hành | **shadcn-admin** (chỉ tham khảo, không cài làm dependency) | Xây trên shadcn/ui — bố cục sidebar/bảng/KPI card quen thuộc, tự dựng lại bằng component đã chọn (xem [ADR-0007](../kien-truc/adr/0007-shadcn-chuan-cho-admin-van-hanh.md)) |
 | Kanban kéo-thả (ATS) | **dnd-kit** | Nhẹ, accessible, đã chọn ở tech stack |
 | Rich text (mô tả tin, bài viết) | **Tiptap** | Headless, style theo token riêng, không mang theo CSS mặc định xấu |
 | Biểu đồ dashboard | **Tremor** (dựng trên Recharts) | Component biểu đồ + KPI card sẵn, phối màu theo CSS variable — khớp nhanh với theme |
 | Form | **React Hook Form + Zod** | Đã chọn ở tech stack — validate đồng nhất với backend |
-| Bảng dữ liệu (danh sách ứng viên, tin, người dùng ở trang Vận hành) | **TanStack Table** (headless) | Không mang UI mặc định, tự style theo shadcn/ui table component |
+| Bảng dữ liệu (danh sách ứng viên, tin, người dùng ở trang Admin/Vận hành) | **TanStack Table** (headless) | Không mang UI mặc định, tự style theo shadcn/ui table component |
 
 ---
 

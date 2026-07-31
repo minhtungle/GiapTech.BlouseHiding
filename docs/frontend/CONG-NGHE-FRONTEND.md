@@ -5,10 +5,13 @@
 > Wireframe/style guide trực quan: [`wireframes/`](./wireframes/).
 
 **3 khu vực site, 1 codebase** (xem quy ước tên ở [`../kien-truc/THUAT-NGU.md`](../kien-truc/THUAT-NGU.md)):
-`app/(client)/...` (ứng viên/khách), `app/(admin)/...` (Nhà tuyển dụng), `app/(ops)/...` (đội Vận hành
-nội bộ). **Không** tách app riêng cho `(ops)` chạy thẳng shadcn-admin — chỉ tham khảo bố cục từ đó rồi
-tự viết lại bằng chính component đã chọn dưới đây, để giữ 1 domain – 1 container – 1 bộ thiết kế
-(xem [ADR-0004](../kien-truc/adr/0004-tech-stack-net-nextjs.md), [ADR-0005](../kien-truc/adr/0005-dat-ten-3-khu-vuc-site.md)).
+`app/(client)/...` (ứng viên/khách — bản sắc "Tin cậy lâm sàng" đầy đủ), `app/(admin)/...` (Nhà tuyển
+dụng) và `app/(ops)/...` (đội Vận hành nội bộ) — **2 khu vực sau dùng chung giao diện dashboard chuẩn
+shadcn/ui trung tính**, khác "ngôn ngữ hình ảnh" so với `(client)` (xem
+[ADR-0007](../kien-truc/adr/0007-shadcn-chuan-cho-admin-van-hanh.md)). **Không** tách app riêng cho
+`(admin)`/`(ops)` chạy thẳng shadcn-admin — chỉ tham khảo bố cục từ đó rồi tự viết lại bằng chính
+component đã chọn dưới đây, để giữ 1 domain – 1 container (xem
+[ADR-0004](../kien-truc/adr/0004-tech-stack-net-nextjs.md), [ADR-0005](../kien-truc/adr/0005-dat-ten-3-khu-vuc-site.md)).
 
 ---
 

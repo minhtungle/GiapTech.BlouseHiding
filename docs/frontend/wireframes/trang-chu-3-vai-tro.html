@@ -148,25 +148,29 @@
   .org-chip .logo{ width:24px; height:24px; border-radius:50%; background: var(--accent-jade); color:#fff; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; }
   .org-chip .name{ font-size:12.5px; }
 
-  /* ============ ADMIN / OPS: app shell + side nav ============ */
-  .app-shell{ display:grid; grid-template-columns: 208px 1fr; min-height: 480px; }
-  .side-nav{ background: var(--paper-sunken); border-right:1px solid var(--line); padding:20px 0; }
-  .side-nav .brand{ padding:0 20px 16px; }
-  .side-nav a{ display:flex; align-items:center; gap:10px; padding:9px 20px; font-size:13px; color: var(--ink-muted); text-decoration:none; border-left:2px solid transparent; }
-  .side-nav a.active{ color: var(--ink); background: var(--paper-raised); border-left-color: var(--accent-seal); font-weight:600; }
-  .side-nav .glyph{ width:14px; text-align:center; font-size:11px; opacity:.75; }
-  .side-nav .badge-count{ margin-left:auto; font-family: var(--font-mono); font-size:10px; background: var(--amber-pending-soft); color: var(--amber-pending); border-radius:999px; padding:1px 6px; }
+  /* ============ ADMIN / OPS: shadcn/ui chuẩn, trung tính (ADR-0007) ============ */
+  .app-shell{ display:grid; grid-template-columns: 216px 1fr; min-height: 480px; background: var(--paper-raised); }
+  .side-nav{ background: var(--paper-raised); border-right:1px solid var(--line); padding:16px 12px; }
+  .side-nav .brand{ padding:4px 8px 16px; font-family: var(--font-body); font-weight:600; font-size:14px; letter-spacing:-.01em; }
+  .side-nav .brand .dot-seal{ font-size:10px; }
+  .side-nav a{ display:flex; align-items:center; gap:9px; padding:7px 10px; font-size:13px; color: var(--ink-muted); text-decoration:none; border-radius:7px; margin-bottom:1px; }
+  .side-nav a:hover{ background: var(--paper-sunken); color: var(--ink); }
+  .side-nav a.active{ color: var(--ink); background: var(--paper-sunken); font-weight:600; }
+  .side-nav .glyph{ width:15px; text-align:center; font-size:12px; opacity:.7; }
+  .side-nav .badge-count{ margin-left:auto; font-family: var(--font-mono); font-size:10px; background: var(--paper-sunken); color: var(--ink-muted); border:1px solid var(--line); border-radius:999px; padding:1px 6px; }
+  .side-nav a.active .badge-count{ background: var(--paper-raised); border-color: var(--line-strong); }
 
-  .dash-main{ padding:26px 30px 34px; }
-  .dash-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; flex-wrap:wrap; gap:12px; }
-  .dash-head h3{ font-family: var(--font-display); font-size:19px; margin:0; font-weight:400; }
+  .dash-main{ padding:22px 28px 32px; }
+  .crumb{ font-family: var(--font-mono); font-size:11.5px; color: var(--ink-faint); margin-bottom:6px; }
+  .dash-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+  .dash-head h3{ font-family: var(--font-body); font-size:17px; margin:0; font-weight:600; letter-spacing:-.01em; }
 
-  .kpi-row{ display:grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap:12px; margin-bottom:26px; }
-  .kpi-tile{ background: var(--paper-raised); border:1px solid var(--line); border-radius:10px; padding:16px; }
-  .kpi-tile .label{ font-size:11.5px; color: var(--ink-muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:8px; }
-  .kpi-tile .value{ font-family: var(--font-mono); font-size:24px; font-variant-numeric: tabular-nums; }
-  .kpi-tile .value.accent{ color: var(--accent-seal); }
-  .kpi-tile .delta{ font-size:11.5px; color: var(--accent-jade); margin-top:4px; }
+  .kpi-row{ display:grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap:12px; margin-bottom:24px; }
+  .kpi-tile{ background: var(--paper-raised); border:1px solid var(--line); border-radius:8px; padding:14px 16px; }
+  .kpi-tile .label{ font-size:11.5px; color: var(--ink-muted); margin-bottom:8px; }
+  .kpi-tile .value{ font-family: var(--font-mono); font-size:22px; font-weight:600; font-variant-numeric: tabular-nums; color: var(--ink); }
+  .kpi-tile .delta{ font-size:11.5px; color: var(--ink-muted); margin-top:4px; }
+  .kpi-tile .delta.up::before{ content:"↑ "; color: var(--accent-jade); }
 
   table.data-table{ width:100%; border-collapse:collapse; font-size:13px; }
   table.data-table th{ text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color: var(--ink-faint); padding:8px 10px; border-bottom:1px solid var(--line); }
@@ -332,14 +336,15 @@
           <a href="#"><span class="glyph">✉</span> Tin nhắn</a>
         </nav>
         <div class="dash-main">
+          <div class="crumb">Dashboard</div>
           <div class="dash-head">
-            <h3>Chào Bệnh viện Đa khoa Tâm Anh</h3>
+            <h3>Bệnh viện Đa khoa Tâm Anh</h3>
             <a class="btn btn-primary" href="#">+ Đăng tin mới</a>
           </div>
 
           <div class="kpi-row">
             <div class="kpi-tile"><div class="label">Tin đang published</div><div class="value">6</div></div>
-            <div class="kpi-tile"><div class="label">Ứng tuyển mới</div><div class="value accent">12</div><div class="delta">+4 hôm nay</div></div>
+            <div class="kpi-tile"><div class="label">Ứng tuyển mới</div><div class="value">12</div><div class="delta up">4 hôm nay</div></div>
             <div class="kpi-tile"><div class="label">Chờ thanh toán</div><div class="value">1</div></div>
             <div class="kpi-tile"><div class="label">Số dư Credit</div><div class="value">428</div></div>
           </div>
@@ -373,8 +378,8 @@
     </div>
 
     <div class="callouts">
+      <div class="callout"><span class="k">Giao diện trung tính</span><span class="v">Không serif, không mảng màu rộng — chỉ nút "+ Đăng tin mới" giữ accent-seal làm CTA duy nhất. Xem <code>ADR-0007</code>.</span></div>
       <div class="callout"><span class="k">KPI "Chờ thanh toán"</span><span class="v">Phản ánh đúng trạng thái <code>pending_payment</code> tách riêng khỏi <code>pending</code> sau rà soát — không gộp lẫn.</span></div>
-      <div class="callout"><span class="k">bảng tin + trạng thái</span><span class="v">6 trạng thái <code>jobs.status</code> đều có mặt (published/pending/pending_payment/expired) — dashboard không giấu trạng thái nào.</span></div>
       <div class="callout"><span class="k">"Cần xử lý"</span><span class="v">Gộp việc cần hành động (ứng viên mới, tin nhắn, đối soát) thay vì chỉ số liệu thụ động — đúng vai trò site Admin là công cụ làm việc của NTD.</span></div>
     </div>
   </section>
@@ -407,13 +412,14 @@
           <a href="#"><span class="glyph">⚙</span> Danh mục &amp; người dùng</a>
         </nav>
         <div class="dash-main">
+          <div class="crumb">Dashboard</div>
           <div class="dash-head"><h3>Tổng quan hệ thống</h3><span class="tag">Cập nhật 2 phút trước</span></div>
 
           <div class="kpi-row">
             <div class="kpi-tile"><div class="label">Người dùng hoạt động</div><div class="value">4.812</div></div>
             <div class="kpi-tile"><div class="label">Tin đang published</div><div class="value">356</div></div>
             <div class="kpi-tile"><div class="label">Doanh thu tháng</div><div class="value">128tr</div></div>
-            <div class="kpi-tile"><div class="label">Việc cần xử lý</div><div class="value accent">18</div></div>
+            <div class="kpi-tile"><div class="label">Việc cần xử lý</div><div class="value">18</div></div>
           </div>
 
           <h3 class="block-title" style="margin:0 0 10px;">Hàng đợi cần duyệt</h3>

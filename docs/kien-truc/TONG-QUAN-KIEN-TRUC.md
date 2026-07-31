@@ -129,6 +129,7 @@ tránh tình trạng "sao lại chọn cái này" phải hỏi lại khi bàn gi
 | [0004](./adr/0004-tech-stack-net-nextjs.md) | Chọn .NET (backend) + Next.js/shadcn-ui (frontend) thay vì Node.js full-stack |
 | [0005](./adr/0005-dat-ten-3-khu-vuc-site.md) | Đặt tên 3 khu vực site: Client / Admin (NTD) / Vận hành (nội bộ) |
 | [0006](./adr/0006-da-ngon-ngu.md) | Đa ngôn ngữ: 6 ngôn ngữ (vi/en/ja/zh/ko/es), dịch qua bảng translation + routing tiền tố URL |
+| [0007](./adr/0007-shadcn-chuan-cho-admin-van-hanh.md) | Admin (NTD) chuyển sang giao diện chuẩn shadcn/ui trung tính, cùng nhóm Vận hành |
 
 ---
 
@@ -149,12 +150,16 @@ tránh tình trạng "sao lại chọn cái này" phải hỏi lại khi bàn gi
    ngữ trên giao diện. Chỉ dịch giao diện + danh mục chuẩn (qua bảng `*_translations`, không phải cột
    song song), **không** dịch nội dung tự viết (mô tả tin, tiểu sử ứng viên). Xem
    [ADR-0006](./adr/0006-da-ngon-ngu.md).
+8. Phong cách giao diện theo khu vực: **Client** bản sắc "Tin cậy lâm sàng" đầy đủ; **Admin (NTD) +
+   Vận hành** dùng chung giao diện dashboard **chuẩn shadcn/ui trung tính** (không serif, không mảng
+   màu trang trí rộng), chỉ giữ màu thương hiệu cho badge trạng thái + 1 nút CTA chính mỗi màn hình.
+   Xem [ADR-0007](./adr/0007-shadcn-chuan-cho-admin-van-hanh.md).
 
 **Còn cần chốt (không chặn tiến độ):**
-8. Nhà cung cấp VPS cụ thể (VN hay quốc tế) — xem `../ha-tang/HA-TANG-TRIEN-KHAI.md` mục so sánh.
-9. Phạm vi chính xác của "CV Scoring" ở MVP — quy tắc tính điểm tự động hay chỉ gắn nhãn thủ công trước?
-10. Cổng thanh toán tự động cụ thể khi cần triển khai thật.
-11. OpenSearch vs Elasticsearch ở Giai đoạn 2 — đã nghiêng OpenSearch.
+9. Nhà cung cấp VPS cụ thể (VN hay quốc tế) — xem `../ha-tang/HA-TANG-TRIEN-KHAI.md` mục so sánh.
+10. Phạm vi chính xác của "CV Scoring" ở MVP — quy tắc tính điểm tự động hay chỉ gắn nhãn thủ công trước?
+11. Cổng thanh toán tự động cụ thể khi cần triển khai thật.
+12. OpenSearch vs Elasticsearch ở Giai đoạn 2 — đã nghiêng OpenSearch.
 
 > Đủ điều kiện khởi tạo solution theo Clean Architecture (Giai đoạn 0 của roadmap) — các mục còn lại
 > không chặn tiến độ, có thể chốt song song trong lúc phát triển Giai đoạn 0–1.
