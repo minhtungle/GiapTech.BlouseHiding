@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { ComingSoon } from '@/components/coming-soon'
+import { OpsCatalog } from '@/features/ops-catalog'
 
 export const Route = createFileRoute('/_authenticated/ops/catalog')({
-  component: ComingSoon,
+  component: OpsCatalog,
 })

@@ -1,26 +1,52 @@
+import { useState } from 'react'
+import {
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import { toast } from 'sonner'
 import {
   APPLICATION_STAGES,
   APPLICATION_STAGE_LABEL,
   MOCK_APPLICATIONS,
   type ApplicationStage,
 } from '@/lib/mock-data'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
+import { KanbanCard } from './kanban-card'
+import { KanbanColumn } from './kanban-column'
 
 export function Applications() {
+  const [applications, setApplications] = useState(MOCK_APPLICATIONS)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } })
+  )
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over) return
+
+    const targetStage = over.id as ApplicationStage
+    const application = applications.find((a) => a.id === active.id)
+    if (!application || application.stage === targetStage) return
+
+    setApplications((prev) =>
+      prev.map((a) =>
+        a.id === active.id ? { ...a, stage: targetStage } : a
+      )
+    )
+    toast.success(
+      `${application.candidateName} → ${APPLICATION_STAGE_LABEL[targetStage]}`
+    )
+  }
+
   return (
     <>
       <Header>
@@ -41,63 +67,24 @@ export function Applications() {
             ATS — Ứng viên
           </h1>
           <p className='mt-1 text-sm text-muted-foreground'>
-            Chuyển giai đoạn bằng bộ chọn trên từng thẻ — kéo-thả (dnd-kit) sẽ
-            bổ sung khi nối API thật.
+            Kéo thẻ (biểu tượng ⋮⋮) sang cột khác để chuyển giai đoạn.
           </p>
         </div>
 
-        <div className='flex gap-4 overflow-x-auto pb-4'>
-          {APPLICATION_STAGES.map((stage) => {
-            const items = MOCK_APPLICATIONS.filter((a) => a.stage === stage)
-            return (
-              <div key={stage} className='w-72 shrink-0'>
-                <div className='mb-2 flex items-center justify-between px-1'>
-                  <h2 className='text-sm font-semibold'>
-                    {APPLICATION_STAGE_LABEL[stage]}
-                  </h2>
-                  <Badge variant='secondary'>{items.length}</Badge>
-                </div>
-                <div className='space-y-2'>
+        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+          <div className='flex gap-4 overflow-x-auto pb-4'>
+            {APPLICATION_STAGES.map((stage) => {
+              const items = applications.filter((a) => a.stage === stage)
+              return (
+                <KanbanColumn key={stage} stage={stage} count={items.length}>
                   {items.map((app) => (
-                    <Card key={app.id}>
-                      <CardHeader className='pb-2'>
-                        <p className='text-sm font-medium'>
-                          {app.candidateName}
-                        </p>
-                        <p className='text-xs text-muted-foreground'>
-                          {app.specialty} · {app.yearsOfExperience} năm KN
-                        </p>
-                      </CardHeader>
-                      <CardContent className='pb-3'>
-                        <Select defaultValue={app.stage}>
-                          <SelectTrigger size='sm' className='w-full'>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {(
-                              Object.keys(
-                                APPLICATION_STAGE_LABEL
-                              ) as ApplicationStage[]
-                            ).map((s) => (
-                              <SelectItem key={s} value={s}>
-                                {APPLICATION_STAGE_LABEL[s]}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </CardContent>
-                    </Card>
+                    <KanbanCard key={app.id} application={app} />
                   ))}
-                  {items.length === 0 && (
-                    <div className='rounded-md border border-dashed p-4 text-center text-xs text-muted-foreground'>
-                      Chưa có ứng viên
-                    </div>
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
+                </KanbanColumn>
+              )
+            })}
+          </div>
+        </DndContext>
       </Main>
     </>
   )

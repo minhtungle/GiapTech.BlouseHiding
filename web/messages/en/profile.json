@@ -29,5 +29,18 @@
   "privacy": "Privacy",
   "deleteAccount": "Delete account",
   "deleteAccountWarning": "Your account will be anonymized per Decree 13/2023 and cannot be undone.",
-  "navLabel": "Profile & License"
+  "navLabel": "Profile & License",
+  "cvBuilderTitle": "Build CV",
+  "cvPreview": "Preview",
+  "education": "Education",
+  "experience": "Work experience",
+  "skills": "Skills",
+  "addEntry": "Add entry",
+  "exportPdf": "Export PDF (coming soon)",
+  "school": "School / Institution",
+  "degree": "Degree / Major",
+  "employer": "Employer",
+  "role": "Role",
+  "period": "Period",
+  "save": "Save CV"
 }

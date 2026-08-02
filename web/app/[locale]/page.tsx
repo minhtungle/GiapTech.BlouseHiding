@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { ShieldCheck, Stethoscope, MapPin, Search } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
@@ -54,45 +55,47 @@ export default async function HomePage() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {MOCK_JOBS.map((job) => (
-              <Card key={job.id} className="transition-shadow hover:shadow-md">
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-base leading-snug">
-                      {job.title}
-                    </CardTitle>
-                    {job.requiresLicense && (
-                      <Badge
-                        variant="outline"
-                        className="shrink-0 gap-1 border-accent-jade/40 text-accent-jade"
-                      >
-                        <ShieldCheck className="size-3" />
-                        CCHN
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-sm text-ink-muted">
-                    {job.organizationName}
-                  </p>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-2 text-sm text-ink-muted">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Stethoscope className="size-3.5" />
-                    {job.specialty}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <MapPin className="size-3.5" />
-                    {job.location} · {job.employmentType}
-                  </span>
-                  <div className="mt-1 flex items-center justify-between">
-                    <span className="font-medium text-ink">
-                      {job.salaryLabel}
+              <Link key={job.id} href={`/jobs/${job.id}`}>
+                <Card className="h-full transition-shadow hover:shadow-md">
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-2">
+                      <CardTitle className="text-base leading-snug">
+                        {job.title}
+                      </CardTitle>
+                      {job.requiresLicense && (
+                        <Badge
+                          variant="outline"
+                          className="shrink-0 gap-1 border-accent-jade/40 text-accent-jade"
+                        >
+                          <ShieldCheck className="size-3" />
+                          CCHN
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-ink-muted">
+                      {job.organizationName}
+                    </p>
+                  </CardHeader>
+                  <CardContent className="flex flex-col gap-2 text-sm text-ink-muted">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Stethoscope className="size-3.5" />
+                      {job.specialty}
                     </span>
-                    <Button size="sm" variant="secondary">
-                      {tJobs("applyNow")}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                    <span className="inline-flex items-center gap-1.5">
+                      <MapPin className="size-3.5" />
+                      {job.location} · {job.employmentType}
+                    </span>
+                    <div className="mt-1 flex items-center justify-between">
+                      <span className="font-medium text-ink">
+                        {job.salaryLabel}
+                      </span>
+                      <span className="text-accent-jade">
+                        {tJobs("applyNow")} →
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
         </section>
@@ -104,23 +107,25 @@ export default async function HomePage() {
           </h2>
           <div className="grid gap-4 sm:grid-cols-3">
             {MOCK_ORGANIZATIONS.map((org) => (
-              <Card key={org.id}>
-                <CardHeader>
-                  <div className="flex items-center justify-between gap-2">
-                    <CardTitle className="text-base">{org.name}</CardTitle>
-                    {org.verified && (
-                      <Badge className="gap-1 bg-accent-jade text-white">
-                        <ShieldCheck className="size-3" />
-                        Đã xác thực
-                      </Badge>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent className="text-sm text-ink-muted">
-                  {org.type} · {org.location}
-                  <div className="mt-1">{org.activeJobs} tin đang tuyển</div>
-                </CardContent>
-              </Card>
+              <Link key={org.id} href={`/organizations/${org.id}`}>
+                <Card className="h-full transition-shadow hover:shadow-md">
+                  <CardHeader>
+                    <div className="flex items-center justify-between gap-2">
+                      <CardTitle className="text-base">{org.name}</CardTitle>
+                      {org.verified && (
+                        <Badge className="gap-1 bg-accent-jade text-white">
+                          <ShieldCheck className="size-3" />
+                          Đã xác thực
+                        </Badge>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="text-sm text-ink-muted">
+                    {org.type} · {org.location}
+                    <div className="mt-1">{org.activeJobs} tin đang tuyển</div>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
         </section>

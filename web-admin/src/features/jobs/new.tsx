@@ -1,6 +1,10 @@
 import { Link } from '@tanstack/react-router'
 import { ChevronLeft } from 'lucide-react'
-import { MOCK_SPECIALTIES, MOCK_LOCATIONS } from '@/lib/mock-data'
+import {
+  MOCK_SPECIALTIES,
+  MOCK_LOCATIONS,
+  MOCK_JOB_PACKAGES,
+} from '@/lib/mock-data'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -126,30 +130,25 @@ export function NewJob() {
               <CardTitle className='text-base'>Chọn gói đăng tin</CardTitle>
             </CardHeader>
             <CardContent className='space-y-3'>
-              {[
-                { name: 'Free', price: '0đ', note: 'Giới hạn hiển thị 7 ngày' },
-                { name: 'Eco', price: '490.000đ', note: '30 ngày, ưu tiên thấp' },
-                { name: 'Pro', price: '990.000đ', note: '30 ngày, ưu tiên cao' },
-                { name: 'Max', price: '1.990.000đ', note: '45 ngày, ghim đầu trang' },
-              ].map((pkg) => (
+              {MOCK_JOB_PACKAGES.map((pkg) => (
                 <label
-                  key={pkg.name}
+                  key={pkg.id}
                   className='flex cursor-pointer items-center justify-between rounded-md border p-3 text-sm has-[input:checked]:border-accent-jade has-[input:checked]:bg-accent-jade/5'
                 >
                   <span>
                     <input
                       type='radio'
                       name='package'
-                      value={pkg.name}
+                      value={pkg.id}
                       className='sr-only'
-                      defaultChecked={pkg.name === 'Pro'}
+                      defaultChecked={pkg.id === 'pkg-pro'}
                     />
                     <span className='font-medium'>{pkg.name}</span>
                     <span className='block text-xs text-muted-foreground'>
-                      {pkg.note}
+                      {pkg.durationDays} ngày · {pkg.note}
                     </span>
                   </span>
-                  <span className='font-medium'>{pkg.price}</span>
+                  <span className='font-medium'>{pkg.priceLabel}</span>
                 </label>
               ))}
 

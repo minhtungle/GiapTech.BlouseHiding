@@ -29,5 +29,18 @@
   "privacy": "Quyền riêng tư",
   "deleteAccount": "Xóa tài khoản",
   "deleteAccountWarning": "Tài khoản sẽ được ẩn danh hóa theo NĐ 13/2023, không thể hoàn tác.",
-  "navLabel": "Hồ sơ & CCHN"
+  "navLabel": "Hồ sơ & CCHN",
+  "cvBuilderTitle": "Xây dựng CV",
+  "cvPreview": "Xem trước",
+  "education": "Học vấn",
+  "experience": "Kinh nghiệm làm việc",
+  "skills": "Kỹ năng",
+  "addEntry": "Thêm mục",
+  "exportPdf": "Xuất PDF (sắp ra mắt)",
+  "school": "Trường / Đơn vị đào tạo",
+  "degree": "Bằng cấp / Chuyên ngành",
+  "employer": "Nơi làm việc",
+  "role": "Vị trí",
+  "period": "Thời gian",
+  "save": "Lưu CV"
 }

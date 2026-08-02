@@ -29,5 +29,18 @@
   "privacy": "Privacidad",
   "deleteAccount": "Eliminar cuenta",
   "deleteAccountWarning": "Tu cuenta será anonimizada según el Decreto 13/2023 y no se puede deshacer.",
-  "navLabel": "Perfil y licencia"
+  "navLabel": "Perfil y licencia",
+  "cvBuilderTitle": "Crear CV",
+  "cvPreview": "Vista previa",
+  "education": "Educación",
+  "experience": "Experiencia laboral",
+  "skills": "Habilidades",
+  "addEntry": "Agregar entrada",
+  "exportPdf": "Exportar PDF (próximamente)",
+  "school": "Institución educativa",
+  "degree": "Título / Especialidad",
+  "employer": "Empleador",
+  "role": "Puesto",
+  "period": "Período",
+  "save": "Guardar CV"
 }

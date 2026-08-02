@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
-import { ShieldCheck, ShieldAlert, ShieldQuestion } from "lucide-react";
+import { ShieldCheck, ShieldAlert, ShieldQuestion, FileText } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { AccountNav } from "@/components/account-nav";
@@ -40,9 +41,17 @@ export default async function ProfilePage() {
       <SiteHeader />
       <main className="flex-1">
         <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-          <h1 className="mb-6 font-heading text-2xl font-semibold text-ink">
-            {t("title")}
-          </h1>
+          <div className="mb-6 flex items-center justify-between">
+            <h1 className="font-heading text-2xl font-semibold text-ink">
+              {t("title")}
+            </h1>
+            <Button variant="outline" asChild>
+              <Link href="/profile/cv">
+                <FileText className="size-4" />
+                {t("cvBuilderTitle")}
+              </Link>
+            </Button>
+          </div>
 
           <AccountNav active="profile" />
 

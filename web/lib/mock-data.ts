@@ -117,14 +117,56 @@ export type MockOrganization = {
   location: string;
   verified: boolean;
   activeJobs: number;
+  description: string;
 };
 
 export const MOCK_ORGANIZATIONS: MockOrganization[] = [
-  { id: "org-1", name: "Bệnh viện Đa khoa Tâm Đức", type: "Bệnh viện", location: "TP. Hồ Chí Minh", verified: true, activeJobs: 6 },
-  { id: "org-2", name: "Nhà thuốc Long Châu Q7", type: "Nhà thuốc", location: "TP. Hồ Chí Minh", verified: true, activeJobs: 2 },
-  { id: "org-3", name: "Phòng khám Đa khoa Việt Đức", type: "Phòng khám", location: "Hà Nội", verified: true, activeJobs: 3 },
-  { id: "org-4", name: "Phòng khám Quốc tế An Sinh", type: "Phòng khám", location: "Đà Nẵng", verified: false, activeJobs: 1 },
+  {
+    id: "org-1",
+    name: "Bệnh viện Đa khoa Tâm Đức",
+    type: "Bệnh viện",
+    location: "TP. Hồ Chí Minh",
+    verified: true,
+    activeJobs: 6,
+    description:
+      "Bệnh viện đa khoa tư nhân quy mô 300 giường, tập trung hồi sức cấp cứu và ngoại khoa, hoạt động từ năm 2008.",
+  },
+  {
+    id: "org-2",
+    name: "Nhà thuốc Long Châu Q7",
+    type: "Nhà thuốc",
+    location: "TP. Hồ Chí Minh",
+    verified: true,
+    activeJobs: 2,
+    description: "Chuỗi nhà thuốc bán lẻ, chi nhánh Quận 7, phục vụ khách hàng khu vực Nam Sài Gòn.",
+  },
+  {
+    id: "org-3",
+    name: "Phòng khám Đa khoa Việt Đức",
+    type: "Phòng khám",
+    location: "Hà Nội",
+    verified: true,
+    activeJobs: 3,
+    description: "Phòng khám đa khoa liên kết chuyên môn với Bệnh viện Việt Đức, tập trung xét nghiệm và chẩn đoán hình ảnh.",
+  },
+  {
+    id: "org-4",
+    name: "Phòng khám Quốc tế An Sinh",
+    type: "Phòng khám",
+    location: "Đà Nẵng",
+    verified: false,
+    activeJobs: 1,
+    description: "Phòng khám quốc tế mới thành lập tại Đà Nẵng, đang trong quá trình xác thực giấy phép hoạt động.",
+  },
 ];
+
+export function getOrganizationById(id: string): MockOrganization | undefined {
+  return MOCK_ORGANIZATIONS.find((o) => o.id === id);
+}
+
+export function getJobsByOrganization(orgId: string): MockJob[] {
+  return MOCK_JOBS.filter((j) => j.organizationId === orgId);
+}
 
 export const MOCK_SPECIALTIES = [
   "Hồi sức cấp cứu",
@@ -182,6 +224,40 @@ export const MOCK_CANDIDATE: MockCandidateProfile = {
     expiresAt: "2030-03-15",
     verifyStatus: "verified",
   },
+};
+
+export type MockCvEducation = {
+  id: string;
+  school: string;
+  degree: string;
+  period: string;
+};
+
+export type MockCvExperience = {
+  id: string;
+  employer: string;
+  role: string;
+  period: string;
+};
+
+export const MOCK_CV = {
+  education: [
+    {
+      id: "edu-1",
+      school: "Đại học Y Dược TP.HCM",
+      degree: "Cử nhân Điều dưỡng",
+      period: "2016 - 2020",
+    },
+  ] as MockCvEducation[],
+  experience: [
+    {
+      id: "exp-1",
+      employer: "Bệnh viện Nhân dân 115",
+      role: "Điều dưỡng Hồi sức cấp cứu",
+      period: "2020 - 2024",
+    },
+  ] as MockCvExperience[],
+  skills: ["Hồi sức tim phổi (CPR)", "Theo dõi monitor bệnh nhân nặng", "Tiếng Anh giao tiếp y khoa"],
 };
 
 export type MockApplication = {

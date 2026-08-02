@@ -3,7 +3,14 @@ import { hasLocale } from "next-intl";
 import { routing } from "./routing";
 
 // Namespace tách theo tính năng, không theo route group (chỉ còn Client dùng app này — ADR-0008).
-const NAMESPACES = ["common", "home", "jobs", "auth", "profile"] as const;
+const NAMESPACES = [
+  "common",
+  "home",
+  "jobs",
+  "auth",
+  "profile",
+  "organizations",
+] as const;
 
 export default getRequestConfig(async ({ requestLocale }) => {
   const requested = await requestLocale;

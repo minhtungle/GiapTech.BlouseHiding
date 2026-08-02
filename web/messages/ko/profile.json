@@ -29,5 +29,18 @@
   "privacy": "개인정보",
   "deleteAccount": "계정 삭제",
   "deleteAccountWarning": "계정은 13/2023호 법령에 따라 익명 처리되며 되돌릴 수 없습니다.",
-  "navLabel": "프로필 및 면허"
+  "navLabel": "프로필 및 면허",
+  "cvBuilderTitle": "이력서 작성",
+  "cvPreview": "미리보기",
+  "education": "학력",
+  "experience": "경력",
+  "skills": "기술",
+  "addEntry": "항목 추가",
+  "exportPdf": "PDF 내보내기 (준비중)",
+  "school": "학교 / 교육기관",
+  "degree": "학위 / 전공",
+  "employer": "근무처",
+  "role": "직책",
+  "period": "기간",
+  "save": "이력서 저장"
 }

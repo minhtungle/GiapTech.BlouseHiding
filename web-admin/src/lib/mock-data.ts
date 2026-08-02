@@ -17,6 +17,21 @@ export const MOCK_LOCATIONS = [
   'Cần Thơ',
 ]
 
+export type MockJobPackage = {
+  id: string
+  name: string
+  priceLabel: string
+  durationDays: number
+  note: string
+}
+
+export const MOCK_JOB_PACKAGES: MockJobPackage[] = [
+  { id: 'pkg-free', name: 'Free', priceLabel: '0đ', durationDays: 7, note: 'Giới hạn hiển thị, không ưu tiên' },
+  { id: 'pkg-eco', name: 'Eco', priceLabel: '490.000đ', durationDays: 30, note: 'Ưu tiên thấp' },
+  { id: 'pkg-pro', name: 'Pro', priceLabel: '990.000đ', durationDays: 30, note: 'Ưu tiên cao' },
+  { id: 'pkg-max', name: 'Max', priceLabel: '1.990.000đ', durationDays: 45, note: 'Ghim đầu trang tìm kiếm' },
+]
+
 export type JobStatus =
   | 'draft'
   | 'pending_payment'

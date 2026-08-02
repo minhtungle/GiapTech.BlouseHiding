@@ -29,5 +29,18 @@
   "privacy": "プライバシー",
   "deleteAccount": "アカウント削除",
   "deleteAccountWarning": "アカウントは政令13/2023に基づき匿名化され、元に戻せません。",
-  "navLabel": "プロフィールと免許"
+  "navLabel": "プロフィールと免許",
+  "cvBuilderTitle": "履歴書作成",
+  "cvPreview": "プレビュー",
+  "education": "学歴",
+  "experience": "職務経歴",
+  "skills": "スキル",
+  "addEntry": "項目を追加",
+  "exportPdf": "PDF出力（近日公開）",
+  "school": "学校・教育機関",
+  "degree": "学位・専攻",
+  "employer": "勤務先",
+  "role": "役職",
+  "period": "期間",
+  "save": "履歴書を保存"
 }

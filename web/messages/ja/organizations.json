@@ -1,0 +1,10 @@
+{
+  "title": "医療機関",
+  "activeJobs": "募集中の求人",
+  "verified": "認証済み",
+  "notVerified": "未認証",
+  "aboutTitle": "紹介",
+  "jobsTitle": "募集中のポジション",
+  "noJobs": "現在募集中の求人はありません",
+  "reviewsTitle": "レビュー（近日公開）"
+}
