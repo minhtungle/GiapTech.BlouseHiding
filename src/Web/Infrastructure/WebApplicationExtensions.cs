@@ -18,8 +18,10 @@ public static class WebApplicationExtensions
         foreach (var type in endpointGroupTypes)
         {
             var groupName = type.Name;
+            // Base "/api/v1" theo docs/backend/API-DESIGN.md mục 1 — override RoutePrefix ở từng
+            // IEndpointGroup khi tên class không khớp path REST mong muốn (vd số nhiều, chữ thường).
             var routePrefix = type.GetProperty(nameof(IEndpointGroup.RoutePrefix))
-                ?.GetValue(null) as string ?? $"/api/{groupName}";
+                ?.GetValue(null) as string ?? $"/api/v1/{groupName}";
             var group = app.MapGroup(routePrefix).WithTags(groupName);
             type.GetMethod(nameof(IEndpointGroup.Map))!.Invoke(null, [group]);
         }

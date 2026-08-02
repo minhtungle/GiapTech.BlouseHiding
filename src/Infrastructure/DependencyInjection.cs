@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Npgsql;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -20,10 +21,18 @@ public static class DependencyInjection
         builder.Services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
         builder.Services.AddScoped<ISaveChangesInterceptor, DispatchDomainEventsInterceptor>();
 
+        // EnableDynamicJson: Npgsql 8+ yêu cầu opt-in tường minh để map CLR type tùy ý (vd
+        // Dictionary<string,bool> của JobPackage.Perks) sang cột jsonb — xem
+        // docs/database/ERD-CHI-TIET.md mục "job_packages".
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
+        dataSourceBuilder.EnableDynamicJson();
+        var dataSource = dataSourceBuilder.Build();
+        builder.Services.AddSingleton(dataSource);
+
         builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
             options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
-            options.UseNpgsql(connectionString);
+            options.UseNpgsql(dataSource);
             options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
         });
 

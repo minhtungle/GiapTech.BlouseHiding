@@ -37,10 +37,16 @@
   MediatR/AutoMapper, xem [ADR-0009](../kien-truc/adr/0009-mediator-mapster-thay-mediatr-automapper.md))
 - ✅ Docker Compose môi trường dev (Postgres, Redis, RabbitMQ, MinIO)
 - ⬜ CI/CD cơ bản (build, test, lint) — cho cả `web/`, `web-admin/`, backend
-- ⬜ Danh mục chuẩn: `specialties`, `locations`, `employment_types`, `job_packages` + bảng `*_translations`
-- ⬜ Middleware `Accept-Language` phía backend (khớp khung i18n đã dựng ở 0.1)
-- ⬜ Nối API thật thay mock data, theo thứ tự: danh mục → Identity (login/register) → Jobs →
-  Applications/ATS → Credit/Payment — màn hình nào nối xong bỏ mock riêng màn đó, không cần đợi tất cả
+- ✅ Danh mục chuẩn: `specialties`, `locations`, `job_packages` + bảng `*_translations` (Domain +
+  Infrastructure + Query + endpoint `GET /api/v1/catalog/*`, đã seed data khớp mock cũ ở frontend).
+  `employment_types` là enum thuần (không bảng riêng), endpoint `GET /catalog/employment-types` chỉ
+  echo tên enum — nhãn dịch nằm ở file dịch frontend, không lưu DB
+- ✅ Middleware `Accept-Language` phía backend (`ICurrentLocale`/`CurrentLocale`, verify qua curl cả
+  6 locale + fallback đúng khi thiếu header hoặc locale không hỗ trợ)
+- 🟨 Nối API thật thay mock data, theo thứ tự: **danh mục (xong)** → Identity (login/register) → Jobs →
+  Applications/ATS → Credit/Payment — màn hình nào nối xong bỏ mock riêng màn đó, không cần đợi tất cả.
+  Chưa có Command CRUD cho danh mục (chỉ mới Query đọc) — `/ops/catalog` ở `web-admin/` vẫn đang mock,
+  sẽ nối khi làm Command Create/Update
 
 ## Giai đoạn 1 — MVP
 
