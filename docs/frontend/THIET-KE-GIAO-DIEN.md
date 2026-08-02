@@ -70,6 +70,12 @@ tin qua bản sắc riêng). Thay vào đó:
   và tốn thời gian nhất nếu tự viết từ đầu — trong khi phần giao diện (màu/bo góc/khoảng cách) hoàn
   toàn tùy biến theo token ở mục 5 (bản sắc "Tin cậy lâm sàng"), không bị ép theo "trông giống shadcn
   mặc định".
+- Dùng thêm skill **taste-skill** ([tasteskill.dev](https://www.tasteskill.dev/), MIT, vendor tại
+  [`../../.claude/skills/taste-skill/`](../../.claude/skills/taste-skill/)) khi Agent thực sự code màn
+  hình Client — bộ quy tắc "anti-slop" giúp tránh đúng những khuôn mẫu đã liệt ở nguyên tắc 3 (gradient
+  tím-xanh, hero giữa trang trên nền mesh tối, 3 feature card đều nhau, glassmorphism tràn lan...). Chỉ
+  áp dụng cho `web/` — skill tự khai báo phạm vi là landing/portfolio/redesign, **không** phải dashboard,
+  nên không dùng cho `web-admin/` (xem CLAUDE.md mục 7).
 
 ### 3.2 Khu vực Admin (NTD) + Vận hành — công cụ làm việc nội bộ, dùng lặp lại nhiều lần/ngày
 > ⚠️ Quyết định cuối (xem [ADR-0007](../kien-truc/adr/0007-shadcn-chuan-cho-admin-van-hanh.md) cho màu

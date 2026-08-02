@@ -148,6 +148,7 @@ docker compose up -d   # Postgres, Redis, RabbitMQ, MinIO
 | `update-config` | Sau khi có lệnh build/test quen thuộc, thêm allowlist giảm hỏi permission |
 | `security-review` | Trước khi merge PR động vào CCHN/thanh toán/dữ liệu cá nhân |
 | `review` | Mỗi PR trước khi merge |
+| `taste-skill` (vendor tại [`.claude/skills/taste-skill/`](.claude/skills/taste-skill/), MIT — [tasteskill.dev](https://www.tasteskill.dev/)) | Khi code/thiết kế UI thật cho **`web/` (Client)** — landing, trang tin tuyển dụng, hồ sơ ứng viên, các trang marketing/khám phá việc làm — để tránh giao diện "AI slop" chung chung, đúng tinh thần mục 1 nguyên tắc số 3 ở [`docs/frontend/THIET-KE-GIAO-DIEN.md`](docs/frontend/THIET-KE-GIAO-DIEN.md). **Không** áp dụng cho `web-admin/` (Admin/Vận hành là dashboard nội bộ, ngoài phạm vi skill này tự khai báo — xem [ADR-0007](docs/kien-truc/adr/0007-shadcn-chuan-cho-admin-van-hanh.md)/[ADR-0008](docs/kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md)) |
 
 ## 8. Ngôn ngữ & phong cách viết tài liệu
 
