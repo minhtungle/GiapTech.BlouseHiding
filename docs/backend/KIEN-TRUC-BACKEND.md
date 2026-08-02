@@ -14,11 +14,11 @@ src/
                         KHÔNG được reference bất kỳ project nào khác. Không NuGet package ngoài
                         (trừ thứ thuần domain như Ardalis.SmartEnum nếu cần).
 
-  Application/        — Use case (CQRS qua MediatR), interface hướng ra ngoài (IJobRepository,
+  Application/        — Use case (CQRS qua Mediator), interface hướng ra ngoài (IJobRepository,
                         IEmailSender...), validator, mapping. CHỈ reference Domain.
     Common/
       Interfaces/      — interface mà Infrastructure phải implement (Dependency Inversion)
-      Behaviours/       — MediatR pipeline: ValidationBehaviour, LoggingBehaviour, ...
+      Behaviours/       — Mediator pipeline: ValidationBehaviour, LoggingBehaviour, ...
       Exceptions/
     Candidates/         — 1 thư mục / 1 bounded context (khớp mục 2 của TONG-QUAN-KIEN-TRUC.md)
       Commands/
@@ -51,7 +51,7 @@ implement — Web chỉ nối dây (composition root), không chứa business lo
 
 ---
 
-## 2. Quy ước CQRS/MediatR
+## 2. Quy ước CQRS/Mediator
 
 - Mỗi thao tác **ghi** → 1 `{Verb}{Noun}Command` (vd `CreateJobCommand`, `VerifyLicenseCommand`,
   `TransitionApplicationStageCommand`) + `Handler` + `Validator` cùng thư mục.

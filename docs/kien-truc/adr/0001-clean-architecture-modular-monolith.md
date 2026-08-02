@@ -12,7 +12,8 @@ không phù hợp giai đoạn đội ngũ nhỏ, MVP chưa xác định tải t
 - Dùng **Clean Architecture** (Domain/Application/Infrastructure/Web) để tách rõ business logic khỏi
   framework/hạ tầng, giữ khả năng test và thay đổi hạ tầng mà không đụng business logic.
 - Dùng **Modular Monolith**: mỗi bounded context là 1 nhóm thư mục `Application/{Context}/` độc lập,
-  giao tiếp nội bộ qua MediatR — KHÔNG tách microservice ở giai đoạn này.
+  giao tiếp nội bộ qua Mediator (thư viện CQRS — xem [ADR-0009](./0009-mediator-mapster-thay-mediatr-automapper.md)
+  cho tên thư viện cụ thể đã đổi so với ghi chú ban đầu) — KHÔNG tách microservice ở giai đoạn này.
 
 ## Phương án đã cân nhắc
 - **Microservice ngay từ đầu**: loại bỏ vì đội ngũ nhỏ, tải chưa rõ, tốn công vận hành không cần thiết.

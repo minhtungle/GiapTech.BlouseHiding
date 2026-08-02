@@ -33,8 +33,9 @@
 - ⬜ Rà lại responsive + dark mode + contrast WCAG AA trên toàn bộ màn hình vừa dựng
 
 ### 0.2 Backend & hạ tầng (sau khi UI shell đã thấy hình hài)
-- ⬜ Khởi tạo solution Clean Architecture (từ Jason Taylor Template)
-- ⬜ Docker Compose môi trường dev (Postgres, Redis, RabbitMQ, MinIO)
+- ✅ Khởi tạo solution Clean Architecture (từ Jason Taylor Template — Mediator/Mapster thay
+  MediatR/AutoMapper, xem [ADR-0009](../kien-truc/adr/0009-mediator-mapster-thay-mediatr-automapper.md))
+- ✅ Docker Compose môi trường dev (Postgres, Redis, RabbitMQ, MinIO)
 - ⬜ CI/CD cơ bản (build, test, lint) — cho cả `web/`, `web-admin/`, backend
 - ⬜ Danh mục chuẩn: `specialties`, `locations`, `employment_types`, `job_packages` + bảng `*_translations`
 - ⬜ Middleware `Accept-Language` phía backend (khớp khung i18n đã dựng ở 0.1)

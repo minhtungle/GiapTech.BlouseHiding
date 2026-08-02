@@ -10,9 +10,14 @@ xác thực chứng chỉ hành nghề, phân loại chuyên khoa, loại hình 
 
 ## Trạng thái
 
-Dự án đang ở giai đoạn thiết kế/lập kế hoạch, solution/code thật chưa khởi tạo.
+Giai đoạn 0 — solution backend (.NET 10 Clean Architecture) và cả 2 app frontend (`web/`, `web-admin/`)
+đã scaffold thật, build/test đã verify chạy được (xem [CLAUDE.md](./CLAUDE.md) mục 6 cho lệnh cụ thể).
+Chưa có bounded context nghiệp vụ nào (chỉ có khung Identity mặc định) — UI Client/Admin/Vận hành đã
+dựng nhiều màn hình bằng mock data, chưa nối API thật.
 
-**Đã chốt:** backend **.NET 10 (ASP.NET Core)**, Web trước với MVP đầy đủ, hạ tầng **self-host VPS**,
+**Đã chốt:** backend **.NET 10 (ASP.NET Core)** + **Mediator/Mapster** (không phải MediatR/AutoMapper —
+2 thư viện đó đã thương mại hóa, xem [ADR-0009](docs/kien-truc/adr/0009-mediator-mapster-thay-mediatr-automapper.md)),
+Web trước với MVP đầy đủ, hạ tầng **self-host VPS** (Docker Compose cho dev: Postgres/Redis/RabbitMQ/MinIO),
 kiến trúc **Clean Architecture + Modular Monolith**, **2 app frontend riêng biệt** — Client dùng
 **Next.js + shadcn/ui**, Admin (NTD) + Vận hành dùng chung 1 app chạy thẳng **shadcn-admin** (Vite +
 TanStack Router), đa ngôn ngữ **6 thứ tiếng (Việt/Anh/Nhật/Trung/Hàn/Tây Ban Nha, chỉ áp dụng cho Client)**,
@@ -36,7 +41,7 @@ chốt ở [`docs/kien-truc/TONG-QUAN-KIEN-TRUC.md`](docs/kien-truc/TONG-QUAN-KI
 - [Danh sách tính năng](docs/nghiep-vu/DANH-SACH-TINH-NANG.md) — checklist theo giai đoạn
 
 ### Backend
-- [Kiến trúc & quy ước code Backend](docs/backend/KIEN-TRUC-BACKEND.md) — layer, CQRS/MediatR, quy tắc bất biến
+- [Kiến trúc & quy ước code Backend](docs/backend/KIEN-TRUC-BACKEND.md) — layer, CQRS/Mediator, quy tắc bất biến
 - [Công nghệ Backend](docs/backend/CONG-NGHE-BACKEND.md) — thư viện cụ thể, auth, dịch vụ bên thứ 3
 - [Thiết kế API](docs/backend/API-DESIGN.md) — endpoint REST theo từng module, phân quyền RBAC
 

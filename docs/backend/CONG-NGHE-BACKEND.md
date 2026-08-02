@@ -7,8 +7,13 @@
 
 **Khung xuất phát điểm:** dùng **Jason Taylor's Clean Architecture Template**
 (`dotnet new install Clean.Architecture.Solution.Template` — MIT license) làm khung khởi tạo thay vì
-tự dựng từ đầu — đã có sẵn MediatR, FluentValidation, EF Core, Serilog, xUnit đúng như lựa chọn dưới
-đây. Xem lý do chọn ở [ADR-0001](../kien-truc/adr/0001-clean-architecture-modular-monolith.md).
+tự dựng từ đầu — đã có sẵn FluentValidation, EF Core, Serilog, xUnit đúng như lựa chọn dưới đây. Xem lý
+do chọn ở [ADR-0001](../kien-truc/adr/0001-clean-architecture-modular-monolith.md).
+
+> ⚠️ Bản template mặc định ghim **MediatR** và **AutoMapper** — cả 2 đã thương mại hóa từ phiên bản mới
+> (Lucky Penny Software, ~$489/năm/sản phẩm). Đã thay bằng **Mediator** (martinothamar) và **Mapster**
+> khi scaffold thật (Giai đoạn 0.2) — xem [ADR-0009](../kien-truc/adr/0009-mediator-mapster-thay-mediatr-automapper.md).
+> Bảng dưới đây đã cập nhật theo quyết định đó.
 
 ---
 
@@ -18,10 +23,10 @@ tự dựng từ đầu — đã có sẵn MediatR, FluentValidation, EF Core, S
 |---|---|---|
 | Runtime | **.NET 10 (LTS)** — đã chốt | Hỗ trợ dài hạn (LTS), phù hợp dự án chạy nhiều năm; VPS self-host tự cài nên không bị giới hạn bởi hosting managed |
 | Ngôn ngữ | C# (nullable reference types bật, `ImplicitUsings`) | Chuẩn của hệ sinh thái .NET hiện đại |
-| Kiến trúc solution | Clean Architecture: `Domain` / `Application` / `Infrastructure` / `Api` (+ `Web` nếu BFF) | Xem chi tiết layer ở `KIEN-TRUC-BACKEND.md` |
-| Pattern nghiệp vụ | CQRS nhẹ với **MediatR** (Command/Query + Handler) | Tách rõ luồng ghi/đọc, dễ test, dễ thêm behavior pipeline (validation, logging) mà không rải code |
-| Validation | **FluentValidation**, tích hợp làm MediatR `IPipelineBehavior` | Validate tập trung trước khi vào handler, không rải `if` rải rác |
-| Mapping | **Mapster** (thay vì AutoMapper) | Nhanh hơn, cấu hình đơn giản hơn cho project mới |
+| Kiến trúc solution | Clean Architecture: `Domain` / `Application` / `Infrastructure` / `Web` | Xem chi tiết layer ở `KIEN-TRUC-BACKEND.md` |
+| Pattern nghiệp vụ | CQRS nhẹ với **Mediator** (martinothamar, MIT, source-generator) — không phải MediatR | Tách rõ luồng ghi/đọc, dễ test, dễ thêm behavior pipeline (validation, logging) mà không rải code; MediatR v12+ đã thương mại hóa, xem [ADR-0009](../kien-truc/adr/0009-mediator-mapster-thay-mediatr-automapper.md) |
+| Validation | **FluentValidation**, tích hợp làm `IPipelineBehavior` của Mediator | Validate tập trung trước khi vào handler, không rải `if` rải rác |
+| Mapping | **Mapster** (không phải AutoMapper — AutoMapper v13+ cũng đã thương mại hóa) | Nhanh hơn, cấu hình đơn giản hơn cho project mới, miễn phí vĩnh viễn (MIT) |
 
 ## 2. Truy cập dữ liệu
 

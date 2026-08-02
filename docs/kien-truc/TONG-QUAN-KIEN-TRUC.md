@@ -90,7 +90,7 @@ Hạ tầng triển khai thật (VPS, container, monitoring) xem [`../ha-tang/HA
 ## 5. Bản đồ công nghệ theo lớp (tham chiếu nhanh, chi tiết ở tài liệu con)
 
 ```
-Backend:    .NET 10 (LTS) · ASP.NET Core Web API · MediatR · FluentValidation · Mapster
+Backend:    .NET 10 (LTS) · ASP.NET Core Web API · Mediator · FluentValidation · Mapster
 Data:       EF Core 10 (Npgsql) + Dapper (đọc nặng) · PostgreSQL 16+ · Redis 7+
 Search:     pg_trgm/tsvector (MVP) → OpenSearch (GĐ2)
 Queue/RT:   RabbitMQ + MassTransit · SignalR (Redis backplane) · Hangfire
@@ -132,6 +132,7 @@ tránh tình trạng "sao lại chọn cái này" phải hỏi lại khi bàn gi
 | [0006](./adr/0006-da-ngon-ngu.md) | Đa ngôn ngữ: 6 ngôn ngữ (vi/en/ja/zh/ko/es), dịch qua bảng translation + routing tiền tố URL |
 | [0007](./adr/0007-shadcn-chuan-cho-admin-van-hanh.md) | Admin (NTD) chuyển sang giao diện chuẩn shadcn/ui trung tính, cùng nhóm Vận hành |
 | [0008](./adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md) | Admin (NTD) + Vận hành tách thành 1 app riêng, chạy thẳng shadcn-admin (đảo ngược 1 phần ADR-0004) |
+| [0009](./adr/0009-mediator-mapster-thay-mediatr-automapper.md) | Dùng Mediator + Mapster thay MediatR + AutoMapper (2 thư viện template mặc định đã thương mại hóa) |
 
 ---
 
@@ -165,11 +166,14 @@ tránh tình trạng "sao lại chọn cái này" phải hỏi lại khi bàn gi
    theo tiêu chí) — `score` chỉ là gợi ý sắp xếp phụ, HR vẫn quyết định qua Kanban. Chấm điểm CV bằng
    AI/NLP đầy đủ dời sang module `Matching` ở Giai đoạn 2. Xem
    [`../database/ERD-CHI-TIET.md`](../database/ERD-CHI-TIET.md) mục 4 điểm 8.
+10. Thư viện CQRS/mapping backend: **Mediator** (martinothamar, MIT) + **Mapster** — không phải
+    MediatR/AutoMapper mặc định của template (đã thương mại hóa từ v12+/v13+). Xem
+    [ADR-0009](./adr/0009-mediator-mapster-thay-mediatr-automapper.md).
 
 **Còn cần chốt (không chặn tiến độ):**
-10. Nhà cung cấp VPS cụ thể (VN hay quốc tế) — xem `../ha-tang/HA-TANG-TRIEN-KHAI.md` mục so sánh.
-11. Cổng thanh toán tự động cụ thể khi cần triển khai thật.
-12. OpenSearch vs Elasticsearch ở Giai đoạn 2 — đã nghiêng OpenSearch.
+11. Nhà cung cấp VPS cụ thể (VN hay quốc tế) — xem `../ha-tang/HA-TANG-TRIEN-KHAI.md` mục so sánh.
+12. Cổng thanh toán tự động cụ thể khi cần triển khai thật.
+13. OpenSearch vs Elasticsearch ở Giai đoạn 2 — đã nghiêng OpenSearch.
 
 > Đủ điều kiện khởi tạo solution theo Clean Architecture (Giai đoạn 0 của roadmap) — các mục còn lại
 > không chặn tiến độ, có thể chốt song song trong lúc phát triển Giai đoạn 0–1.

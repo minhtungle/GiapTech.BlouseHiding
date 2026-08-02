@@ -84,7 +84,7 @@ Có một cơ chế hoàn tiền (Credit refund) cho các trường hợp tranh 
 
 Ba nguyên tắc kiến trúc chi phối mọi quyết định công nghệ phía sau:
 
-**Modular Monolith, không microservice ngay.** Hệ thống có nhiều miền nghiệp vụ rõ ràng (Identity, Profile, Job, Application, Messaging, Ops, Events), nhưng chúng sống chung trong một ứng dụng backend, giao tiếp nội bộ qua MediatR thay vì network call giữa các service riêng. Microservice giải quyết đúng vấn đề "scale độc lập từng miền" — một vấn đề dự án này chưa có, vì đội ngũ còn nhỏ và tải chưa xác định. Ranh giới module vẫn được giữ rõ ràng (mỗi miền là một thư mục riêng trong tầng Application), nên nếu tương lai thật sự cần tách, việc tách sẽ không phải viết lại từ đầu.
+**Modular Monolith, không microservice ngay.** Hệ thống có nhiều miền nghiệp vụ rõ ràng (Identity, Profile, Job, Application, Messaging, Ops, Events), nhưng chúng sống chung trong một ứng dụng backend, giao tiếp nội bộ qua Mediator thay vì network call giữa các service riêng. Microservice giải quyết đúng vấn đề "scale độc lập từng miền" — một vấn đề dự án này chưa có, vì đội ngũ còn nhỏ và tải chưa xác định. Ranh giới module vẫn được giữ rõ ràng (mỗi miền là một thư mục riêng trong tầng Application), nên nếu tương lai thật sự cần tách, việc tách sẽ không phải viết lại từ đầu.
 
 **Clean Architecture** — tách rõ bốn tầng Domain / Application / Infrastructure / Web, với quy tắc phụ thuộc chỉ đi một chiều: Domain không được biết gì về các tầng phía trên. Đây là "luật chơi bắt buộc" ghi thẳng trong tài liệu hướng dẫn cho AI agent (CLAUDE.md) — nếu một thay đổi cần import ngược chiều, đó là dấu hiệu thiết kế sai chỗ, không phải quy tắc cần phá.
 

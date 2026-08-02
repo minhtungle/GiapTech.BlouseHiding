@@ -21,8 +21,9 @@ Cần chọn stack backend/frontend và quyết định mức độ dùng lại 
 
 ## Phương án đã cân nhắc
 - **Ardalis Clean Architecture Template**: cũng tốt nhưng kèm thư viện riêng của tác giả
-  (Ardalis.Specification, Ardalis.Result) lệch khỏi stack MediatR/FluentValidation thuần đã chọn —
-  không chọn để giảm số lượng quy ước phải học.
+  (Ardalis.Specification, Ardalis.Result) lệch khỏi stack CQRS/FluentValidation thuần đã chọn —
+  không chọn để giảm số lượng quy ước phải học. (Thư viện CQRS cụ thể sau này đổi từ MediatR sang
+  Mediator vì lý do bản quyền — xem [ADR-0009](./0009-mediator-mapster-thay-mediatr-automapper.md).)
 - **Next.js SaaS Starter mã nguồn mở** (đa số bundle Prisma + Next API routes làm backend riêng): loại
   bỏ vì xung đột với việc đã có backend .NET riêng — dùng sẽ phải gỡ bỏ nhiều hơn là tận dụng.
 - ~~**shadcn-admin chạy như app riêng cho trang Vận hành** (Vite, tách biệt): loại bỏ vì tạo 2 hệ sinh

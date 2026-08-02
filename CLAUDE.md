@@ -12,9 +12,10 @@ Nền tảng **tuyển dụng chuyên biệt cho ngành y tế** tại Việt Na
 tham khảo TopCV/Ybox nhưng thêm lớp xác thực chứng chỉ hành nghề (CCHN) làm rào cản tin cậy cốt lõi.
 Xem [`docs/nghiep-vu/PHAN-TICH-NGHIEP-VU.md`](docs/nghiep-vu/PHAN-TICH-NGHIEP-VU.md) để hiểu đầy đủ bối cảnh trước khi code.
 
-**Trạng thái hiện tại:** giai đoạn thiết kế, solution/code thật **chưa được khởi tạo**. Khi solution
-đã tồn tại, chạy lại skill `init` để cập nhật phần "Lệnh build/test" (mục 6) của file này cho khớp
-thực tế — đừng để phần đó lạc hậu so với code.
+**Trạng thái hiện tại:** Giai đoạn 0 — solution backend (.NET 10 Clean Architecture) và cả 2 app
+frontend (`web/`, `web-admin/`) đã scaffold, build/test thật đã verify. Chưa có bounded context nghiệp
+vụ nào (Identity/Job/Application...) — chỉ có khung Identity mặc định của template. Xem mục 6 cho lệnh
+build/test/dev thật đã xác minh chạy được.
 
 ## 2. Bản đồ tài liệu — đọc đúng chỗ trước khi hỏi/đoán
 
@@ -43,20 +44,27 @@ thực tế — đừng để phần đó lạc hậu so với code.
 | Chính sách bảo mật | [`SECURITY.md`](SECURITY.md) |
 | Nhật ký thay đổi | [`CHANGELOG.md`](CHANGELOG.md) |
 
-## 3. Cấu trúc repo (khi solution đã khởi tạo — xem `docs/backend/KIEN-TRUC-BACKEND.md` mục 1 để biết chi tiết)
+## 3. Cấu trúc repo (đã khởi tạo thật — xem `docs/backend/KIEN-TRUC-BACKEND.md` mục 1 để biết chi tiết)
 
 ```
 src/
-  Domain/            — entity, business invariant, KHÔNG reference project khác
-  Application/        — use case (CQRS/MediatR), 1 thư mục / 1 bounded context
+  Domain/            — entity, business invariant, KHÔNG reference project khác (0 NuGet package)
+  Application/        — use case (CQRS/Mediator), 1 thư mục / 1 bounded context
   Infrastructure/     — EF Core, implement interface của Application
-  Web/                — Controllers/API, composition root
+  Web/                — Controllers/API (Minimal API), composition root
+  ServiceDefaults/    — OpenTelemetry + health checks dùng chung (không phải Aspire orchestration)
+  Shared/             — hằng số dùng chung giữa Infrastructure & test infra (vd tên connection string)
+tests/
+  Domain.UnitTests/ · Application.UnitTests/ · Application.FunctionalTests/ · Infrastructure.IntegrationTests/
+  TestAppHost/        — spin Postgres container thật cho Application.FunctionalTests (Aspire.Hosting.PostgreSQL,
+                        generic — không phải Aspire Azure orchestration đã gỡ ở src/AppHost)
 web/                  — Next.js (App Router) — CHỈ khu vực Client (candidate/guest), bản sắc
                         "Tin cậy lâm sàng" đầy đủ, cần SEO/SSR cho tin tuyển dụng
 web-admin/            — shadcn-admin (Vite + TanStack Router + TS) — 1 app riêng dùng chung cho
                         Admin (Nhà tuyển dụng) + Vận hành (nội bộ nền tảng), phân biệt màn hình theo
                         role đăng nhập, RBAC chặn thật ở backend (xem ADR-0008)
                         (xem docs/kien-truc/THUAT-NGU.md — role backend `admin` ≠ site "Admin")
+docker-compose.yml    — Postgres/Redis/RabbitMQ/MinIO cho dev cục bộ (self-host, xem ADR-0002)
 docs/                 — toàn bộ tài liệu (bản đồ ở mục 2)
 ```
 
@@ -65,7 +73,7 @@ docs/                 — toàn bộ tài liệu (bản đồ ở mục 2)
 1. **Dependency Rule của Clean Architecture**: `Domain` không được reference `Application`/
    `Infrastructure`/`Web`. Nếu thấy mình cần import ngược, dừng lại — thiết kế sai chỗ, không phải
    quy tắc sai.
-2. **Mọi Command (MediatR) bắt buộc có FluentValidation validator.** Không validate rải rác trong
+2. **Mọi Command (Mediator) bắt buộc có FluentValidation validator.** Không validate rải rác trong
    handler hay controller.
 3. **Business invariant nằm trong Domain entity**, không nằm trong Command Handler hay Controller.
 4. **4 ràng buộc dữ liệu bắt buộc** (chi tiết ở `docs/database/ERD-CHI-TIET.md` mục 4 và
@@ -114,32 +122,46 @@ docs/                 — toàn bộ tài liệu (bản đồ ở mục 2)
 
 ## 6. Lệnh build/test/dev
 
-> ⚠️ Solution chưa được khởi tạo — phần này là **placeholder theo kế hoạch**. Sau khi chạy
-> `dotnet new install Clean.Architecture.Solution.Template` và scaffold Next.js, chạy lại skill `init`
-> để thay các lệnh dưới đây bằng lệnh thật đã xác minh chạy được.
+> Đã xác minh chạy được (Giai đoạn 0). Cần **.NET 10 SDK** (`global.json` pin `10.0.201`,
+> `rollForward: latestFeature` — cài qua [dotnet-install script](https://dot.net/v1/dotnet-install.sh)
+> nếu package manager hệ thống chưa có bản 10). Cần Docker chạy sẵn cho Postgres/Redis/RabbitMQ/MinIO.
 
 ```bash
-# Backend (dự kiến)
-dotnet restore
-dotnet build
-dotnet test
+# Hạ tầng dev — chạy trước tiên
+docker compose up -d   # Postgres, Redis, RabbitMQ, MinIO — xem docker-compose.yml
 
-# Frontend Client (dự kiến)
+# Backend (.NET 10 Clean Architecture — src/, tests/)
+dotnet restore GiapTech.BlouseHiding.slnx
+dotnet build GiapTech.BlouseHiding.slnx
+dotnet test GiapTech.BlouseHiding.slnx
+# Migration (dotnet-ef cần cài: dotnet tool install -g dotnet-ef)
+dotnet ef migrations add <Ten> --project src/Infrastructure --startup-project src/Web --output-dir Data/Migrations
+dotnet ef database update --project src/Infrastructure --startup-project src/Web
+# Chạy API (mặc định đọc ConnectionStrings:Postgres từ appsettings.json, đã khớp docker-compose.yml)
+dotnet run --project src/Web
+
+# Frontend Client (web/ — Next.js)
 cd web && npm install
-npm run dev
+npm run dev     # http://localhost:3000, redirect /vi mặc định
 npm run build
-npm run test        # Vitest
-npm run test:e2e     # Playwright
+npm run lint
 
-# Frontend Admin/Vận hành — shadcn-admin (dự kiến)
+# Frontend Admin/Vận hành (web-admin/ — shadcn-admin, Vite + TanStack Router)
 cd web-admin && npm install
-npm run dev
-npm run build        # build ra static assets, Caddy phục vụ thẳng — xem ADR-0008
-npm run test
-
-# Hạ tầng dev (dự kiến)
-docker compose up -d   # Postgres, Redis, RabbitMQ, MinIO
+npm run dev     # http://localhost:5173
+npm run build   # build ra static assets, Caddy phục vụ thẳng — xem ADR-0008
+npm run lint
 ```
+
+**Lưu ý quan trọng khi sinh code backend:**
+- Dùng **Mediator** (namespace `Mediator`) và **Mapster**, KHÔNG phải MediatR/AutoMapper — xem
+  [ADR-0009](docs/kien-truc/adr/0009-mediator-mapster-thay-mediatr-automapper.md). `IPipelineBehavior<TMessage,TResponse>.Handle`
+  trả `ValueTask<TResponse>`, nhận `MessageHandlerDelegate` (không phải `Task`/`RequestHandlerDelegate`
+  như MediatR).
+- `Domain.csproj` không có PackageReference nào — domain event (`BaseEvent`) không implement
+  `INotification` trực tiếp, Infrastructure tự bọc lại lúc dispatch.
+- Solution không dùng Aspire AppHost (đã gỡ — xung đột ADR-0002 self-host). Dev cục bộ dùng
+  `docker-compose.yml` ở repo root, không phải `dotnet run --project src/AppHost`.
 
 ## 7. Skill nên dùng trong dự án này
 
