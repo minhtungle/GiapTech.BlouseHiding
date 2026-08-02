@@ -4,5 +4,30 @@
   "verifyStatusPending": "待认证",
   "verifyStatusVerified": "已认证",
   "verifyStatusRejected": "已拒绝",
-  "cvBuilder": "简历生成"
+  "cvBuilder": "简历生成",
+  "completion": "档案完整度",
+  "tabOverview": "概览",
+  "tabApplications": "投递记录",
+  "tabSettings": "设置",
+  "yearsExperience": "年经验",
+  "licenseNumber": "执业证书编号",
+  "issuedBy": "颁发机构",
+  "issuedAt": "颁发日期",
+  "expiresAt": "到期日期",
+  "welcomeBack": "欢迎回来",
+  "stage": {
+    "moi": "新申请",
+    "dang_xem": "审核中",
+    "phu_hop": "符合条件",
+    "phong_van": "面试",
+    "offer": "录用意向",
+    "trung_tuyen": "已录用",
+    "tu_choi": "已拒绝"
+  },
+  "settingsTitle": "账户设置",
+  "changePassword": "修改密码",
+  "privacy": "隐私",
+  "deleteAccount": "删除账户",
+  "deleteAccountWarning": "账户将根据第13/2023号法令匿名化处理，且无法撤销。",
+  "navLabel": "档案与执业证书"
 }

@@ -4,5 +4,30 @@
   "verifyStatusPending": "Pendiente de verificación",
   "verifyStatusVerified": "Verificado",
   "verifyStatusRejected": "Rechazado",
-  "cvBuilder": "Crear CV"
+  "cvBuilder": "Crear CV",
+  "completion": "Perfil completado",
+  "tabOverview": "Resumen",
+  "tabApplications": "Postulaciones",
+  "tabSettings": "Configuración",
+  "yearsExperience": "años de experiencia",
+  "licenseNumber": "Número de licencia",
+  "issuedBy": "Emitido por",
+  "issuedAt": "Fecha de emisión",
+  "expiresAt": "Fecha de vencimiento",
+  "welcomeBack": "Bienvenido de nuevo",
+  "stage": {
+    "moi": "Nuevo",
+    "dang_xem": "En revisión",
+    "phu_hop": "Preseleccionado",
+    "phong_van": "Entrevista",
+    "offer": "Oferta",
+    "trung_tuyen": "Contratado",
+    "tu_choi": "Rechazado"
+  },
+  "settingsTitle": "Configuración de la cuenta",
+  "changePassword": "Cambiar contraseña",
+  "privacy": "Privacidad",
+  "deleteAccount": "Eliminar cuenta",
+  "deleteAccountWarning": "Tu cuenta será anonimizada según el Decreto 13/2023 y no se puede deshacer.",
+  "navLabel": "Perfil y licencia"
 }

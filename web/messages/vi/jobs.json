@@ -7,5 +7,15 @@
   "salary": "Mức lương",
   "applyNow": "Ứng tuyển ngay",
   "requireLicense": "Yêu cầu CCHN",
-  "comingSoon": "Đang phát triển"
+  "comingSoon": "Đang phát triển",
+  "resultsCount": "{count} tin phù hợp",
+  "noResults": "Không tìm thấy tin phù hợp — thử điều chỉnh bộ lọc",
+  "postedOn": "Đăng ngày",
+  "backToList": "Quay lại danh sách",
+  "jobDescription": "Mô tả công việc",
+  "requirements": "Yêu cầu ứng viên",
+  "benefits": "Quyền lợi",
+  "aboutOrg": "Về cơ sở y tế",
+  "shareJob": "Chia sẻ tin này",
+  "clearFilters": "Xóa bộ lọc"
 }

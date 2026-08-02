@@ -7,5 +7,15 @@
   "salary": "Salary",
   "applyNow": "Apply now",
   "requireLicense": "License required",
-  "comingSoon": "Coming soon"
+  "comingSoon": "Coming soon",
+  "resultsCount": "{count} matching jobs",
+  "noResults": "No matching jobs — try adjusting filters",
+  "postedOn": "Posted on",
+  "backToList": "Back to list",
+  "jobDescription": "Job description",
+  "requirements": "Requirements",
+  "benefits": "Benefits",
+  "aboutOrg": "About the facility",
+  "shareJob": "Share this job",
+  "clearFilters": "Clear filters"
 }

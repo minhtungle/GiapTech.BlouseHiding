@@ -4,5 +4,30 @@
   "verifyStatusPending": "Chờ xác thực",
   "verifyStatusVerified": "Đã xác thực",
   "verifyStatusRejected": "Bị từ chối",
-  "cvBuilder": "Xây dựng CV"
+  "cvBuilder": "Xây dựng CV",
+  "completion": "Hoàn thiện hồ sơ",
+  "tabOverview": "Tổng quan",
+  "tabApplications": "Đã ứng tuyển",
+  "tabSettings": "Cài đặt",
+  "yearsExperience": "năm kinh nghiệm",
+  "licenseNumber": "Số CCHN",
+  "issuedBy": "Nơi cấp",
+  "issuedAt": "Ngày cấp",
+  "expiresAt": "Ngày hết hạn",
+  "welcomeBack": "Chào mừng quay lại",
+  "stage": {
+    "moi": "Mới",
+    "dang_xem": "Đang xem",
+    "phu_hop": "Phù hợp",
+    "phong_van": "Hẹn phỏng vấn",
+    "offer": "Offer",
+    "trung_tuyen": "Trúng tuyển",
+    "tu_choi": "Từ chối"
+  },
+  "settingsTitle": "Cài đặt tài khoản",
+  "changePassword": "Đổi mật khẩu",
+  "privacy": "Quyền riêng tư",
+  "deleteAccount": "Xóa tài khoản",
+  "deleteAccountWarning": "Tài khoản sẽ được ẩn danh hóa theo NĐ 13/2023, không thể hoàn tác.",
+  "navLabel": "Hồ sơ & CCHN"
 }

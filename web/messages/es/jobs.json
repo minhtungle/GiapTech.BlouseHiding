@@ -7,5 +7,15 @@
   "salary": "Salario",
   "applyNow": "Postular ahora",
   "requireLicense": "Requiere licencia",
-  "comingSoon": "Próximamente"
+  "comingSoon": "Próximamente",
+  "resultsCount": "{count} empleos encontrados",
+  "noResults": "No se encontraron empleos — intenta ajustar los filtros",
+  "postedOn": "Publicado el",
+  "backToList": "Volver a la lista",
+  "jobDescription": "Descripción del puesto",
+  "requirements": "Requisitos",
+  "benefits": "Beneficios",
+  "aboutOrg": "Sobre el centro de salud",
+  "shareJob": "Compartir este empleo",
+  "clearFilters": "Limpiar filtros"
 }

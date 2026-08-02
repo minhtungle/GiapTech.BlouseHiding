@@ -22,10 +22,18 @@ import { Route as errors500RouteImport } from './routes/(errors)/500'
 import { Route as errors503RouteImport } from './routes/(errors)/503'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
+import { Route as AuthenticatedApplicationsIndexRouteImport } from './routes/_authenticated/applications/index'
 import { Route as AuthenticatedAppsIndexRouteImport } from './routes/_authenticated/apps/index'
 import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
+import { Route as AuthenticatedCreditIndexRouteImport } from './routes/_authenticated/credit/index'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
+import { Route as AuthenticatedJobsIndexRouteImport } from './routes/_authenticated/jobs/index'
+import { Route as AuthenticatedJobsNewRouteImport } from './routes/_authenticated/jobs/new'
+import { Route as AuthenticatedOpsCatalogRouteImport } from './routes/_authenticated/ops/catalog'
+import { Route as AuthenticatedOpsPaymentsRouteImport } from './routes/_authenticated/ops/payments'
+import { Route as AuthenticatedOpsReportsRouteImport } from './routes/_authenticated/ops/reports'
+import { Route as AuthenticatedOpsVerificationRouteImport } from './routes/_authenticated/ops/verification'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
@@ -99,6 +107,12 @@ const AuthenticatedSettingsRouteRoute =
     path: '/settings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedApplicationsIndexRoute =
+  AuthenticatedApplicationsIndexRouteImport.update({
+    id: '/applications/',
+    path: '/applications/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAppsIndexRoute = AuthenticatedAppsIndexRouteImport.update({
   id: '/apps/',
   path: '/apps/',
@@ -109,6 +123,12 @@ const AuthenticatedChatsIndexRoute = AuthenticatedChatsIndexRouteImport.update({
   path: '/chats/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCreditIndexRoute =
+  AuthenticatedCreditIndexRouteImport.update({
+    id: '/credit/',
+    path: '/credit/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedErrorsErrorRoute =
   AuthenticatedErrorsErrorRouteImport.update({
     id: '/errors/$error',
@@ -119,6 +139,38 @@ const AuthenticatedHelpCenterIndexRoute =
   AuthenticatedHelpCenterIndexRouteImport.update({
     id: '/help-center/',
     path: '/help-center/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedJobsIndexRoute = AuthenticatedJobsIndexRouteImport.update({
+  id: '/jobs/',
+  path: '/jobs/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedJobsNewRoute = AuthenticatedJobsNewRouteImport.update({
+  id: '/jobs/new',
+  path: '/jobs/new',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOpsCatalogRoute = AuthenticatedOpsCatalogRouteImport.update({
+  id: '/ops/catalog',
+  path: '/ops/catalog',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOpsPaymentsRoute =
+  AuthenticatedOpsPaymentsRouteImport.update({
+    id: '/ops/payments',
+    path: '/ops/payments',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedOpsReportsRoute = AuthenticatedOpsReportsRouteImport.update({
+  id: '/ops/reports',
+  path: '/ops/reports',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOpsVerificationRoute =
+  AuthenticatedOpsVerificationRouteImport.update({
+    id: '/ops/verification',
+    path: '/ops/verification',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSettingsIndexRoute =
@@ -176,13 +228,21 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
+  '/jobs/new': typeof AuthenticatedJobsNewRoute
+  '/ops/catalog': typeof AuthenticatedOpsCatalogRoute
+  '/ops/payments': typeof AuthenticatedOpsPaymentsRoute
+  '/ops/reports': typeof AuthenticatedOpsReportsRoute
+  '/ops/verification': typeof AuthenticatedOpsVerificationRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/applications/': typeof AuthenticatedApplicationsIndexRoute
   '/apps/': typeof AuthenticatedAppsIndexRoute
   '/chats/': typeof AuthenticatedChatsIndexRoute
+  '/credit/': typeof AuthenticatedCreditIndexRoute
   '/help-center/': typeof AuthenticatedHelpCenterIndexRoute
+  '/jobs/': typeof AuthenticatedJobsIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/tasks/': typeof AuthenticatedTasksIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
@@ -200,13 +260,21 @@ export interface FileRoutesByTo {
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
+  '/jobs/new': typeof AuthenticatedJobsNewRoute
+  '/ops/catalog': typeof AuthenticatedOpsCatalogRoute
+  '/ops/payments': typeof AuthenticatedOpsPaymentsRoute
+  '/ops/reports': typeof AuthenticatedOpsReportsRoute
+  '/ops/verification': typeof AuthenticatedOpsVerificationRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/applications': typeof AuthenticatedApplicationsIndexRoute
   '/apps': typeof AuthenticatedAppsIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
+  '/credit': typeof AuthenticatedCreditIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
+  '/jobs': typeof AuthenticatedJobsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
@@ -227,13 +295,21 @@ export interface FileRoutesById {
   '/(errors)/503': typeof errors503Route
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
+  '/_authenticated/jobs/new': typeof AuthenticatedJobsNewRoute
+  '/_authenticated/ops/catalog': typeof AuthenticatedOpsCatalogRoute
+  '/_authenticated/ops/payments': typeof AuthenticatedOpsPaymentsRoute
+  '/_authenticated/ops/reports': typeof AuthenticatedOpsReportsRoute
+  '/_authenticated/ops/verification': typeof AuthenticatedOpsVerificationRoute
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/_authenticated/applications/': typeof AuthenticatedApplicationsIndexRoute
   '/_authenticated/apps/': typeof AuthenticatedAppsIndexRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
+  '/_authenticated/credit/': typeof AuthenticatedCreditIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
+  '/_authenticated/jobs/': typeof AuthenticatedJobsIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
@@ -254,13 +330,21 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/errors/$error'
+    | '/jobs/new'
+    | '/ops/catalog'
+    | '/ops/payments'
+    | '/ops/reports'
+    | '/ops/verification'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
+    | '/applications/'
     | '/apps/'
     | '/chats/'
+    | '/credit/'
     | '/help-center/'
+    | '/jobs/'
     | '/settings/'
     | '/tasks/'
     | '/users/'
@@ -278,13 +362,21 @@ export interface FileRouteTypes {
     | '/503'
     | '/'
     | '/errors/$error'
+    | '/jobs/new'
+    | '/ops/catalog'
+    | '/ops/payments'
+    | '/ops/reports'
+    | '/ops/verification'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
+    | '/applications'
     | '/apps'
     | '/chats'
+    | '/credit'
     | '/help-center'
+    | '/jobs'
     | '/settings'
     | '/tasks'
     | '/users'
@@ -304,13 +396,21 @@ export interface FileRouteTypes {
     | '/(errors)/503'
     | '/_authenticated/'
     | '/_authenticated/errors/$error'
+    | '/_authenticated/jobs/new'
+    | '/_authenticated/ops/catalog'
+    | '/_authenticated/ops/payments'
+    | '/_authenticated/ops/reports'
+    | '/_authenticated/ops/verification'
     | '/_authenticated/settings/account'
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
     | '/_authenticated/settings/notifications'
+    | '/_authenticated/applications/'
     | '/_authenticated/apps/'
     | '/_authenticated/chats/'
+    | '/_authenticated/credit/'
     | '/_authenticated/help-center/'
+    | '/_authenticated/jobs/'
     | '/_authenticated/settings/'
     | '/_authenticated/tasks/'
     | '/_authenticated/users/'
@@ -423,6 +523,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/applications/': {
+      id: '/_authenticated/applications/'
+      path: '/applications'
+      fullPath: '/applications/'
+      preLoaderRoute: typeof AuthenticatedApplicationsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/apps/': {
       id: '/_authenticated/apps/'
       path: '/apps'
@@ -437,6 +544,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChatsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/credit/': {
+      id: '/_authenticated/credit/'
+      path: '/credit'
+      fullPath: '/credit/'
+      preLoaderRoute: typeof AuthenticatedCreditIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/errors/$error': {
       id: '/_authenticated/errors/$error'
       path: '/errors/$error'
@@ -449,6 +563,48 @@ declare module '@tanstack/react-router' {
       path: '/help-center'
       fullPath: '/help-center/'
       preLoaderRoute: typeof AuthenticatedHelpCenterIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/jobs/': {
+      id: '/_authenticated/jobs/'
+      path: '/jobs'
+      fullPath: '/jobs/'
+      preLoaderRoute: typeof AuthenticatedJobsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/jobs/new': {
+      id: '/_authenticated/jobs/new'
+      path: '/jobs/new'
+      fullPath: '/jobs/new'
+      preLoaderRoute: typeof AuthenticatedJobsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ops/catalog': {
+      id: '/_authenticated/ops/catalog'
+      path: '/ops/catalog'
+      fullPath: '/ops/catalog'
+      preLoaderRoute: typeof AuthenticatedOpsCatalogRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ops/payments': {
+      id: '/_authenticated/ops/payments'
+      path: '/ops/payments'
+      fullPath: '/ops/payments'
+      preLoaderRoute: typeof AuthenticatedOpsPaymentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ops/reports': {
+      id: '/_authenticated/ops/reports'
+      path: '/ops/reports'
+      fullPath: '/ops/reports'
+      preLoaderRoute: typeof AuthenticatedOpsReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ops/verification': {
+      id: '/_authenticated/ops/verification'
+      path: '/ops/verification'
+      fullPath: '/ops/verification'
+      preLoaderRoute: typeof AuthenticatedOpsVerificationRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings/': {
@@ -530,9 +686,17 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
+  AuthenticatedJobsNewRoute: typeof AuthenticatedJobsNewRoute
+  AuthenticatedOpsCatalogRoute: typeof AuthenticatedOpsCatalogRoute
+  AuthenticatedOpsPaymentsRoute: typeof AuthenticatedOpsPaymentsRoute
+  AuthenticatedOpsReportsRoute: typeof AuthenticatedOpsReportsRoute
+  AuthenticatedOpsVerificationRoute: typeof AuthenticatedOpsVerificationRoute
+  AuthenticatedApplicationsIndexRoute: typeof AuthenticatedApplicationsIndexRoute
   AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
+  AuthenticatedCreditIndexRoute: typeof AuthenticatedCreditIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
+  AuthenticatedJobsIndexRoute: typeof AuthenticatedJobsIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
 }
@@ -541,9 +705,17 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
+  AuthenticatedJobsNewRoute: AuthenticatedJobsNewRoute,
+  AuthenticatedOpsCatalogRoute: AuthenticatedOpsCatalogRoute,
+  AuthenticatedOpsPaymentsRoute: AuthenticatedOpsPaymentsRoute,
+  AuthenticatedOpsReportsRoute: AuthenticatedOpsReportsRoute,
+  AuthenticatedOpsVerificationRoute: AuthenticatedOpsVerificationRoute,
+  AuthenticatedApplicationsIndexRoute: AuthenticatedApplicationsIndexRoute,
   AuthenticatedAppsIndexRoute: AuthenticatedAppsIndexRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
+  AuthenticatedCreditIndexRoute: AuthenticatedCreditIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
+  AuthenticatedJobsIndexRoute: AuthenticatedJobsIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
 }

@@ -7,5 +7,15 @@
   "salary": "薪资",
   "applyNow": "立即申请",
   "requireLicense": "需要执业证书",
-  "comingSoon": "即将推出"
+  "comingSoon": "即将推出",
+  "resultsCount": "{count} 个匹配职位",
+  "noResults": "没有匹配的职位 — 请调整筛选条件",
+  "postedOn": "发布于",
+  "backToList": "返回列表",
+  "jobDescription": "职位描述",
+  "requirements": "任职要求",
+  "benefits": "福利待遇",
+  "aboutOrg": "关于该机构",
+  "shareJob": "分享此职位",
+  "clearFilters": "清除筛选"
 }

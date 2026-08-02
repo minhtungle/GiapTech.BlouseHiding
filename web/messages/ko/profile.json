@@ -4,5 +4,30 @@
   "verifyStatusPending": "인증 대기중",
   "verifyStatusVerified": "인증됨",
   "verifyStatusRejected": "거절됨",
-  "cvBuilder": "이력서 작성"
+  "cvBuilder": "이력서 작성",
+  "completion": "프로필 완성도",
+  "tabOverview": "개요",
+  "tabApplications": "지원 내역",
+  "tabSettings": "설정",
+  "yearsExperience": "년 경력",
+  "licenseNumber": "면허 번호",
+  "issuedBy": "발급 기관",
+  "issuedAt": "발급일",
+  "expiresAt": "만료일",
+  "welcomeBack": "다시 오신 것을 환영합니다",
+  "stage": {
+    "moi": "신규",
+    "dang_xem": "검토중",
+    "phu_hop": "서류합격",
+    "phong_van": "면접",
+    "offer": "오퍼",
+    "trung_tuyen": "합격",
+    "tu_choi": "불합격"
+  },
+  "settingsTitle": "계정 설정",
+  "changePassword": "비밀번호 변경",
+  "privacy": "개인정보",
+  "deleteAccount": "계정 삭제",
+  "deleteAccountWarning": "계정은 13/2023호 법령에 따라 익명 처리되며 되돌릴 수 없습니다.",
+  "navLabel": "프로필 및 면허"
 }

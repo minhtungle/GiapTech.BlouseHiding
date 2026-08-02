@@ -4,5 +4,30 @@
   "verifyStatusPending": "確認待ち",
   "verifyStatusVerified": "確認済み",
   "verifyStatusRejected": "却下",
-  "cvBuilder": "履歴書作成"
+  "cvBuilder": "履歴書作成",
+  "completion": "プロフィール完成度",
+  "tabOverview": "概要",
+  "tabApplications": "応募履歴",
+  "tabSettings": "設定",
+  "yearsExperience": "年の経験",
+  "licenseNumber": "免許番号",
+  "issuedBy": "発行元",
+  "issuedAt": "発行日",
+  "expiresAt": "有効期限",
+  "welcomeBack": "おかえりなさい",
+  "stage": {
+    "moi": "新規",
+    "dang_xem": "確認中",
+    "phu_hop": "書類通過",
+    "phong_van": "面接",
+    "offer": "内定",
+    "trung_tuyen": "採用",
+    "tu_choi": "不採用"
+  },
+  "settingsTitle": "アカウント設定",
+  "changePassword": "パスワード変更",
+  "privacy": "プライバシー",
+  "deleteAccount": "アカウント削除",
+  "deleteAccountWarning": "アカウントは政令13/2023に基づき匿名化され、元に戻せません。",
+  "navLabel": "プロフィールと免許"
 }

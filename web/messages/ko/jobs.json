@@ -7,5 +7,15 @@
   "salary": "급여",
   "applyNow": "지금 지원하기",
   "requireLicense": "면허 필요",
-  "comingSoon": "준비 중"
+  "comingSoon": "준비 중",
+  "resultsCount": "{count}개의 채용공고",
+  "noResults": "일치하는 채용공고가 없습니다 — 필터를 조정해보세요",
+  "postedOn": "게시일",
+  "backToList": "목록으로 돌아가기",
+  "jobDescription": "직무 설명",
+  "requirements": "지원 자격",
+  "benefits": "복리후생",
+  "aboutOrg": "의료기관 소개",
+  "shareJob": "공유하기",
+  "clearFilters": "필터 초기화"
 }

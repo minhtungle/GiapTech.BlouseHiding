@@ -7,5 +7,15 @@
   "salary": "給与",
   "applyNow": "今すぐ応募",
   "requireLicense": "免許が必要",
-  "comingSoon": "近日公開"
+  "comingSoon": "近日公開",
+  "resultsCount": "{count}件の求人",
+  "noResults": "該当する求人が見つかりません — 条件を変更してください",
+  "postedOn": "掲載日",
+  "backToList": "一覧に戻る",
+  "jobDescription": "職務内容",
+  "requirements": "応募条件",
+  "benefits": "待遇",
+  "aboutOrg": "医療機関について",
+  "shareJob": "この求人を共有",
+  "clearFilters": "フィルターを解除"
 }
