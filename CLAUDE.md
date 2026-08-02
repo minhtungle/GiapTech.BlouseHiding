@@ -28,6 +28,7 @@ build/test/dev thật đã xác minh chạy được.
 | Nghiệp vụ, actor, đối chiếu TopCV/Ybox, roadmap | [`docs/nghiep-vu/PHAN-TICH-NGHIEP-VU.md`](docs/nghiep-vu/PHAN-TICH-NGHIEP-VU.md) |
 | Luồng nghiệp vụ chi tiết + danh sách màn hình | [`docs/nghiep-vu/LUONG-NGHIEP-VU-MAN-HINH.md`](docs/nghiep-vu/LUONG-NGHIEP-VU-MAN-HINH.md) |
 | Checklist tính năng theo giai đoạn | [`docs/nghiep-vu/DANH-SACH-TINH-NANG.md`](docs/nghiep-vu/DANH-SACH-TINH-NANG.md) |
+| Nhật ký tiến độ + quy trình chốt giai đoạn — **đọc trước khi báo "xong giai đoạn X"** | [`docs/nghiep-vu/TIEN-DO-DU-AN.md`](docs/nghiep-vu/TIEN-DO-DU-AN.md) |
 | Quy ước layer/CQRS backend — **đọc trước khi viết bất kỳ code backend nào** | [`docs/backend/KIEN-TRUC-BACKEND.md`](docs/backend/KIEN-TRUC-BACKEND.md) |
 | Thư viện backend cụ thể | [`docs/backend/CONG-NGHE-BACKEND.md`](docs/backend/CONG-NGHE-BACKEND.md) |
 | Hợp đồng API (endpoint, request/response) | [`docs/backend/API-DESIGN.md`](docs/backend/API-DESIGN.md) |
@@ -119,6 +120,11 @@ docs/                 — toàn bộ tài liệu (bản đồ ở mục 2)
 5. Cập nhật `docs/nghiep-vu/DANH-SACH-TINH-NANG.md` (đổi trạng thái ⬜/🟨/✅).
 6. Viết test tương ứng (xem `docs/backend/KIEN-TRUC-BACKEND.md` mục 4) — không merge thiếu test cho
    use case mới.
+
+**Khi xong toàn bộ 1 giai đoạn (không phải 1 tính năng lẻ)** — trước khi báo "xong Giai đoạn X" hay bắt
+đầu Giai đoạn tiếp theo, chạy đủ checklist chốt giai đoạn ở
+[`docs/nghiep-vu/TIEN-DO-DU-AN.md`](docs/nghiep-vu/TIEN-DO-DU-AN.md) mục 1 và ghi nhật ký vào mục 3 của
+tài liệu đó. Không tự ý coi 1 giai đoạn là xong chỉ vì code compile — phải verify chạy thật.
 
 ## 6. Lệnh build/test/dev
 
