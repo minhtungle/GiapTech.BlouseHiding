@@ -18,7 +18,7 @@
 ### 0.1 UI Shell (ưu tiên làm trước, không cần chờ backend)
 - ⬜ Khởi tạo `web/` (Next.js + shadcn/ui) — copy component cần dùng, áp token "Tin cậy lâm sàng"
   ([`../frontend/THIET-KE-GIAO-DIEN.md`](../frontend/THIET-KE-GIAO-DIEN.md) mục 5), tự host Be Vietnam Pro
-- ⬜ Khởi tạo `web-admin/` (shadcn-admin, Vite + React Router) — áp token trung tính (ADR-0007), theo
+- ⬜ Khởi tạo `web-admin/` (shadcn-admin, Vite + TanStack Router) — áp token trung tính (ADR-0007), theo
   cấu trúc đã chốt ở [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md)
 - ⬜ Khung đa ngôn ngữ ở `web/`: routing `next-intl` 6 locale (`localePrefix: always`), cấu trúc thư
   mục `messages/`, bộ chọn ngôn ngữ (header + footer) — dựng khung trước dù bản dịch tạm để tiếng Việt

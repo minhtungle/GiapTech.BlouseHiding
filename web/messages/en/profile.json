@@ -1,0 +1,8 @@
+{
+  "title": "My profile",
+  "license": "Practice license (CCHN)",
+  "verifyStatusPending": "Pending verification",
+  "verifyStatusVerified": "Verified",
+  "verifyStatusRejected": "Rejected",
+  "cvBuilder": "Build CV"
+}

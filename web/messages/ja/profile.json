@@ -1,0 +1,8 @@
+{
+  "title": "マイプロフィール",
+  "license": "医療従事者免許（CCHN）",
+  "verifyStatusPending": "確認待ち",
+  "verifyStatusVerified": "確認済み",
+  "verifyStatusRejected": "却下",
+  "cvBuilder": "履歴書作成"
+}

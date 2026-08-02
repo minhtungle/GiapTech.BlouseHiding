@@ -1,0 +1,11 @@
+{
+  "title": "Buscar empleo",
+  "filters": "Filtros",
+  "specialty": "Especialidad",
+  "location": "Ubicación",
+  "employmentType": "Tipo de empleo",
+  "salary": "Salario",
+  "applyNow": "Postular ahora",
+  "requireLicense": "Requiere licencia",
+  "comingSoon": "Próximamente"
+}

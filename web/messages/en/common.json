@@ -1,0 +1,18 @@
+{
+  "brand": "BlouseHiding",
+  "tagline": "Specialized healthcare recruitment platform",
+  "nav": {
+    "jobs": "Find Jobs",
+    "organizations": "Healthcare Facilities",
+    "about": "About",
+    "login": "Log in",
+    "register": "Sign up"
+  },
+  "footer": {
+    "rights": "All rights reserved by BlouseHiding",
+    "language": "Language"
+  },
+  "languageSwitcher": {
+    "label": "Choose language"
+  }
+}

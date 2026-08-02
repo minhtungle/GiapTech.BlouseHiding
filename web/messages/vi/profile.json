@@ -1,0 +1,8 @@
+{
+  "title": "Hồ sơ của tôi",
+  "license": "Chứng chỉ hành nghề (CCHN)",
+  "verifyStatusPending": "Chờ xác thực",
+  "verifyStatusVerified": "Đã xác thực",
+  "verifyStatusRejected": "Bị từ chối",
+  "cvBuilder": "Xây dựng CV"
+}

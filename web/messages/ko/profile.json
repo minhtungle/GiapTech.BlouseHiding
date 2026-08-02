@@ -1,0 +1,8 @@
+{
+  "title": "내 프로필",
+  "license": "의료 면허 (CCHN)",
+  "verifyStatusPending": "인증 대기중",
+  "verifyStatusVerified": "인증됨",
+  "verifyStatusRejected": "거절됨",
+  "cvBuilder": "이력서 작성"
+}

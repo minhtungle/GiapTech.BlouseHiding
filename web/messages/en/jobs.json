@@ -1,0 +1,11 @@
+{
+  "title": "Find Jobs",
+  "filters": "Filters",
+  "specialty": "Specialty",
+  "location": "Location",
+  "employmentType": "Employment type",
+  "salary": "Salary",
+  "applyNow": "Apply now",
+  "requireLicense": "License required",
+  "comingSoon": "Coming soon"
+}

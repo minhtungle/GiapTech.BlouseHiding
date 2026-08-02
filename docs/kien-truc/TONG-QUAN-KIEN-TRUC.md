@@ -96,7 +96,7 @@ Search:     pg_trgm/tsvector (MVP) → OpenSearch (GĐ2)
 Queue/RT:   RabbitMQ + MassTransit · SignalR (Redis backplane) · Hangfire
 Storage:    MinIO (self-host, S3-compatible) qua presigned URL
 Frontend:   Client = Next.js (App Router) + React 19 + TypeScript
-            Admin/Vận hành = shadcn-admin (Vite + React Router + TypeScript), 1 app riêng — ADR-0008
+            Admin/Vận hành = shadcn-admin (Vite + TanStack Router + TypeScript), 1 app riêng — ADR-0008
 UI:         shadcn/ui (Radix + Tailwind) · dnd-kit · Tiptap · Recharts — dùng chung nền tảng ở cả 2 app
 State:      TanStack Query + Zustand · React Hook Form + Zod
 i18n:       next-intl (vi/en/ja/zh/ko/es, vi mặc định) · routing tiền tố URL — CHỈ áp dụng cho Client;
@@ -146,7 +146,7 @@ tránh tình trạng "sao lại chọn cái này" phải hỏi lại khi bàn gi
 6. Tên 3 khu vực site: **Client** (ứng viên/khách) · **Admin** (Nhà tuyển dụng) · **Vận hành** (đội nội
    bộ nền tảng). Xem [ADR-0005](./adr/0005-dat-ten-3-khu-vuc-site.md) và [`THUAT-NGU.md`](./THUAT-NGU.md).
    **Client** dùng Next.js (`web/`, riêng 1 app). **Admin + Vận hành dùng chung 1 app shadcn-admin**
-   (`web-admin/`, Vite + React Router), tách khỏi Next.js — phân biệt màn hình theo role, RBAC chặn
+   (`web-admin/`, Vite + TanStack Router), tách khỏi Next.js — phân biệt màn hình theo role, RBAC chặn
    thật ở backend. Xem [ADR-0008](./adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md).
 7. Đa ngôn ngữ: **6 ngôn ngữ** — Tiếng Việt (mặc định), Anh, Nhật, Trung, Hàn, Tây Ban Nha — **chỉ áp
    dụng cho Client** (`web/`); Admin/Vận hành (`web-admin/`) chỉ tiếng Việt (xem

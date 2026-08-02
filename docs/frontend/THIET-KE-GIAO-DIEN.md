@@ -80,7 +80,7 @@ tin qua bản sắc riêng). Thay vào đó:
 ### 3.2 Khu vực Admin (NTD) + Vận hành — công cụ làm việc nội bộ, dùng lặp lại nhiều lần/ngày
 > ⚠️ Quyết định cuối (xem [ADR-0007](../kien-truc/adr/0007-shadcn-chuan-cho-admin-van-hanh.md) cho màu
 > sắc/phong cách, [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md) cho
-> khung kỹ thuật): **1 app riêng biệt (`web-admin/`), chạy thẳng shadcn-admin** (Vite + React Router) —
+> khung kỹ thuật): **1 app riêng biệt (`web-admin/`), chạy thẳng shadcn-admin** (Vite + TanStack Router) —
 > **không** còn "chỉ tham khảo bố cục rồi tự dựng lại trong Next.js" như quyết định trước đó. shadcn-admin
 > được cài đặt trực tiếp làm nền tảng, tùy biến theo token màu ở mục 5. App này tách hẳn khỏi `web/`
 > (Client, Next.js) — dùng chung 1 instance cho cả Admin và Vận hành, phân biệt màn hình theo role.
@@ -113,7 +113,7 @@ dùng shadcn/ui hay không.
 | Component nền + theming | **shadcn/ui** (Radix + Tailwind) | Copy-code, tùy biến 100%, theming bằng CSS variable — khớp thẳng với token ở mục 5 |
 | Icon | **Lucide** | Đi kèm mặc định với shadcn/ui, nét vẽ nhất quán, mã nguồn mở, đủ icon y tế cơ bản (stethoscope, syringe, hospital...) |
 | Minh họa (empty state, onboarding) | **unDraw** | Mã nguồn mở, **tự đổi màu SVG theo bảng màu riêng** (khác hẳn ảnh stock chung chung) |
-| Nền tảng app Admin + Vận hành (`web-admin/`) | **shadcn-admin** (cài đặt trực tiếp làm nền tảng app, Vite + React Router) | Xây trên shadcn/ui — bố cục sidebar/bảng/KPI card có sẵn, tùy biến theo token màu ở mục 5 thay vì tự dựng lại (xem [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md)) |
+| Nền tảng app Admin + Vận hành (`web-admin/`) | **shadcn-admin** (cài đặt trực tiếp làm nền tảng app, Vite + TanStack Router) | Xây trên shadcn/ui — bố cục sidebar/bảng/KPI card có sẵn, tùy biến theo token màu ở mục 5 thay vì tự dựng lại (xem [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md)) |
 | Kanban kéo-thả (ATS) | **dnd-kit** | Nhẹ, accessible, đã chọn ở tech stack |
 | Rich text (mô tả tin, bài viết) | **Tiptap** | Headless, style theo token riêng, không mang theo CSS mặc định xấu |
 | Biểu đồ dashboard | **Tremor** (dựng trên Recharts) | Component biểu đồ + KPI card sẵn, phối màu theo CSS variable — khớp nhanh với theme |

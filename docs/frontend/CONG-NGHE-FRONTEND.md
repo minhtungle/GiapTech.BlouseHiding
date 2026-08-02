@@ -9,7 +9,7 @@ quyết định tách app ở [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-
 
 - **`web/`** — Next.js, chỉ khu vực **Client** (ứng viên/khách), bản sắc "Tin cậy lâm sàng" đầy đủ, cần
   SSR/SSG cho SEO tin tuyển dụng, đủ 6 ngôn ngữ.
-- **`web-admin/`** — **shadcn-admin** (Vite + React Router + TypeScript), dùng chung cho **Admin (NTD)**
+- **`web-admin/`** — **shadcn-admin** (Vite + TanStack Router + TypeScript), dùng chung cho **Admin (NTD)**
   và **Vận hành** (nội bộ) — phân biệt màn hình theo role đăng nhập, RBAC chặn thật ở backend. Dùng
   giao diện dashboard chuẩn shadcn/ui trung tính (xem [ADR-0007](../kien-truc/adr/0007-shadcn-chuan-cho-admin-van-hanh.md)),
   chỉ tiếng Việt (không dùng next-intl).
@@ -38,7 +38,7 @@ quyết định tách app ở [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-
 
 | Thành phần | Lựa chọn | Lý do |
 |---|---|---|
-| Framework | **shadcn-admin** (Vite + **React Router** + React 19 + TypeScript, MIT) | Cài đặt trực tiếp làm nền tảng app — tận dụng pattern sidebar/bảng/dialog có sẵn, xem [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md) |
+| Framework | **shadcn-admin** (Vite + **TanStack Router** + React 19 + TypeScript, MIT) | Cài đặt trực tiếp làm nền tảng app — tận dụng pattern sidebar/bảng/dialog có sẵn, xem [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md) |
 | Component/UI | **shadcn/ui** (Radix + Tailwind) | Cùng nền tảng component với Client — theme trung tính riêng (xem `THIET-KE-GIAO-DIEN.md` mục 3.2) |
 | Quản lý state server | **TanStack Query** | Giống Client — cache/refetch dữ liệu API |
 | Quản lý state client nhẹ | **Zustand** | Modal, wizard nội bộ (đăng tin, duyệt hồ sơ) |

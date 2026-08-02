@@ -1,0 +1,18 @@
+{
+  "brand": "BlouseHiding",
+  "tagline": "의료 전문 채용 플랫폼",
+  "nav": {
+    "jobs": "채용 검색",
+    "organizations": "의료기관",
+    "about": "소개",
+    "login": "로그인",
+    "register": "회원가입"
+  },
+  "footer": {
+    "rights": "BlouseHiding 판권 소유",
+    "language": "언어"
+  },
+  "languageSwitcher": {
+    "label": "언어 선택"
+  }
+}

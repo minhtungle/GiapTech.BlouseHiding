@@ -1,0 +1,8 @@
+{
+  "title": "我的档案",
+  "license": "执业证书（CCHN）",
+  "verifyStatusPending": "待认证",
+  "verifyStatusVerified": "已认证",
+  "verifyStatusRejected": "已拒绝",
+  "cvBuilder": "简历生成"
+}

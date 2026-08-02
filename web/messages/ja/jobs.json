@@ -1,0 +1,11 @@
+{
+  "title": "求人検索",
+  "filters": "絞り込み",
+  "specialty": "専門分野",
+  "location": "勤務地",
+  "employmentType": "雇用形態",
+  "salary": "給与",
+  "applyNow": "今すぐ応募",
+  "requireLicense": "免許が必要",
+  "comingSoon": "近日公開"
+}

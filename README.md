@@ -15,7 +15,7 @@ Dự án đang ở giai đoạn thiết kế/lập kế hoạch, solution/code t
 **Đã chốt:** backend **.NET 10 (ASP.NET Core)**, Web trước với MVP đầy đủ, hạ tầng **self-host VPS**,
 kiến trúc **Clean Architecture + Modular Monolith**, **2 app frontend riêng biệt** — Client dùng
 **Next.js + shadcn/ui**, Admin (NTD) + Vận hành dùng chung 1 app chạy thẳng **shadcn-admin** (Vite +
-React Router), đa ngôn ngữ **6 thứ tiếng (Việt/Anh/Nhật/Trung/Hàn/Tây Ban Nha, chỉ áp dụng cho Client)**,
+TanStack Router), đa ngôn ngữ **6 thứ tiếng (Việt/Anh/Nhật/Trung/Hàn/Tây Ban Nha, chỉ áp dụng cho Client)**,
 thanh toán tự động **hoãn lại** (MVP dùng quy trình thủ công). Xem trạng thái đầy đủ + việc còn cần
 chốt ở [`docs/kien-truc/TONG-QUAN-KIEN-TRUC.md`](docs/kien-truc/TONG-QUAN-KIEN-TRUC.md) mục 7.
 

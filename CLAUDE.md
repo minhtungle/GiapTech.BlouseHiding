@@ -53,7 +53,7 @@ src/
   Web/                — Controllers/API, composition root
 web/                  — Next.js (App Router) — CHỈ khu vực Client (candidate/guest), bản sắc
                         "Tin cậy lâm sàng" đầy đủ, cần SEO/SSR cho tin tuyển dụng
-web-admin/            — shadcn-admin (Vite + React Router + TS) — 1 app riêng dùng chung cho
+web-admin/            — shadcn-admin (Vite + TanStack Router + TS) — 1 app riêng dùng chung cho
                         Admin (Nhà tuyển dụng) + Vận hành (nội bộ nền tảng), phân biệt màn hình theo
                         role đăng nhập, RBAC chặn thật ở backend (xem ADR-0008)
                         (xem docs/kien-truc/THUAT-NGU.md — role backend `admin` ≠ site "Admin")

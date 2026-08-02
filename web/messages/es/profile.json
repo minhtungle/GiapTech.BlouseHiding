@@ -1,0 +1,8 @@
+{
+  "title": "Mi perfil",
+  "license": "Licencia profesional (CCHN)",
+  "verifyStatusPending": "Pendiente de verificación",
+  "verifyStatusVerified": "Verificado",
+  "verifyStatusRejected": "Rechazado",
+  "cvBuilder": "Crear CV"
+}

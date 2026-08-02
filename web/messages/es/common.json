@@ -1,0 +1,18 @@
+{
+  "brand": "BlouseHiding",
+  "tagline": "Plataforma de reclutamiento especializada en salud",
+  "nav": {
+    "jobs": "Buscar empleo",
+    "organizations": "Centros de salud",
+    "about": "Acerca de",
+    "login": "Iniciar sesión",
+    "register": "Registrarse"
+  },
+  "footer": {
+    "rights": "Todos los derechos reservados a BlouseHiding",
+    "language": "Idioma"
+  },
+  "languageSwitcher": {
+    "label": "Elegir idioma"
+  }
+}

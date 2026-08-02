@@ -1,0 +1,11 @@
+{
+  "title": "채용 검색",
+  "filters": "필터",
+  "specialty": "전문분야",
+  "location": "지역",
+  "employmentType": "고용 형태",
+  "salary": "급여",
+  "applyNow": "지금 지원하기",
+  "requireLicense": "면허 필요",
+  "comingSoon": "준비 중"
+}

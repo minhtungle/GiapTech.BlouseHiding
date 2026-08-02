@@ -14,8 +14,13 @@ làm nền tảng thật cho 2 khu vực này thay vì tự dựng lại từ đ
 
 ## Quyết định
 1. **Admin (NTD) + Vận hành tách khỏi Next.js**, chuyển thành **1 ứng dụng riêng** dựng trên
-   **shadcn-admin** (Vite + React Router + TypeScript, MIT license) — cài đặt trực tiếp làm nền tảng
+   **shadcn-admin** (Vite + TanStack Router + TypeScript, MIT license) — cài đặt trực tiếp làm nền tảng
    app, không còn chỉ "tham khảo bố cục".
+   > 📝 Đính chính lúc scaffold thật (Giai đoạn 0.1): bản ghi ban đầu của ADR này ghi router là "React
+   > Router" — kiểm chứng lại repo gốc [`satnaing/shadcn-admin`](https://github.com/satnaing/shadcn-admin)
+   > thì router thật là **TanStack Router**, không phải React Router. Đã sửa xuyên suốt tài liệu liên
+   > quan (`CLAUDE.md`, `CONG-NGHE-FRONTEND.md`, `THIET-KE-GIAO-DIEN.md`, `TONG-QUAN-KIEN-TRUC.md`).
+   > Không đổi bản chất quyết định (vẫn Vite SPA, không phải Next.js) — chỉ đính chính chi tiết kỹ thuật.
 2. **Dùng chung 1 instance duy nhất** cho cả Admin (NTD) và Vận hành (không tách 2 app riêng biệt) —
    phân biệt màn hình/nav theo role đăng nhập (`employer_*` thấy menu Admin; `admin`/`moderator` thấy
    menu Vận hành), chặn thật sự bằng RBAC phía backend (đã có sẵn, xem
@@ -55,7 +60,7 @@ làm nền tảng thật cho 2 khu vực này thay vì tự dựng lại từ đ
   [`../../ha-tang/HA-TANG-TRIEN-KHAI.md`](../../ha-tang/HA-TANG-TRIEN-KHAI.md).
 - (+) Auth JWT Bearer có sẵn từ đầu nên không phát sinh vấn đề cookie cross-domain khi tách app — chỉ
   cần thêm whitelist CORS.
-- (−) 2 hệ sinh thái frontend (Next.js cho Client, Vite/React Router cho Admin/Vận hành) — 2 lần cấu
+- (−) 2 hệ sinh thái frontend (Next.js cho Client, Vite/TanStack Router cho Admin/Vận hành) — 2 lần cấu
   hình Tailwind/theme token (dù cùng giá trị màu ở
   [`../../frontend/THIET-KE-GIAO-DIEN.md`](../../frontend/THIET-KE-GIAO-DIEN.md) mục 5), 2 lần setup
   test (Vitest+RTL vẫn dùng chung được, nhưng Playwright e2e phải trỏ 2 base URL khác nhau).
