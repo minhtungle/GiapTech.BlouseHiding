@@ -20,6 +20,7 @@ thực tế — đừng để phần đó lạc hậu so với code.
 
 | Cần biết gì | Đọc ở đâu |
 |---|---|
+| Đọc một mạch để nắm tổng thể trước khi đi sâu | [`docs/TONG-THUAT-HE-THONG.md`](docs/TONG-THUAT-HE-THONG.md) |
 | Kiến trúc & công nghệ tổng quan, quyết định đã chốt | [`docs/kien-truc/TONG-QUAN-KIEN-TRUC.md`](docs/kien-truc/TONG-QUAN-KIEN-TRUC.md) |
 | Vì sao 1 quyết định lớn được chọn (không phải chọn cái khác) | [`docs/kien-truc/adr/`](docs/kien-truc/adr/) |
 | Thuật ngữ y tế/nghiệp vụ (CCHN, chuyên khoa, tuyến, locum...) | [`docs/kien-truc/THUAT-NGU.md`](docs/kien-truc/THUAT-NGU.md) |
@@ -40,6 +41,7 @@ thực tế — đừng để phần đó lạc hậu so với code.
 | Hướng dẫn sử dụng cho từng vai trò | [`docs/huong-dan-su-dung/`](docs/huong-dan-su-dung/) |
 | Quy trình đóng góp code (git flow, commit, PR) | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
 | Chính sách bảo mật | [`SECURITY.md`](SECURITY.md) |
+| Nhật ký thay đổi | [`CHANGELOG.md`](CHANGELOG.md) |
 
 ## 3. Cấu trúc repo (khi solution đã khởi tạo — xem `docs/backend/KIEN-TRUC-BACKEND.md` mục 1 để biết chi tiết)
 

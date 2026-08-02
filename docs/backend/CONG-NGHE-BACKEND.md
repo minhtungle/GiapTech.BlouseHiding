@@ -41,6 +41,14 @@ tự dựng từ đầu — đã có sẵn MediatR, FluentValidation, EF Core, S
 | Phân quyền | Policy-based Authorization (`[Authorize(Policy = "EmployerMember")]`) + custom `IAuthorizationHandler` kiểm tra membership tổ chức | RBAC đơn giản (role) không đủ vì cần kiểm tra "có phải member của org này" |
 | Rate limiting | `Microsoft.AspNetCore.RateLimiting` (built-in .NET) | Chặn spam OTP, brute-force login |
 
+**Lưu trữ token xuyên 2 app frontend** (Client `web/` + Admin/Vận hành `web-admin/`, xem
+[ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md)): access token giữ
+trong bộ nhớ JS (không localStorage) ở cả 2 app. Refresh token gọi qua endpoint riêng, KHÔNG cần cookie
+chung domain giữa 2 frontend — vì cookie refresh token (nếu dùng httpOnly cookie thay vì trả thẳng
+trong response) chỉ cần thuộc **domain của API**, không phải domain frontend, nên gửi kèm được từ cả
+2 origin (`credentials: 'include'` + CORS `AllowCredentials`) mà không phát sinh vấn đề cross-domain
+cookie. Không cần thiết kế phức tạp hơn cho MVP quy mô hiện tại.
+
 ## 4. Xử lý nền & realtime
 
 | Thành phần | Lựa chọn | Lý do |

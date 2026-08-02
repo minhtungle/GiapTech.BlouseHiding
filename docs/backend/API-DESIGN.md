@@ -30,6 +30,13 @@
   (`web-admin/`, shadcn-admin) — xem [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md).
   Whitelist đúng 2 origin domain trong CORS policy; vì auth dùng JWT Bearer (không phải cookie session)
   nên không cần cấu hình `credentials`/cookie domain phức tạp giữa 2 origin.
+- **Upload file** (ảnh CCHN, giấy phép doanh nghiệp, CV, avatar, logo): dùng **chung 1 endpoint**
+  `POST /uploads/presigned-url` — Owner — body `{ purpose: "license" | "cv" | "avatar" | "org_document" | "org_logo", file_name, content_type }`, trả về URL + field để client upload thẳng lên MinIO (xem
+  [`CONG-NGHE-BACKEND.md`](./CONG-NGHE-BACKEND.md)), không upload qua backend. Không cần endpoint riêng
+  cho từng loại file ở Giai đoạn 1 — `purpose` đủ để backend áp giới hạn kích thước/định dạng khác nhau.
+- **Báo cáo vi phạm** (report): `POST /reports` — Owner (bất kỳ user đăng nhập) — body
+  `{ target_type: "job" | "organization" | "profile" | "message", target_id, reason }`. Vận hành xử lý
+  qua `/ops/reports/*` (mục 11).
 - **Ngôn ngữ**: request gửi header `Accept-Language` với 1 trong 6 giá trị `vi`/`en`/`ja`/`zh`/`ko`/`es`
   — dùng để trả lỗi validate đúng ngôn ngữ và (xem [ADR-0006](../kien-truc/adr/0006-da-ngon-ngu.md))
   để endpoint danh mục (mục 10) resolve sẵn `name` theo đúng locale đó (JOIN bảng `*_translations`,
@@ -229,7 +236,7 @@ khi `payments.type = credit_topup` thành công, cộng `amount` vào `credit_wa
 | POST | `/ops/payments/{id}/reject` | Admin/Moderator | Không nhận được/sai số tiền → `payments.status=failed`, `jobs.status: pending_payment→draft` để NTD sửa & nộp lại |
 | POST | `/ops/organizations/{id}/credit-refund` | Admin | Hoàn Credit thủ công khi có tranh chấp — ghi `credit_transactions` (`reason=refund`, `created_by`) |
 | GET | `/ops/reports?status=pending` | Admin/Moderator | Danh sách báo cáo vi phạm |
-| POST | `/ops/reports/{id}/resolve` | Admin/Moderator | Xử lý report — hành động "gỡ nội dung" phải gọi kèm state change tương ứng của entity bị báo cáo (đóng tin/rút xác thực tổ chức) trong cùng thao tác, không tách 2 bước thủ công (xem ERD mục 4.10) |
+| POST | `/ops/reports/{id}/resolve` | Admin/Moderator | Body: `{ action: "warned" \| "content_removed" \| "account_suspended", note }`. `content_removed`/`account_suspended` phải trigger state change tương ứng của entity bị báo cáo (đóng tin/rút xác thực tổ chức) trong cùng transaction, không tách 2 bước thủ công (xem ERD mục 4.10) |
 | GET | `/ops/users` | Admin | Tìm kiếm/quản lý người dùng |
 | POST | `/ops/users/{id}/suspend` | Admin | Khóa tài khoản |
 | CRUD | `/ops/catalog/specialties`, `/ops/catalog/locations` | Admin | Quản lý danh mục |

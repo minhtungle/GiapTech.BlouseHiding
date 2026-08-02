@@ -44,12 +44,10 @@ Mỗi bounded context tương ứng 1 nhóm `Features/` trong tầng `Applicatio
 ## 3. Sơ đồ tổng quát (logic)
 
 ```
-  [Client: Next.js]  [Mobile App, GĐ2]  [Admin: NTD]  [Vận hành]
-        \                     |               \            /
-         \                    |                \  shadcn-admin (Vite + React
-          \                   |                 \  Router) — 1 app riêng dùng
-           \                  |                  \ chung, RBAC theo role
-            \                 |                   \  (xem ADR-0008)         /
+  [Client: Next.js]   [Mobile App, GĐ2]   [shadcn-admin: 1 app dùng chung
+        \                     |             cho Admin (NTD) + Vận hành,
+         \                    |             RBAC phân biệt màn hình — ADR-0008]
+          \                   |                        /
               ┌────────────────────────┐
               │  Caddy (reverse proxy)  │
               └────────────────────────┘
@@ -161,10 +159,15 @@ tránh tình trạng "sao lại chọn cái này" phải hỏi lại khi bàn gi
    màu trang trí rộng), chỉ giữ màu thương hiệu cho badge trạng thái + 1 nút CTA chính mỗi màn hình.
    Xem [ADR-0007](./adr/0007-shadcn-chuan-cho-admin-van-hanh.md) (màu sắc/phong cách) và
    [ADR-0008](./adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md) (2 app riêng biệt).
+9. Phạm vi "CV Scoring" ở Giai đoạn 1: **chỉ match-score dựa trên trường có cấu trúc sẵn** (chuyên khoa,
+   số năm kinh nghiệm, địa điểm so với yêu cầu tin) — **không** phân tích văn bản CV tự do (không NLP/AI).
+   Tham khảo thực tế ATS lớn (Greenhouse/Lever không có AI-score gốc, recruiter chủ yếu search/filter
+   theo tiêu chí) — `score` chỉ là gợi ý sắp xếp phụ, HR vẫn quyết định qua Kanban. Chấm điểm CV bằng
+   AI/NLP đầy đủ dời sang module `Matching` ở Giai đoạn 2. Xem
+   [`../database/ERD-CHI-TIET.md`](../database/ERD-CHI-TIET.md) mục 4 điểm 8.
 
 **Còn cần chốt (không chặn tiến độ):**
-9. Nhà cung cấp VPS cụ thể (VN hay quốc tế) — xem `../ha-tang/HA-TANG-TRIEN-KHAI.md` mục so sánh.
-10. Phạm vi chính xác của "CV Scoring" ở MVP — quy tắc tính điểm tự động hay chỉ gắn nhãn thủ công trước?
+10. Nhà cung cấp VPS cụ thể (VN hay quốc tế) — xem `../ha-tang/HA-TANG-TRIEN-KHAI.md` mục so sánh.
 11. Cổng thanh toán tự động cụ thể khi cần triển khai thật.
 12. OpenSearch vs Elasticsearch ở Giai đoạn 2 — đã nghiêng OpenSearch.
 

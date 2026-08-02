@@ -562,13 +562,14 @@ set `accepted_at`. Không tạo `employer_members` với `user_id` rỗng ở b�
 | note_text | text |
 
 **`application_stage_history`**
-| Cột | Kiểu |
-|---|---|
-| id | uuid PK |
-| application_id | uuid FK |
-| from_stage / to_stage | enum |
-| changed_by | uuid FK |
-| changed_at | timestamp |
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| id | uuid PK | |
+| application_id | uuid FK | |
+| from_stage / to_stage | enum | |
+| changed_by | uuid FK | |
+| changed_at | timestamp | |
+| silent | boolean DEFAULT false | khớp tham số `silent` ở `PATCH /applications/{id}/stage` — `true` = không gửi thông báo cho ứng viên, chỉ ghi log nội bộ |
 
 ### 2.7 Credit & Profile Unlock
 
@@ -577,7 +578,7 @@ set `accepted_at`. Không tạo `employer_members` với `user_id` rỗng ở b�
 |---|---|
 | id | uuid PK |
 | org_id | uuid FK UNIQUE |
-| balance | int DEFAULT 0 |
+| balance | int DEFAULT 0, `CHECK (balance >= 0)` |
 
 **`credit_transactions`**
 | Cột | Kiểu | Ghi chú |
@@ -679,6 +680,7 @@ ra sai/trùng, lỗi hệ thống trừ nhầm). Không có luồng tự động
 | target_id | uuid | |
 | reason | text | |
 | status | enum | `pending`, `resolved`, `dismissed` |
+| resolution_action | enum nullable | `warned` (nhắc nhở, không đổi state entity), `content_removed` (gỡ/ẩn — kèm state change entity bị báo cáo cùng transaction, xem mục 4.10), `account_suspended` (dùng lại cơ chế rút xác thực tổ chức ở mục 4.6 nếu `target_type=organization`) — NULL khi `status=dismissed`. Giai đoạn 1 chỉ cần 3 giá trị này, không cần thêm mức độ nghiêm trọng phức tạp hơn |
 | resolved_by | uuid FK nullable | |
 
 **`audit_logs`** (tuân thủ NĐ 13/2023 — bất biến, không update/delete)
@@ -736,6 +738,12 @@ ra sai/trùng, lỗi hệ thống trừ nhầm). Không có luồng tự động
 8. `applications.cv_snapshot` được ghi **1 lần duy nhất** lúc tạo application (copy từ CV đang chọn tại
    thời điểm đó) — sửa CV gốc (`cvs`) sau này **không** ảnh hưởng tới các application đã nộp trước đó.
    `applications.score` tính dựa trên `cv_snapshot`, cũng không tự tính lại khi hồ sơ gốc đổi.
+   **Giai đoạn 1, `score` chỉ là match-score dựa trên trường có cấu trúc sẵn có** (trùng chuyên khoa,
+   số năm kinh nghiệm tối thiểu, địa điểm so với yêu cầu tin) — **không** phân tích văn bản CV tự do
+   (không NLP/AI). Tham khảo thực tế ATS lớn (Greenhouse/Lever không có AI-score gốc, recruiter chủ yếu
+   search/filter theo tiêu chí, không dựa số điểm ẩn) — HR vẫn là người quyết định qua Kanban, `score`
+   chỉ là gợi ý sắp xếp phụ. Chấm điểm CV bằng AI/NLP đầy đủ dời sang module `Matching` ở Giai đoạn 2
+   (xem [`../kien-truc/TONG-QUAN-KIEN-TRUC.md`](../kien-truc/TONG-QUAN-KIEN-TRUC.md) mục 2 & mục 7).
 9. Chuyển `jobs.status` sang `expired`/`closed`/`suspended` **không khóa thao tác ATS** — NTD vẫn xem,
    chuyển `stage`, ghi chú, chấm điểm các `applications` đã có của tin đó bình thường; chỉ tin công khai
    (search, trang chi tiết) bị ảnh hưởng.

@@ -29,6 +29,7 @@
 - ⬜ Đa thành viên HR trong 1 tổ chức
 - ⬜ Mời thành viên HR qua email (kể cả email chưa có tài khoản — `organization_invitations`)
 - ⬜ Chọn/ghi nhớ ngôn ngữ giao diện (`users.locale`), email/thông báo gửi đúng ngôn ngữ đã chọn
+- ⬜ Xóa tài khoản (`DELETE /users/me` — soft-delete + anonymize PII, giữ audit log/application đã ẩn danh)
 
 ### Hồ sơ ứng viên
 - ⬜ Hồ sơ cơ bản (học vấn, kinh nghiệm, kỹ năng)
@@ -57,7 +58,7 @@
 - ⬜ Ứng tuyển bằng CV nền tảng/upload
 - ⬜ Chụp `cv_snapshot` + tính `score` 1 lần lúc ứng tuyển (không đổi khi hồ sơ gốc thay đổi sau này)
 - ⬜ ATS Kanban (6 trạng thái pipeline) — vẫn thao tác được sau khi tin hết hạn/đóng/suspended
-- ⬜ Ghi chú nội bộ + chấm điểm hồ sơ (CV Scoring)
+- ⬜ Ghi chú nội bộ + match-score theo trường có cấu trúc (chuyên khoa/kinh nghiệm/địa điểm — không NLP/AI, xem ERD mục 4 điểm 8)
 - ⬜ Hệ thống Credit + tìm kiếm ứng viên chủ động + Profile Unlock
 - ⬜ Hoàn Credit thủ công khi có tranh chấp (`/ops/organizations/{id}/credit-refund`)
 
@@ -68,7 +69,7 @@
 ### Vận hành
 - ⬜ Dashboard số liệu cơ bản
 - ⬜ Quản lý người dùng (khóa/mở khóa)
-- ⬜ Xử lý báo cáo vi phạm
+- ⬜ Xử lý báo cáo vi phạm (`POST /reports` tạo báo cáo, `/ops/reports/{id}/resolve` với 3 hành động: `warned`/`content_removed`/`account_suspended`)
 
 ## Giai đoạn 2 — Hoàn thiện
 
