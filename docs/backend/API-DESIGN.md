@@ -26,6 +26,10 @@
   > ⚠️ Role backend tên là `Admin` nhưng **site tương ứng gọi là "Vận hành"**, không phải trang "Admin"
   > mà Nhà tuyển dụng dùng — 2 khái niệm khác nhau, tránh nhầm lẫn khi đọc bảng dưới.
 - **Idempotency**: các endpoint tạo giao dịch tiền/credit nhận header `Idempotency-Key`.
+- **CORS**: API phục vụ **2 origin frontend riêng biệt** — Client (`web/`, Next.js) và Admin/Vận hành
+  (`web-admin/`, shadcn-admin) — xem [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md).
+  Whitelist đúng 2 origin domain trong CORS policy; vì auth dùng JWT Bearer (không phải cookie session)
+  nên không cần cấu hình `credentials`/cookie domain phức tạp giữa 2 origin.
 - **Ngôn ngữ**: request gửi header `Accept-Language` với 1 trong 6 giá trị `vi`/`en`/`ja`/`zh`/`ko`/`es`
   — dùng để trả lỗi validate đúng ngôn ngữ và (xem [ADR-0006](../kien-truc/adr/0006-da-ngon-ngu.md))
   để endpoint danh mục (mục 10) resolve sẵn `name` theo đúng locale đó (JOIN bảng `*_translations`,

@@ -28,7 +28,7 @@ Hệ thống có ba nhóm người dùng, và — điểm quan trọng cần n�
 
 Cái tên "Admin" ở đây **không phải** trang quản trị nội bộ như trực giác thường nghĩ — nó là trang dành cho khách hàng trả tiền (Nhà tuyển dụng). Đội ngũ nội bộ vận hành nền tảng dùng một khu vực tên khác hẳn: **Vận hành**. Sự tách bạch này từng bị đặt tên trùng nhau trong một phiên bản tài liệu trước, gây nhầm lẫn thật sự, nên đã được ghi lại thành quyết định kiến trúc chính thức (ADR-0005) để không lặp lại.
 
-Cả ba khu vực sống trong **cùng một codebase Next.js**, chia theo route group, không phải ba ứng dụng tách rời — quyết định này ưu tiên "dễ kiểm soát, dễ bàn giao" hơn là tốc độ dựng màn hình nhanh bằng cách ghép nhiều công cụ có sẵn.
+Về mặt kỹ thuật, ba khu vực này thực chất chia thành **hai ứng dụng frontend**: **Client** là một app Next.js riêng (cần SEO/SSR cho tin tuyển dụng lên Google), còn **Admin** và **Vận hành** dùng chung **một** ứng dụng khác — dựng thẳng trên **shadcn-admin** (một admin dashboard mã nguồn mở có sẵn), phân biệt màn hình theo vai trò đăng nhập chứ không tách thêm ứng dụng thứ ba. Quyết định ban đầu là ép cả ba vào một codebase Next.js duy nhất để dễ kiểm soát; sau khi dựng thử mockup thực tế mới nhận ra Admin/Vận hành không cần bất kỳ lợi ích nào của Next.js (không SEO, không chia sẻ URL công khai với Client) trong khi phải tự dựng lại toàn bộ pattern mà shadcn-admin đã có sẵn — nên quyết định đảo ngược, dùng thẳng shadcn-admin thay vì chỉ "tham khảo bố cục" (ghi lại ở ADR-0008).
 
 ---
 
@@ -128,7 +128,7 @@ Toàn bộ năm điểm này đã được sửa trực tiếp vào ERD và tài
 
 Phong cách hình ảnh được chọn có chủ đích để tránh hai khuôn mẫu đã có sẵn trên thị trường: xanh dương công sở kiểu TopCV, và sặc sỡ trẻ trung kiểu Ybox. Bảng màu dùng một **màu đỏ triện** (gợi con dấu đỏ trên giấy tờ hành chính/y tế Việt Nam) cho các trạng thái xác thực và hành động chính, và một **màu xanh ngọc trầm** cho các yếu tố chuyên môn — hai màu này có ý nghĩa nghiệp vụ thật, không phải chọn ngẫu nhiên. Nguyên tắc ưu tiên hàng đầu là **rõ ràng hơn đẹp thuần túy**, vì người dùng gồm nhiều bác sĩ/điều dưỡng ở nhiều độ tuổi, không phải dân công nghệ trẻ quen giao diện phức tạp.
 
-Về việc dùng mã nguồn mở: khu vực Client và Admin (đối ngoại, cần bản sắc riêng) **không** lấy nguyên một theme có sẵn — chỉ dùng shadcn/ui làm nền tảng component rồi tùy biến hoàn toàn theo token màu/chữ riêng. Khu vực Vận hành (nội bộ, ít người dùng) được phép **tham khảo bố cục** từ một admin dashboard mã nguồn mở có sẵn (shadcn-admin) để đi nhanh hơn, nhưng vẫn build lại bằng đúng bộ component đã chọn — không chạy nó như một ứng dụng tách biệt, để giữ một bộ thiết kế nhất quán duy nhất.
+Về việc dùng mã nguồn mở: khu vực **Client** (đối ngoại, bề mặt tiếp thị/khám phá việc làm) **không** lấy nguyên một theme có sẵn — chỉ dùng shadcn/ui làm nền tảng component rồi tùy biến hoàn toàn theo token màu/chữ riêng, giữ trọn bản sắc "Tin cậy lâm sàng". Khu vực **Admin (NTD) và Vận hành** — sau khi dựng mockup thử mới nhận ra bản sắc branded đầy đủ không hợp với một công cụ mở ra hàng chục lần/ngày để xử lý công việc — chuyển sang giao diện dashboard **chuẩn shadcn/ui trung tính** (ADR-0007), và chạy thẳng trên **shadcn-admin** như một ứng dụng thật (ADR-0008) thay vì chỉ tham khảo bố cục rồi tự dựng lại: không dùng serif tiêu đề, không mảng màu trang trí rộng, chỉ giữ màu thương hiệu cho badge trạng thái và một nút CTA chính mỗi màn hình.
 
 ---
 
@@ -140,7 +140,7 @@ Giai đoạn 0 khởi tạo solution và hạ tầng dev. Giai đoạn 1 (MVP) �
 
 ## 11. Những gì đã chốt, và những gì còn để ngỏ
 
-**Đã chốt, không cần bàn lại:** stack backend .NET 10/ASP.NET Core; Web trước, chưa làm mobile; hạ tầng self-host VPS; kiến trúc Clean Architecture + Modular Monolith; frontend Next.js + shadcn/ui, ba khu vực site trong một codebase; đa ngôn ngữ 6 thứ tiếng vi/en/ja/zh/ko/es, routing theo tiền tố URL (chỉ giao diện + danh mục, không dịch nội dung tự viết); cổng thanh toán tự động hoãn lại, dùng quy trình thủ công có đầy đủ hỗ trợ kỹ thuật (mã tham chiếu, endpoint xác nhận); tổ chức bị rút xác thực thì tự động ẩn tin; gia hạn tin luôn tạo tin mới.
+**Đã chốt, không cần bàn lại:** stack backend .NET 10/ASP.NET Core; Web trước, chưa làm mobile; hạ tầng self-host VPS; kiến trúc Clean Architecture + Modular Monolith; frontend chia hai app — Client (Next.js + shadcn/ui, bản sắc riêng, 6 ngôn ngữ) và Admin+Vận hành (một app shadcn-admin dùng chung, giao diện trung tính, chỉ tiếng Việt); đa ngôn ngữ 6 thứ tiếng vi/en/ja/zh/ko/es cho Client, routing theo tiền tố URL (chỉ giao diện + danh mục, không dịch nội dung tự viết); cổng thanh toán tự động hoãn lại, dùng quy trình thủ công có đầy đủ hỗ trợ kỹ thuật (mã tham chiếu, endpoint xác nhận); tổ chức bị rút xác thực thì tự động ẩn tin; gia hạn tin luôn tạo tin mới.
 
 **Còn để ngỏ, cần cân nhắc thêm trước hoặc trong lúc code:** chọn nhà cung cấp VPS cụ thể (trong nước hay quốc tế — có phân tích đánh đổi sẵn, nghiêng nhẹ về trong nước vì lý do tuân thủ dữ liệu); phạm vi chính xác của thuật toán chấm điểm CV (quy tắc tự động cụ thể ra sao, hay ban đầu chỉ gắn nhãn thủ công); và cổng thanh toán tự động cụ thể sẽ chọn khi tới lúc cần (PayOS hay tự nối từng cổng riêng) — không có mục nào trong số này chặn việc bắt đầu code.
 

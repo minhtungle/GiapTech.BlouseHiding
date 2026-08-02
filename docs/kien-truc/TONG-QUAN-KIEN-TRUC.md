@@ -44,11 +44,12 @@ Mỗi bounded context tương ứng 1 nhóm `Features/` trong tầng `Applicatio
 ## 3. Sơ đồ tổng quát (logic)
 
 ```
-  [Client: Web App]  [Mobile App, GĐ2]  [Admin: NTD]  [Vận hành]
-        \                |                    |            /
-         \               |                    |           /   (Client/Admin/Vận hành
-          \              |                    |          /     cùng 1 app Next.js —
-           \             |                    |         /       route group riêng, xem docs/frontend)
+  [Client: Next.js]  [Mobile App, GĐ2]  [Admin: NTD]  [Vận hành]
+        \                     |               \            /
+         \                    |                \  shadcn-admin (Vite + React
+          \                   |                 \  Router) — 1 app riêng dùng
+           \                  |                  \ chung, RBAC theo role
+            \                 |                   \  (xem ADR-0008)         /
               ┌────────────────────────┐
               │  Caddy (reverse proxy)  │
               └────────────────────────┘
@@ -96,11 +97,13 @@ Data:       EF Core 10 (Npgsql) + Dapper (đọc nặng) · PostgreSQL 16+ · Re
 Search:     pg_trgm/tsvector (MVP) → OpenSearch (GĐ2)
 Queue/RT:   RabbitMQ + MassTransit · SignalR (Redis backplane) · Hangfire
 Storage:    MinIO (self-host, S3-compatible) qua presigned URL
-Frontend:   Next.js (App Router) + React 19 + TypeScript
-UI:         shadcn/ui (Radix + Tailwind) · dnd-kit · Tiptap · Recharts
+Frontend:   Client = Next.js (App Router) + React 19 + TypeScript
+            Admin/Vận hành = shadcn-admin (Vite + React Router + TypeScript), 1 app riêng — ADR-0008
+UI:         shadcn/ui (Radix + Tailwind) · dnd-kit · Tiptap · Recharts — dùng chung nền tảng ở cả 2 app
 State:      TanStack Query + Zustand · React Hook Form + Zod
-i18n:       next-intl (vi/en/ja/zh/ko/es, vi mặc định) · routing tiền tố URL · giao diện + danh mục
-            dịch qua bảng `*_translations`, nội dung tự viết không dịch
+i18n:       next-intl (vi/en/ja/zh/ko/es, vi mặc định) · routing tiền tố URL — CHỈ áp dụng cho Client;
+            Admin/Vận hành chỉ tiếng Việt (ADR-0008). Giao diện + danh mục dịch qua bảng
+            `*_translations`, nội dung tự viết không dịch
 Hạ tầng:    Self-host VPS · Docker Compose + Caddy · GitHub Actions ·
             Grafana/Loki/Prometheus + Uptime Kuma (self-host) · Sentry (cloud)
 VN services: Thanh toán thủ công tạm thời (chưa chọn cổng) · eSMS/SpeedSMS (OTP) · Zalo OAuth
@@ -130,6 +133,7 @@ tránh tình trạng "sao lại chọn cái này" phải hỏi lại khi bàn gi
 | [0005](./adr/0005-dat-ten-3-khu-vuc-site.md) | Đặt tên 3 khu vực site: Client / Admin (NTD) / Vận hành (nội bộ) |
 | [0006](./adr/0006-da-ngon-ngu.md) | Đa ngôn ngữ: 6 ngôn ngữ (vi/en/ja/zh/ko/es), dịch qua bảng translation + routing tiền tố URL |
 | [0007](./adr/0007-shadcn-chuan-cho-admin-van-hanh.md) | Admin (NTD) chuyển sang giao diện chuẩn shadcn/ui trung tính, cùng nhóm Vận hành |
+| [0008](./adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md) | Admin (NTD) + Vận hành tách thành 1 app riêng, chạy thẳng shadcn-admin (đảo ngược 1 phần ADR-0004) |
 
 ---
 
@@ -142,18 +146,21 @@ tránh tình trạng "sao lại chọn cái này" phải hỏi lại khi bàn gi
 4. Cổng thanh toán tự động: **hoãn lại** — MVP dùng quy trình thủ công.
 5. Kiến trúc: **Clean Architecture + Modular Monolith**.
 6. Tên 3 khu vực site: **Client** (ứng viên/khách) · **Admin** (Nhà tuyển dụng) · **Vận hành** (đội nội
-   bộ nền tảng) — cả 3 **cùng 1 codebase Next.js** (route group riêng), không tách app riêng dùng
-   shadcn-admin trực tiếp — chỉ tham khảo bố cục. Xem [ADR-0005](./adr/0005-dat-ten-3-khu-vuc-site.md)
-   và [`THUAT-NGU.md`](./THUAT-NGU.md).
-7. Đa ngôn ngữ: **6 ngôn ngữ** — Tiếng Việt (mặc định), Anh, Nhật, Trung, Hàn, Tây Ban Nha. Routing
-   theo tiền tố URL (`/vi/`, `/en/`...), tự nhận diện qua `Accept-Language` lần đầu, có bộ chọn ngôn
-   ngữ trên giao diện. Chỉ dịch giao diện + danh mục chuẩn (qua bảng `*_translations`, không phải cột
-   song song), **không** dịch nội dung tự viết (mô tả tin, tiểu sử ứng viên). Xem
-   [ADR-0006](./adr/0006-da-ngon-ngu.md).
+   bộ nền tảng). Xem [ADR-0005](./adr/0005-dat-ten-3-khu-vuc-site.md) và [`THUAT-NGU.md`](./THUAT-NGU.md).
+   **Client** dùng Next.js (`web/`, riêng 1 app). **Admin + Vận hành dùng chung 1 app shadcn-admin**
+   (`web-admin/`, Vite + React Router), tách khỏi Next.js — phân biệt màn hình theo role, RBAC chặn
+   thật ở backend. Xem [ADR-0008](./adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md).
+7. Đa ngôn ngữ: **6 ngôn ngữ** — Tiếng Việt (mặc định), Anh, Nhật, Trung, Hàn, Tây Ban Nha — **chỉ áp
+   dụng cho Client** (`web/`); Admin/Vận hành (`web-admin/`) chỉ tiếng Việt (xem
+   [ADR-0008](./adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md) mục 5). Routing theo tiền tố URL
+   (`/vi/`, `/en/`...), tự nhận diện qua `Accept-Language` lần đầu, có bộ chọn ngôn ngữ trên giao diện.
+   Chỉ dịch giao diện + danh mục chuẩn (qua bảng `*_translations`, không phải cột song song), **không**
+   dịch nội dung tự viết (mô tả tin, tiểu sử ứng viên). Xem [ADR-0006](./adr/0006-da-ngon-ngu.md).
 8. Phong cách giao diện theo khu vực: **Client** bản sắc "Tin cậy lâm sàng" đầy đủ; **Admin (NTD) +
    Vận hành** dùng chung giao diện dashboard **chuẩn shadcn/ui trung tính** (không serif, không mảng
    màu trang trí rộng), chỉ giữ màu thương hiệu cho badge trạng thái + 1 nút CTA chính mỗi màn hình.
-   Xem [ADR-0007](./adr/0007-shadcn-chuan-cho-admin-van-hanh.md).
+   Xem [ADR-0007](./adr/0007-shadcn-chuan-cho-admin-van-hanh.md) (màu sắc/phong cách) và
+   [ADR-0008](./adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md) (2 app riêng biệt).
 
 **Còn cần chốt (không chặn tiến độ):**
 9. Nhà cung cấp VPS cụ thể (VN hay quốc tế) — xem `../ha-tang/HA-TANG-TRIEN-KHAI.md` mục so sánh.

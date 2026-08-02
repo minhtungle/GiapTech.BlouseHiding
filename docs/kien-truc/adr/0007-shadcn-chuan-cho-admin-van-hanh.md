@@ -1,7 +1,9 @@
 # ADR-0007: Admin (NTD) chuyển sang giao diện chuẩn shadcn/ui trung tính, cùng nhóm với Vận hành
 
 **Trạng thái:** Đã chấp nhận (sửa lại phân nhóm ở [ADR-0004](./0004-tech-stack-net-nextjs.md) và
-`THIET-KE-GIAO-DIEN.md` mục 3.1)
+`THIET-KE-GIAO-DIEN.md` mục 3.1). ⚠️ Quyết định **màu sắc/phong cách** ở ADR này vẫn giữ nguyên; phần
+**khung kỹ thuật** ("cùng 1 codebase Next.js") mô tả bên dưới đã được [ADR-0008](./0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md)
+đảo ngược — Admin + Vận hành nay là 1 app shadcn-admin riêng, tách khỏi Next.js của Client.
 
 ## Bối cảnh
 Quyết định ban đầu nhóm **Client** và **Admin (NTD)** chung 1 nhóm — cả hai đều dùng đầy đủ bản sắc
@@ -38,8 +40,9 @@ Phân nhóm mới:
 - (+) Người dùng NTD/Vận hành có cảm giác "công cụ làm việc" quen thuộc thay vì màn hình trình diễn.
 - (+) Badge trạng thái vẫn nhất quán ý nghĩa màu xuyên suốt cả 3 khu vực (chỉ khác mật độ dùng màu ở
   phần khung/chrome xung quanh).
-- (−) Sản phẩm có 2 "ngôn ngữ hình ảnh" khác nhau (Client branded vs Admin/Vận hành trung tính) — ranh
-  giới phải rõ ràng ở route group (`app/(client)` khác hẳn `app/(admin)`/`app/(ops)`) để không lẫn lộn
-  giữa 2 style khi phát triển.
+- (−) Sản phẩm có 2 "ngôn ngữ hình ảnh" khác nhau (Client branded vs Admin/Vận hành trung tính) — sau
+  [ADR-0008](./0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md), ranh giới này còn rõ hơn nữa vì là
+  2 app riêng biệt (Next.js vs shadcn-admin), không chỉ khác route group trong cùng 1 codebase.
 - Cập nhật liên quan: [`../../frontend/THIET-KE-GIAO-DIEN.md`](../../frontend/THIET-KE-GIAO-DIEN.md)
-  mục 3, wireframe [`../../frontend/wireframes/trang-chu-3-vai-tro.html`](../../frontend/wireframes/trang-chu-3-vai-tro.html).
+  mục 3, wireframe [`../../frontend/wireframes/trang-chu-3-vai-tro.html`](../../frontend/wireframes/trang-chu-3-vai-tro.html),
+  [ADR-0008](./0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md) (khung kỹ thuật 2 app riêng).

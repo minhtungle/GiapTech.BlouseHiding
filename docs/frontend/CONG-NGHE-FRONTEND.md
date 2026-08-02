@@ -4,16 +4,19 @@
 > Phong cách thiết kế & quyết định dùng mã nguồn mở ở đâu: [`THIET-KE-GIAO-DIEN.md`](./THIET-KE-GIAO-DIEN.md).
 > Wireframe/style guide trực quan: [`wireframes/`](./wireframes/).
 
-**3 khu vực site, 1 codebase** (xem quy ước tên ở [`../kien-truc/THUAT-NGU.md`](../kien-truc/THUAT-NGU.md)):
-`app/(client)/...` (ứng viên/khách — bản sắc "Tin cậy lâm sàng" đầy đủ), `app/(admin)/...` (Nhà tuyển
-dụng) và `app/(ops)/...` (đội Vận hành nội bộ) — **2 khu vực sau dùng chung giao diện dashboard chuẩn
-shadcn/ui trung tính**, khác "ngôn ngữ hình ảnh" so với `(client)` (xem
-[ADR-0007](../kien-truc/adr/0007-shadcn-chuan-cho-admin-van-hanh.md)). **Không** tách app riêng cho
-`(admin)`/`(ops)` chạy thẳng shadcn-admin — chỉ tham khảo bố cục từ đó rồi tự viết lại bằng chính
-component đã chọn dưới đây, để giữ 1 domain – 1 container (xem
-[ADR-0004](../kien-truc/adr/0004-tech-stack-net-nextjs.md), [ADR-0005](../kien-truc/adr/0005-dat-ten-3-khu-vuc-site.md)).
+**2 ứng dụng frontend riêng biệt** (xem quy ước tên khu vực ở [`../kien-truc/THUAT-NGU.md`](../kien-truc/THUAT-NGU.md),
+quyết định tách app ở [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md)):
+
+- **`web/`** — Next.js, chỉ khu vực **Client** (ứng viên/khách), bản sắc "Tin cậy lâm sàng" đầy đủ, cần
+  SSR/SSG cho SEO tin tuyển dụng, đủ 6 ngôn ngữ.
+- **`web-admin/`** — **shadcn-admin** (Vite + React Router + TypeScript), dùng chung cho **Admin (NTD)**
+  và **Vận hành** (nội bộ) — phân biệt màn hình theo role đăng nhập, RBAC chặn thật ở backend. Dùng
+  giao diện dashboard chuẩn shadcn/ui trung tính (xem [ADR-0007](../kien-truc/adr/0007-shadcn-chuan-cho-admin-van-hanh.md)),
+  chỉ tiếng Việt (không dùng next-intl).
 
 ---
+
+### `web/` — Client (Next.js)
 
 | Thành phần | Lựa chọn | Lý do |
 |---|---|---|
@@ -26,18 +29,34 @@ component đã chọn dưới đây, để giữ 1 domain – 1 container (xem
 | Quản lý state server | **TanStack Query (React Query)** | Cache, refetch, optimistic update cho dữ liệu từ API (jobs, applications...) |
 | Quản lý state client nhẹ | **Zustand** | Chỉ cho state UI thuần túy (modal, wizard hồ sơ) — tránh Redux thừa cho quy mô này |
 | Form & validate | **React Hook Form + Zod** | Zod schema tái dùng ý tưởng validate giống FluentValidation phía backend |
-| Kéo-thả ATS Kanban | **dnd-kit** | Nhẹ, accessible, đúng nhu cầu màn hình ATS đã thiết kế |
-| Bảng dữ liệu (trang Admin/Vận hành, danh sách ứng viên/tin) | **TanStack Table** (headless) | Không mang UI mặc định, tự style theo shadcn/ui table component |
 | Rich text editor | **Tiptap** | Mô tả công việc, bài viết "Góc nghề y" (Giai đoạn 3) |
-| Biểu đồ (dashboard Admin/Vận hành) | **Tremor** (dựng trên Recharts) | Component biểu đồ + KPI card sẵn, phối màu theo CSS variable — khớp nhanh với token thiết kế |
 | Realtime client | **@microsoft/signalr** | Khớp SignalR backend |
 | i18n | **next-intl** | 6 ngôn ngữ (vi/en/ja/zh/ko/es) — xem chi tiết mục "Đa ngôn ngữ" bên dưới |
 | Testing | **Vitest** + **React Testing Library** (unit) + **Playwright** (e2e) | Playwright thay thế Cypress — nhanh hơn, chạy đa trình duyệt |
+
+### `web-admin/` — Admin (NTD) + Vận hành (shadcn-admin)
+
+| Thành phần | Lựa chọn | Lý do |
+|---|---|---|
+| Framework | **shadcn-admin** (Vite + **React Router** + React 19 + TypeScript, MIT) | Cài đặt trực tiếp làm nền tảng app — tận dụng pattern sidebar/bảng/dialog có sẵn, xem [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md) |
+| Component/UI | **shadcn/ui** (Radix + Tailwind) | Cùng nền tảng component với Client — theme trung tính riêng (xem `THIET-KE-GIAO-DIEN.md` mục 3.2) |
+| Quản lý state server | **TanStack Query** | Giống Client — cache/refetch dữ liệu API |
+| Quản lý state client nhẹ | **Zustand** | Modal, wizard nội bộ (đăng tin, duyệt hồ sơ) |
+| Form & validate | **React Hook Form + Zod** | Đồng nhất với Client |
+| Kéo-thả ATS Kanban | **dnd-kit** | Nhẹ, accessible, đúng nhu cầu màn hình ATS đã thiết kế |
+| Bảng dữ liệu (danh sách ứng viên/tin/người dùng) | **TanStack Table** (headless) | Không mang UI mặc định, tự style theo shadcn/ui table component |
+| Biểu đồ dashboard | **Tremor** (dựng trên Recharts) | Component biểu đồ + KPI card sẵn, phối màu theo CSS variable — khớp nhanh với token thiết kế |
+| Realtime client | **@microsoft/signalr** | Thông báo/report mới cho Vận hành |
+| i18n | **Không dùng** — chỉ tiếng Việt | Công cụ nội bộ, không hướng đối tượng đa quốc gia — xem [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md) mục 5 |
+| Testing | **Vitest** + **React Testing Library** (unit) + **Playwright** (e2e, base URL riêng) | Cùng bộ công cụ với Client, cấu hình riêng theo Vite |
 
 ---
 
 ## Đa ngôn ngữ (i18n)
 
+> ⚠️ Toàn bộ mục này chỉ áp dụng cho **`web/` (Client)**. `web-admin/` (Admin/Vận hành) không dùng
+> next-intl, chỉ tiếng Việt — xem [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md) mục 5.
+>
 > Quyết định & phương án đã cân nhắc: [ADR-0006](../kien-truc/adr/0006-da-ngon-ngu.md). Backend tương
 > ứng: [`../backend/CONG-NGHE-BACKEND.md`](../backend/CONG-NGHE-BACKEND.md) mục i18n. Schema: bảng
 > `*_translations` + `users.locale`, xem [`../database/ERD-CHI-TIET.md`](../database/ERD-CHI-TIET.md).
@@ -76,7 +95,7 @@ cùng bộ chọn (tham khảo bố cục apple.com/vn/) làm điểm truy cập
 
 | Thành phần | Cách làm |
 |---|---|
-| File dịch giao diện | `messages/{locale}/{namespace}.json` — 1 thư mục/ngôn ngữ (`messages/vi/`, `messages/en/`...), mỗi thư mục chia theo namespace route group (`common.json`, `client.json`, `admin.json`, `ops.json`). Giao đúng 1 thư mục cho dịch giả/vendor thuê ngoài, không đụng ngôn ngữ khác |
+| File dịch giao diện | `messages/{locale}/{namespace}.json` — 1 thư mục/ngôn ngữ (`messages/vi/`, `messages/en/`...) trong `web/`, mỗi thư mục chia theo namespace (`common.json`, `jobs.json`, `profile.json`...). Giao đúng 1 thư mục cho dịch giả/vendor thuê ngoài, không đụng ngôn ngữ khác |
 | Danh mục (chuyên khoa/địa điểm/tên gói) | API trả kèm bản dịch từ bảng `*_translations` (JOIN theo `locale` đang active) — component chỉ hiển thị field nhận được, không tự chọn cột phía client |
 | Ghi nhớ lựa chọn | Cookie + `users.locale` khi đã đăng nhập — đồng bộ để email/thông báo gửi đúng ngôn ngữ đã chọn dù đăng nhập từ thiết bị khác |
 | Ngày/giờ/số | `Intl.DateTimeFormat`/`Intl.NumberFormat` theo locale qua tiện ích có sẵn của `next-intl` — định dạng ngày tháng khác nhau giữa các ngôn ngữ (vd `ja` dùng 年/月/日), tiền tệ VND giữ nguyên ký hiệu bất kể locale |

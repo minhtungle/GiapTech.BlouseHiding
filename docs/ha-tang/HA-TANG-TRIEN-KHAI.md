@@ -20,21 +20,29 @@ thứ Azure/AWS managed từng cân nhắc (SignalR Service, Key Vault, RDS...) 
                  │  Caddy        │  reverse proxy + auto HTTPS (Let's Encrypt)
                  └──────┬───────┘
                         │
-                ┌───────┴───────┐
-                │               │
-     ┌──────────────────┐  ┌─────────────┐
-     │ Next.js            │  │ ASP.NET     │   (docker compose services,
-     │ Client/Admin(NTD)/  │  │ Core API    │    cùng 1 docker network nội bộ)
-     │ Vận hành (3 route   │  │             │
-     │ group, 1 codebase)  │  │             │
-     └──────────────────┘  └──────┬─────┘
-                                  │
+        ┌───────────────┼───────────────┬───────────────┐
+        │               │               │               │
+ ┌─────────────┐ ┌──────────────┐ ┌─────────────┐
+ │ Next.js       │ │ shadcn-admin   │ │ ASP.NET     │   (docker compose services +
+ │ Client (web/) │ │ static assets  │ │ Core API    │    static files, cùng 1 docker
+ │ (Node process)│ │ (web-admin/,   │ │             │    network nội bộ)
+ │               │ │ Admin+Vận hành,│ │             │
+ │               │ │ Caddy phục vụ  │ │             │
+ │               │ │ thẳng — không  │ │             │
+ │               │ │ cần container  │ │             │
+ │               │ │ riêng, ADR-0008│ │             │
+ └─────────────┘ └──────────────┘ └──────┬─────┘
+                                          │
    ┌───────────┬────────┼────────┬────────────┐
 ┌──▼───┐   ┌────▼───┐ ┌──▼───┐ ┌──▼────┐  ┌────▼────┐
 │Postgres│  │ Redis  │ │RabbitMQ│ │MinIO │  │Hangfire │  ← tất cả container riêng,
 └────────┘  └────────┘ └────────┘ └──────┘  │dashboard│    KHÔNG expose port ra ngoài
                                               └─────────┘    (chỉ Caddy expose 443)
 ```
+
+> `web-admin/` (shadcn-admin) build ra static assets thuần (Vite SPA, không SSR) — Caddy phục vụ trực
+> tiếp như static site, **không cần thêm container/Node runtime riêng**. Xem
+> [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md).
 
 ## 2. Bảng thành phần
 

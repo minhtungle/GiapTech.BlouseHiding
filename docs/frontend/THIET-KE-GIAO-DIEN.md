@@ -72,11 +72,12 @@ tin qua bản sắc riêng). Thay vào đó:
   mặc định".
 
 ### 3.2 Khu vực Admin (NTD) + Vận hành — công cụ làm việc nội bộ, dùng lặp lại nhiều lần/ngày
-> ⚠️ Quyết định cuối (xem [ADR-0004](../kien-truc/adr/0004-tech-stack-net-nextjs.md),
-> [ADR-0007](../kien-truc/adr/0007-shadcn-chuan-cho-admin-van-hanh.md)): **cùng 1 codebase Next.js**
-> (route group riêng cho mỗi khu vực), **không** chạy shadcn-admin như 1 app tách biệt — chỉ tham khảo
-> quy ước hình ảnh/bố cục (sidebar, bảng, card KPI) của shadcn/ui rồi dựng bằng đúng component đã chọn
-> ở mục 4, để giữ 1 codebase — nhưng **được phép** khác "ngôn ngữ hình ảnh" so với Client.
+> ⚠️ Quyết định cuối (xem [ADR-0007](../kien-truc/adr/0007-shadcn-chuan-cho-admin-van-hanh.md) cho màu
+> sắc/phong cách, [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md) cho
+> khung kỹ thuật): **1 app riêng biệt (`web-admin/`), chạy thẳng shadcn-admin** (Vite + React Router) —
+> **không** còn "chỉ tham khảo bố cục rồi tự dựng lại trong Next.js" như quyết định trước đó. shadcn-admin
+> được cài đặt trực tiếp làm nền tảng, tùy biến theo token màu ở mục 5. App này tách hẳn khỏi `web/`
+> (Client, Next.js) — dùng chung 1 instance cho cả Admin và Vận hành, phân biệt màn hình theo role.
 
 Cả **Admin** và **Vận hành** giờ dùng chung 1 kiểu: giao diện dashboard **chuẩn shadcn/ui, trung
 tính** — không dùng serif tiêu đề, không mảng màu trang trí rộng, sidebar/card/bảng theo đúng convention
@@ -84,8 +85,8 @@ mặc định của shadcn (nền trắng/xám nhạt, viền hairline, active s
 viền màu thương hiệu). Lý do:
 - Đây là công cụ NTD/Vận hành mở ra hàng chục lần mỗi ngày để xử lý công việc (đăng tin, ATS, duyệt
   hồ sơ) — quen thuộc và tốc độ thao tác quan trọng hơn gây ấn tượng thương hiệu.
-- Tận dụng đúng pattern có sẵn của **shadcn-admin** (dự án cộng đồng, MIT, xây sẵn trên shadcn/ui +
-  Tailwind) để đi nhanh hơn, ít phải tùy biến layout.
+- Dùng thẳng **shadcn-admin** (dự án cộng đồng, MIT, xây sẵn trên shadcn/ui + Tailwind) làm nền tảng
+  app thật — không chỉ tham khảo — để đi nhanh hơn đáng kể, tận dụng pattern sidebar/bảng/dialog có sẵn.
 
 **Không bỏ hoàn toàn màu thương hiệu** — `accent-seal`/`accent-jade`/`amber-pending` vẫn giữ nguyên
 cho 2 việc duy nhất: **badge trạng thái** (verified/pending/rejected — ý nghĩa xuyên suốt cả 3 khu
@@ -106,7 +107,7 @@ dùng shadcn/ui hay không.
 | Component nền + theming | **shadcn/ui** (Radix + Tailwind) | Copy-code, tùy biến 100%, theming bằng CSS variable — khớp thẳng với token ở mục 5 |
 | Icon | **Lucide** | Đi kèm mặc định với shadcn/ui, nét vẽ nhất quán, mã nguồn mở, đủ icon y tế cơ bản (stethoscope, syringe, hospital...) |
 | Minh họa (empty state, onboarding) | **unDraw** | Mã nguồn mở, **tự đổi màu SVG theo bảng màu riêng** (khác hẳn ảnh stock chung chung) |
-| Bố cục tham khảo trang Admin + Vận hành | **shadcn-admin** (chỉ tham khảo, không cài làm dependency) | Xây trên shadcn/ui — bố cục sidebar/bảng/KPI card quen thuộc, tự dựng lại bằng component đã chọn (xem [ADR-0007](../kien-truc/adr/0007-shadcn-chuan-cho-admin-van-hanh.md)) |
+| Nền tảng app Admin + Vận hành (`web-admin/`) | **shadcn-admin** (cài đặt trực tiếp làm nền tảng app, Vite + React Router) | Xây trên shadcn/ui — bố cục sidebar/bảng/KPI card có sẵn, tùy biến theo token màu ở mục 5 thay vì tự dựng lại (xem [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md)) |
 | Kanban kéo-thả (ATS) | **dnd-kit** | Nhẹ, accessible, đã chọn ở tech stack |
 | Rich text (mô tả tin, bài viết) | **Tiptap** | Headless, style theo token riêng, không mang theo CSS mặc định xấu |
 | Biểu đồ dashboard | **Tremor** (dựng trên Recharts) | Component biểu đồ + KPI card sẵn, phối màu theo CSS variable — khớp nhanh với theme |

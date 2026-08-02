@@ -49,8 +49,11 @@ src/
   Application/        — use case (CQRS/MediatR), 1 thư mục / 1 bounded context
   Infrastructure/     — EF Core, implement interface của Application
   Web/                — Controllers/API, composition root
-web/                  — Next.js (App Router) — 3 route group: (client)/(admin)/(ops), cùng 1 codebase
-                        Client=candidate/guest · Admin=Nhà tuyển dụng · Ops="Vận hành" nội bộ nền tảng
+web/                  — Next.js (App Router) — CHỈ khu vực Client (candidate/guest), bản sắc
+                        "Tin cậy lâm sàng" đầy đủ, cần SEO/SSR cho tin tuyển dụng
+web-admin/            — shadcn-admin (Vite + React Router + TS) — 1 app riêng dùng chung cho
+                        Admin (Nhà tuyển dụng) + Vận hành (nội bộ nền tảng), phân biệt màn hình theo
+                        role đăng nhập, RBAC chặn thật ở backend (xem ADR-0008)
                         (xem docs/kien-truc/THUAT-NGU.md — role backend `admin` ≠ site "Admin")
 docs/                 — toàn bộ tài liệu (bản đồ ở mục 2)
 ```
@@ -70,10 +73,13 @@ docs/                 — toàn bộ tài liệu (bản đồ ở mục 2)
    - Đổi `applications.stage` phải ghi `application_stage_history` cùng transaction.
    - Xóa tài khoản là soft-delete + anonymize, không bao giờ xóa cứng dữ liệu liên quan CCHN/audit log.
 5. **Không tự ý đổi/xóa migration đã merge** — tạo migration mới để sửa, xem `docs/database/QUY-UOC-MIGRATION.md`.
-6. **Không lấy nguyên một Next.js SaaS template hay chạy shadcn-admin như 1 app riêng** cho bất kỳ khu
-   vực nào (Client/Admin/Vận hành) — lý do ở [ADR-0004](docs/kien-truc/adr/0004-tech-stack-net-nextjs.md)
-   và [ADR-0005](docs/kien-truc/adr/0005-dat-ten-3-khu-vuc-site.md). Component nền tảng dùng shadcn/ui
-   (copy-code vào repo), không cài package UI đóng gói khác thay thế.
+6. **Không lấy nguyên một Next.js SaaS template cho Client.** Client (`web/`) không được scaffold từ
+   1 SaaS starter đóng gói — lý do ở [ADR-0004](docs/kien-truc/adr/0004-tech-stack-net-nextjs.md). Ngược
+   lại, **Admin (NTD) + Vận hành (`web-admin/`) chạy thẳng shadcn-admin** làm nền tảng app thật (1
+   instance dùng chung, phân quyền theo role) — xem [ADR-0008](docs/kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md).
+   Không tự dựng lại pattern shadcn-admin đã có sẵn bên trong `web/` Next.js — 2 khu vực này **không**
+   còn chung codebase. Component nền tảng của cả 2 app đều dùng shadcn/ui (copy-code vào repo), không
+   cài package UI đóng gói khác thay thế.
 7. **Quyết định kiến trúc lớn/khó đảo ngược → viết ADR mới** trong `docs/kien-truc/adr/`, đánh số tiếp
    theo, theo đúng format các ADR hiện có (Bối cảnh/Quyết định/Phương án đã cân nhắc/Hệ quả). Đừng chỉ
    sửa trực tiếp tài liệu tổng quan mà không để lại dấu vết quyết định.
@@ -84,12 +90,14 @@ docs/                 — toàn bộ tài liệu (bản đồ ở mục 2)
    plaintext, không trả về API response nhiều hơn mức cần thiết cho từng role (xem RBAC ở
    `docs/backend/CONG-NGHE-BACKEND.md` mục 3). Trước khi merge thay đổi động vào các luồng này, chạy
    skill `security-review`.
-10. **Đa ngôn ngữ (6 ngôn ngữ: vi/en/ja/zh/ko/es)** — không hardcode chuỗi tiếng Việt trực tiếp trong
-    component/response lỗi. Mọi text UI mới thêm phải có đủ 6 khóa dịch trong cùng PR (file
-    `messages/{locale}/{namespace}.json`). Danh mục (chuyên khoa, địa điểm, tên gói) dịch qua bảng
-    `*_translations` riêng (không phải cột song song) — thêm danh mục mới phải thêm luôn bản dịch cho
-    cả 5 ngôn ngữ không phải `vi`, không để trống rồi tính sau. Nội dung tự do người dùng viết (mô tả
-    tin, tiểu sử) **không dịch**, hiển thị nguyên văn — xem [ADR-0006](docs/kien-truc/adr/0006-da-ngon-ngu.md).
+10. **Đa ngôn ngữ (6 ngôn ngữ: vi/en/ja/zh/ko/es) — chỉ áp dụng cho `web/` (Client)**, không áp dụng
+    cho `web-admin/` (Admin/Vận hành — chỉ tiếng Việt, xem [ADR-0008](docs/kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md)
+    mục 5). Ở `web/`: không hardcode chuỗi tiếng Việt trực tiếp trong component/response lỗi. Mọi text
+    UI mới thêm phải có đủ 6 khóa dịch trong cùng PR (file `messages/{locale}/{namespace}.json`). Danh
+    mục (chuyên khoa, địa điểm, tên gói) dịch qua bảng `*_translations` riêng (không phải cột song
+    song) — thêm danh mục mới phải thêm luôn bản dịch cho cả 5 ngôn ngữ không phải `vi`, không để
+    trống rồi tính sau. Nội dung tự do người dùng viết (mô tả tin, tiểu sử) **không dịch**, hiển thị
+    nguyên văn — xem [ADR-0006](docs/kien-truc/adr/0006-da-ngon-ngu.md).
 
 ## 5. Khi thêm tính năng mới — thứ tự làm việc
 
@@ -114,12 +122,18 @@ dotnet restore
 dotnet build
 dotnet test
 
-# Frontend (dự kiến)
+# Frontend Client (dự kiến)
 cd web && npm install
 npm run dev
 npm run build
 npm run test        # Vitest
 npm run test:e2e     # Playwright
+
+# Frontend Admin/Vận hành — shadcn-admin (dự kiến)
+cd web-admin && npm install
+npm run dev
+npm run build        # build ra static assets, Caddy phục vụ thẳng — xem ADR-0008
+npm run test
 
 # Hạ tầng dev (dự kiến)
 docker compose up -d   # Postgres, Redis, RabbitMQ, MinIO
