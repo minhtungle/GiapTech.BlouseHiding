@@ -16,21 +16,23 @@
 > chi tiết theo màn hình xem [`LUONG-NGHIEP-VU-MAN-HINH.md`](./LUONG-NGHIEP-VU-MAN-HINH.md) mục 2.
 
 ### 0.1 UI Shell (ưu tiên làm trước, không cần chờ backend)
-- ⬜ Khởi tạo `web/` (Next.js + shadcn/ui) — copy component cần dùng, áp token "Tin cậy lâm sàng"
+- ✅ Khởi tạo `web/` (Next.js + shadcn/ui) — copy component cần dùng, áp token "Tin cậy lâm sàng"
   ([`../frontend/THIET-KE-GIAO-DIEN.md`](../frontend/THIET-KE-GIAO-DIEN.md) mục 5), tự host Be Vietnam Pro
-- ⬜ Khởi tạo `web-admin/` (shadcn-admin, Vite + TanStack Router) — áp token trung tính (ADR-0007), theo
+- ✅ Khởi tạo `web-admin/` (shadcn-admin, Vite + TanStack Router) — áp token trung tính (ADR-0007), theo
   cấu trúc đã chốt ở [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md)
-- ⬜ Khung đa ngôn ngữ ở `web/`: routing `next-intl` 6 locale (`localePrefix: always`), cấu trúc thư
-  mục `messages/`, bộ chọn ngôn ngữ (header + footer) — dựng khung trước dù bản dịch tạm để tiếng Việt
-- ⬜ Mock data layer (fixture JSON tĩnh hoặc MSW) thay API thật — đủ thể hiện trạng thái loading/rỗng/lỗi/có dữ liệu cho mọi màn hình bên dưới
-- ⬜ Dựng màn hình `web/` theo mục 2.1/2.2 LUONG-NGHIEP-VU-MAN-HINH.md: trang chủ, tìm việc, chi tiết
-  tin, đăng ký/đăng nhập, dashboard ứng viên, hồ sơ + CCHN, CV Builder, cài đặt tài khoản (áp dụng
-  skill `taste-skill` cho các trang này — xem CLAUDE.md mục 7)
-- ⬜ Dựng màn hình `web-admin/` phần Admin theo mục 2.3: dashboard NTD, hồ sơ tổ chức, đăng/sửa tin,
-  danh sách tin, mua gói, ví Credit, ATS Kanban, tìm ứng viên chủ động
-- ⬜ Dựng màn hình `web-admin/` phần Vận hành theo mục 2.4: dashboard tổng quan, 3 hàng đợi duyệt
-  (CCHN/doanh nghiệp/tin), đối soát thanh toán, quản lý danh mục/gói, quản lý người dùng, xử lý report
-- ⬜ Rà lại responsive + dark mode + contrast WCAG AA trên toàn bộ màn hình vừa dựng
+- ✅ Khung đa ngôn ngữ ở `web/`: routing `next-intl` 6 locale (`localePrefix: always`), cấu trúc thư
+  mục `messages/`, bộ chọn ngôn ngữ (header + footer)
+- ✅ Dựng màn hình `web/` theo mục 2.1/2.2 LUONG-NGHIEP-VU-MAN-HINH.md: trang chủ, tìm việc, chi tiết
+  tin, đăng ký/đăng nhập, dashboard ứng viên, hồ sơ + CCHN, cài đặt tài khoản — nay đã nối API thật
+  (xem mục 0.2). Riêng `profile/cv` (CV Builder) vẫn giữ mock, chờ backend CV Builder
+- ✅ Dựng màn hình `web-admin/` phần Admin theo mục 2.3: dashboard NTD, đăng/sửa tin, danh sách tin,
+  ATS Kanban, ví Credit, tìm ứng viên chủ động, thành viên tổ chức — nay đã nối API thật (mục 0.2)
+- 🟨 Dựng màn hình `web-admin/` phần Vận hành theo mục 2.4: dashboard tổng quan, 3 hàng đợi duyệt
+  (CCHN/doanh nghiệp/tin), đối soát thanh toán, quản lý danh mục/gói đã nối API thật; quản lý người
+  dùng (`features/users/` — nhầm lẫn tên với trang Thành viên tổ chức, cần trang riêng cho Vận hành
+  khoá/mở khoá user) và xử lý report chưa làm (chưa có bounded context Report)
+- ⬜ Rà lại responsive + dark mode + contrast WCAG AA trên toàn bộ màn hình — chưa làm riêng thành 1
+  đợt, mới rà thủ công từng màn hình lúc dựng
 
 ### 0.2 Backend & hạ tầng (sau khi UI shell đã thấy hình hài)
 - ✅ Khởi tạo solution Clean Architecture (từ Jason Taylor Template — Mediator/Mapster thay
