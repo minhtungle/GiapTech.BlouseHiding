@@ -3,7 +3,9 @@
 > Checklist tính năng theo giai đoạn, dùng để theo dõi tiến độ thực tế — cập nhật trạng thái khi triển
 > khai, không để tài liệu này lệch khỏi code thật. Chi tiết nghiệp vụ từng mục xem
 > [`PHAN-TICH-NGHIEP-VU.md`](./PHAN-TICH-NGHIEP-VU.md) mục 3; luồng & màn hình xem
-> [`LUONG-NGHIEP-VU-MAN-HINH.md`](./LUONG-NGHIEP-VU-MAN-HINH.md).
+> [`LUONG-NGHIEP-VU-MAN-HINH.md`](./LUONG-NGHIEP-VU-MAN-HINH.md). Muốn tra theo module (endpoint/route
+> cụ thể nào đã nối API thật, còn mock, hay hoàn toàn chưa có) xem
+> [`TIEN-DO-CHI-TIET.md`](./TIEN-DO-CHI-TIET.md).
 >
 > Trạng thái: ⬜ Chưa làm · 🟨 Đang làm · ✅ Hoàn thành
 

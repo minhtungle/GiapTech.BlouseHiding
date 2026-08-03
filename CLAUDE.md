@@ -28,6 +28,7 @@ build/test/dev thật đã xác minh chạy được.
 | Nghiệp vụ, actor, đối chiếu TopCV/Ybox, roadmap | [`docs/nghiep-vu/PHAN-TICH-NGHIEP-VU.md`](docs/nghiep-vu/PHAN-TICH-NGHIEP-VU.md) |
 | Luồng nghiệp vụ chi tiết + danh sách màn hình | [`docs/nghiep-vu/LUONG-NGHIEP-VU-MAN-HINH.md`](docs/nghiep-vu/LUONG-NGHIEP-VU-MAN-HINH.md) |
 | Checklist tính năng theo giai đoạn | [`docs/nghiep-vu/DANH-SACH-TINH-NANG.md`](docs/nghiep-vu/DANH-SACH-TINH-NANG.md) |
+| Tra cứu chi tiết theo module: chức năng nào đã nối API thật, còn mock, hay chưa có | [`docs/nghiep-vu/TIEN-DO-CHI-TIET.md`](docs/nghiep-vu/TIEN-DO-CHI-TIET.md) |
 | Nhật ký tiến độ + quy trình chốt giai đoạn — **đọc trước khi báo "xong giai đoạn X"** | [`docs/nghiep-vu/TIEN-DO-DU-AN.md`](docs/nghiep-vu/TIEN-DO-DU-AN.md) |
 | Quy ước layer/CQRS backend — **đọc trước khi viết bất kỳ code backend nào** | [`docs/backend/KIEN-TRUC-BACKEND.md`](docs/backend/KIEN-TRUC-BACKEND.md) |
 | Thư viện backend cụ thể | [`docs/backend/CONG-NGHE-BACKEND.md`](docs/backend/CONG-NGHE-BACKEND.md) |
