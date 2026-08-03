@@ -102,13 +102,17 @@ docs/                 — toàn bộ tài liệu (bản đồ ở mục 2)
    plaintext, không trả về API response nhiều hơn mức cần thiết cho từng role (xem RBAC ở
    `docs/backend/CONG-NGHE-BACKEND.md` mục 3). Trước khi merge thay đổi động vào các luồng này, chạy
    skill `security-review`.
-10. **Đa ngôn ngữ (6 ngôn ngữ: vi/en/ja/zh/ko/es) — chỉ áp dụng cho `web/` (Client)**, không áp dụng
-    cho `web-admin/` (Admin/Vận hành — chỉ tiếng Việt, xem [ADR-0008](docs/kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md)
-    mục 5). Ở `web/`: không hardcode chuỗi tiếng Việt trực tiếp trong component/response lỗi. Mọi text
-    UI mới thêm phải có đủ 6 khóa dịch trong cùng PR (file `messages/{locale}/{namespace}.json`). Danh
-    mục (chuyên khoa, địa điểm, tên gói) dịch qua bảng `*_translations` riêng (không phải cột song
-    song) — thêm danh mục mới phải thêm luôn bản dịch cho cả 5 ngôn ngữ không phải `vi`, không để
-    trống rồi tính sau. Nội dung tự do người dùng viết (mô tả tin, tiểu sử) **không dịch**, hiển thị
+10. **Đa ngôn ngữ (6 ngôn ngữ: vi/en/ja/zh/ko/es) — áp dụng cho cả `web/` (Client) và `web-admin/`
+    (Admin/Vận hành)**. `web-admin/` từng chỉ tiếng Việt (ADR-0008 mục 5 bản gốc) nhưng đã đảo lại ở
+    [ADR-0010](docs/kien-truc/adr/0010-da-ngon-ngu-cho-web-admin.md) do phát sinh nhu cầu NTD/nhân sự
+    không nói tiếng Việt. **Khác thư viện theo app**: `web/` dùng `next-intl`
+    (`messages/{locale}/{namespace}.json`); `web-admin/` dùng `react-i18next`
+    (`web-admin/src/messages/{locale}/{namespace}.json`, thư mục riêng, không dùng chung với `web/`)
+    vì là Vite SPA, không phải Next.js. Ở cả 2 app: không hardcode chuỗi tiếng Việt trực tiếp trong
+    component/response lỗi. Mọi text UI mới thêm phải có đủ 6 khóa dịch trong cùng PR. Danh mục
+    (chuyên khoa, địa điểm, tên gói) dịch qua bảng `*_translations` riêng (không phải cột song song) —
+    thêm danh mục mới phải thêm luôn bản dịch cho cả 5 ngôn ngữ không phải `vi`, không để trống rồi
+    tính sau. Nội dung tự do người dùng viết (mô tả tin, tiểu sử, ghi chú ATS) **không dịch**, hiển thị
     nguyên văn — xem [ADR-0006](docs/kien-truc/adr/0006-da-ngon-ngu.md).
 
 ## 5. Khi thêm tính năng mới — thứ tự làm việc

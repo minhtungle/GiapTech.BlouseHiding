@@ -99,8 +99,9 @@ Frontend:   Client = Next.js (App Router) + React 19 + TypeScript
             Admin/Vận hành = shadcn-admin (Vite + TanStack Router + TypeScript), 1 app riêng — ADR-0008
 UI:         shadcn/ui (Radix + Tailwind) · dnd-kit · Tiptap · Recharts — dùng chung nền tảng ở cả 2 app
 State:      TanStack Query + Zustand · React Hook Form + Zod
-i18n:       next-intl (vi/en/ja/zh/ko/es, vi mặc định) · routing tiền tố URL — CHỈ áp dụng cho Client;
-            Admin/Vận hành chỉ tiếng Việt (ADR-0008). Giao diện + danh mục dịch qua bảng
+i18n:       6 ngôn ngữ (vi/en/ja/zh/ko/es, vi mặc định) ở cả 2 app — Client dùng next-intl + routing
+            tiền tố URL; Admin/Vận hành dùng react-i18next, không routing URL (ADR-0010, đảo ngược
+            "chỉ tiếng Việt" ban đầu ở ADR-0008). Giao diện + danh mục dịch qua bảng
             `*_translations`, nội dung tự viết không dịch
 Hạ tầng:    Self-host VPS · Docker Compose + Caddy · GitHub Actions ·
             Grafana/Loki/Prometheus + Uptime Kuma (self-host) · Sentry (cloud)
@@ -133,6 +134,7 @@ tránh tình trạng "sao lại chọn cái này" phải hỏi lại khi bàn gi
 | [0007](./adr/0007-shadcn-chuan-cho-admin-van-hanh.md) | Admin (NTD) chuyển sang giao diện chuẩn shadcn/ui trung tính, cùng nhóm Vận hành |
 | [0008](./adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md) | Admin (NTD) + Vận hành tách thành 1 app riêng, chạy thẳng shadcn-admin (đảo ngược 1 phần ADR-0004) |
 | [0009](./adr/0009-mediator-mapster-thay-mediatr-automapper.md) | Dùng Mediator + Mapster thay MediatR + AutoMapper (2 thư viện template mặc định đã thương mại hóa) |
+| [0010](./adr/0010-da-ngon-ngu-cho-web-admin.md) | Đảo ngược ADR-0008 mục 5 — `web-admin/` cũng áp dụng 6 ngôn ngữ, dùng react-i18next |
 
 ---
 
@@ -149,10 +151,12 @@ tránh tình trạng "sao lại chọn cái này" phải hỏi lại khi bàn gi
    **Client** dùng Next.js (`web/`, riêng 1 app). **Admin + Vận hành dùng chung 1 app shadcn-admin**
    (`web-admin/`, Vite + TanStack Router), tách khỏi Next.js — phân biệt màn hình theo role, RBAC chặn
    thật ở backend. Xem [ADR-0008](./adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md).
-7. Đa ngôn ngữ: **6 ngôn ngữ** — Tiếng Việt (mặc định), Anh, Nhật, Trung, Hàn, Tây Ban Nha — **chỉ áp
-   dụng cho Client** (`web/`); Admin/Vận hành (`web-admin/`) chỉ tiếng Việt (xem
-   [ADR-0008](./adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md) mục 5). Routing theo tiền tố URL
-   (`/vi/`, `/en/`...), tự nhận diện qua `Accept-Language` lần đầu, có bộ chọn ngôn ngữ trên giao diện.
+7. Đa ngôn ngữ: **6 ngôn ngữ** — Tiếng Việt (mặc định), Anh, Nhật, Trung, Hàn, Tây Ban Nha — áp dụng
+   cho **cả 2 app**. Client (`web/`) dùng next-intl, routing theo tiền tố URL (`/vi/`, `/en/`...), tự
+   nhận diện qua `Accept-Language` lần đầu. Admin/Vận hành (`web-admin/`) **từng chỉ tiếng Việt**
+   (ADR-0008 mục 5 bản gốc) nhưng đã **đảo ngược ở [ADR-0010](./adr/0010-da-ngon-ngu-cho-web-admin.md)**
+   do phát sinh nhu cầu NTD/nhân sự không nói tiếng Việt — dùng react-i18next, chọn ngôn ngữ lưu
+   `localStorage` (không routing URL, không SSR). Cả 2 app có bộ chọn ngôn ngữ trên giao diện.
    Chỉ dịch giao diện + danh mục chuẩn (qua bảng `*_translations`, không phải cột song song), **không**
    dịch nội dung tự viết (mô tả tin, tiểu sử ứng viên). Xem [ADR-0006](./adr/0006-da-ngon-ngu.md).
 8. Phong cách giao diện theo khu vực: **Client** bản sắc "Tin cậy lâm sàng" đầy đủ; **Admin (NTD) +

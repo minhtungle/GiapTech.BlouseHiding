@@ -2,9 +2,12 @@
 
 **Trạng thái:** Đã chấp nhận (thay thế bản v1 chỉ dự tính VI+EN). ⚠️ Sau
 [ADR-0008](./0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md), phạm vi **routing/UI 6 ngôn ngữ ở mục
-2–4 chỉ áp dụng cho Client (`web/`, Next.js)** — app Admin/Vận hành (`web-admin/`, shadcn-admin) chỉ
-tiếng Việt, không dùng next-intl. Danh mục dịch qua bảng `*_translations` (mục 4) và `users.locale`
-vẫn dùng chung cho toàn hệ thống vì đây là dữ liệu backend, không phụ thuộc app frontend nào hiển thị.
+2–4 vốn chỉ áp dụng cho Client (`web/`, Next.js)** — app Admin/Vận hành (`web-admin/`, shadcn-admin)
+từng chỉ tiếng Việt. **[ADR-0010](./0010-da-ngon-ngu-cho-web-admin.md) đã đảo lại quyết định đó** —
+`web-admin/` giờ cũng áp dụng cùng 6 ngôn ngữ này, nhưng dùng `react-i18next` (không dùng `next-intl`,
+vì `web-admin/` là Vite SPA) và tổ chức bản dịch riêng ở `web-admin/src/messages/`, tách biệt khỏi
+`web/messages/`. Danh mục dịch qua bảng `*_translations` (mục 4) và `users.locale` vẫn dùng chung cho
+toàn hệ thống vì đây là dữ liệu backend, không phụ thuộc app frontend nào hiển thị.
 
 ## Bối cảnh
 Ứng viên/tổ chức y tế nước ngoài (bệnh viện có vốn đầu tư nước ngoài, NGO y tế, chuyên gia expat, đặc
@@ -47,7 +50,8 @@ dùng quen tìm ở footer.
   trong `web/` (namespace theo tính năng: `common`, `jobs`, `profile`...) — mỗi ngôn ngữ 1 thư mục
   riêng, dễ giao cho dịch giả/vendor dịch thuê ngoài theo từng gói ngôn ngữ, không phải sửa 1 file
   khổng lồ dùng chung. Đây là cách tổ chức phổ biến của các dự án i18n mã nguồn mở lớn dùng next-intl.
-  Không áp dụng cho `web-admin/` — xem [ADR-0008](./0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md) mục 5.
+  `web-admin/` dùng `react-i18next` với cấu trúc tương tự nhưng thư mục riêng
+  (`web-admin/src/messages/`) — xem [ADR-0010](./0010-da-ngon-ngu-cho-web-admin.md).
 - **Danh mục do nền tảng quản lý** (chuyên khoa, địa điểm, loại hình, tên gói dịch vụ): **không** dùng
   cột song song (`name_en`, `name_ja`...) như bản ADR v1 — với 6 ngôn ngữ, cách này phình cột và khó
   quản lý bản dịch thiếu/thừa. Thay bằng **bảng dịch riêng theo mẫu chuẩn** (tương tự cách các hệ CMS/

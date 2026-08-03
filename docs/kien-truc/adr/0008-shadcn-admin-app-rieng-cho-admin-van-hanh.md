@@ -31,10 +31,11 @@ làm nền tảng thật cho 2 khu vực này thay vì tự dựng lại từ đ
    [`../../backend/CONG-NGHE-BACKEND.md`](../../backend/CONG-NGHE-BACKEND.md) mục 3) nên không phát
    sinh vấn đề cookie cross-domain — chỉ cần thêm origin của app Admin/Vận hành vào whitelist CORS của
    backend.
-5. **Đa ngôn ngữ**: app Admin/Vận hành **không áp dụng 6 ngôn ngữ** — chỉ tiếng Việt. Đây là công cụ nội
-   bộ dùng bởi NTD tại Việt Nam và đội Vận hành nội bộ, không phải bề mặt hướng ứng viên quốc tế; dùng
-   `next-intl` cho 1 SPA nội bộ không đáng công sức. Phạm vi 6 ngôn ngữ ở
-   [ADR-0006](./0006-da-ngon-ngu.md) thu hẹp lại **chỉ áp dụng cho Client**.
+5. ~~**Đa ngôn ngữ**: app Admin/Vận hành **không áp dụng 6 ngôn ngữ** — chỉ tiếng Việt...~~
+   **Đã đảo ngược bởi [ADR-0010](./0010-da-ngon-ngu-cho-web-admin.md)** — phát sinh nhu cầu thật từ
+   NTD/nhân sự không nói tiếng Việt (cơ sở y tế có vốn/quản lý nước ngoài). `web-admin/` giờ áp dụng
+   cùng 6 ngôn ngữ như `web/`, dùng `react-i18next` (không dùng `next-intl` vì đây là Vite SPA, không
+   phải Next.js). Xem ADR-0010 để biết chi tiết + việc cần làm.
 
 ## Phương án đã cân nhắc
 - **Giữ nguyên route group trong Next.js, chỉ tham khảo bố cục (quyết định cũ ở ADR-0004)**: loại bỏ —

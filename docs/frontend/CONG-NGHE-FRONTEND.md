@@ -12,7 +12,8 @@ quyết định tách app ở [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-
 - **`web-admin/`** — **shadcn-admin** (Vite + TanStack Router + TypeScript), dùng chung cho **Admin (NTD)**
   và **Vận hành** (nội bộ) — phân biệt màn hình theo role đăng nhập, RBAC chặn thật ở backend. Dùng
   giao diện dashboard chuẩn shadcn/ui trung tính (xem [ADR-0007](../kien-truc/adr/0007-shadcn-chuan-cho-admin-van-hanh.md)),
-  chỉ tiếng Việt (không dùng next-intl).
+  đủ 6 ngôn ngữ qua `react-i18next` (xem [ADR-0010](../kien-truc/adr/0010-da-ngon-ngu-cho-web-admin.md)
+  — đảo ngược quyết định "chỉ tiếng Việt" ban đầu ở ADR-0008 mục 5).
 
 ---
 
@@ -47,15 +48,18 @@ quyết định tách app ở [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-
 | Bảng dữ liệu (danh sách ứng viên/tin/người dùng) | **TanStack Table** (headless) | Không mang UI mặc định, tự style theo shadcn/ui table component |
 | Biểu đồ dashboard | **Tremor** (dựng trên Recharts) | Component biểu đồ + KPI card sẵn, phối màu theo CSS variable — khớp nhanh với token thiết kế |
 | Realtime client | **@microsoft/signalr** | Thông báo/report mới cho Vận hành |
-| i18n | **Không dùng** — chỉ tiếng Việt | Công cụ nội bộ, không hướng đối tượng đa quốc gia — xem [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md) mục 5 |
+| i18n | **react-i18next** + `i18next-browser-languagedetector` | 6 ngôn ngữ (vi/en/ja/zh/ko/es) — không dùng `next-intl` (gắn với Next.js App Router, không cài được cho Vite SPA); xem [ADR-0010](../kien-truc/adr/0010-da-ngon-ngu-cho-web-admin.md) |
 | Testing | **Vitest** + **React Testing Library** (unit) + **Playwright** (e2e, base URL riêng) | Cùng bộ công cụ với Client, cấu hình riêng theo Vite |
 
 ---
 
 ## Đa ngôn ngữ (i18n)
 
-> ⚠️ Toàn bộ mục này chỉ áp dụng cho **`web/` (Client)**. `web-admin/` (Admin/Vận hành) không dùng
-> next-intl, chỉ tiếng Việt — xem [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md) mục 5.
+> ⚠️ Toàn bộ mục này (routing theo tiền tố URL, `next-intl`, `messages/{locale}/{namespace}.json`) mô
+> tả riêng **`web/` (Client)**. `web-admin/` (Admin/Vận hành) áp dụng cùng 6 ngôn ngữ nhưng dùng
+> **`react-i18next`** (không có routing theo URL — chọn ngôn ngữ lưu `localStorage`, không phải
+> next-intl/middleware) với bản dịch riêng ở `web-admin/src/messages/{locale}/{namespace}.json` — xem
+> [ADR-0010](../kien-truc/adr/0010-da-ngon-ngu-cho-web-admin.md).
 >
 > Quyết định & phương án đã cân nhắc: [ADR-0006](../kien-truc/adr/0006-da-ngon-ngu.md). Backend tương
 > ứng: [`../backend/CONG-NGHE-BACKEND.md`](../backend/CONG-NGHE-BACKEND.md) mục i18n. Schema: bảng
