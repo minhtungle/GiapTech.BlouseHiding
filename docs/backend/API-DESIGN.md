@@ -25,6 +25,9 @@
   hoặc `Owner` (chỉ chủ sở hữu resource, vd. hồ sơ của chính mình).
   > ⚠️ Role backend tên là `Admin` nhưng **site tương ứng gọi là "Vận hành"**, không phải trang "Admin"
   > mà Nhà tuyển dụng dùng — 2 khái niệm khác nhau, tránh nhầm lẫn khi đọc bảng dưới.
+- **Enum**: serialize dạng **string** trong JSON (vd `"orgType": "BenhVienTu"`, không phải số thứ tự)
+  — cấu hình `JsonStringEnumConverter` toàn cục ở `Web/DependencyInjection.cs`. Ổn định hơn khi thêm
+  giá trị enum mới ở giữa, dễ đọc hơn khi debug.
 - **Idempotency**: các endpoint tạo giao dịch tiền/credit nhận header `Idempotency-Key`.
 - **CORS**: API phục vụ **2 origin frontend riêng biệt** — Client (`web/`, Next.js) và Admin/Vận hành
   (`web-admin/`, shadcn-admin) — xem [ADR-0008](../kien-truc/adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md).

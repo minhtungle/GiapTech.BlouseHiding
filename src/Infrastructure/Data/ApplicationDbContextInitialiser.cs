@@ -28,9 +28,9 @@ public class ApplicationDbContextInitialiser
     private readonly ILogger<ApplicationDbContextInitialiser> _logger;
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly RoleManager<IdentityRole<Guid>> _roleManager;
 
-    public ApplicationDbContextInitialiser(ILogger<ApplicationDbContextInitialiser> logger, ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+    public ApplicationDbContextInitialiser(ILogger<ApplicationDbContextInitialiser> logger, ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole<Guid>> roleManager)
     {
         _logger = logger;
         _context = context;
@@ -74,12 +74,12 @@ public class ApplicationDbContextInitialiser
         {
             if (_roleManager.Roles.All(r => r.Name != roleName))
             {
-                await _roleManager.CreateAsync(new IdentityRole(roleName));
+                await _roleManager.CreateAsync(new IdentityRole<Guid>(roleName));
             }
         }
 
         // Default user — role "admin" (đội Vận hành nội bộ), dùng cho dev/test cục bộ
-        var administrator = new ApplicationUser { UserName = "admin@localhost", Email = "admin@localhost" };
+        var administrator = new ApplicationUser { UserName = "admin@localhost", Email = "admin@localhost", Role = Roles.Admin, EmailVerifiedAt = DateTimeOffset.UtcNow };
 
         if (_userManager.Users.All(u => u.UserName != administrator.UserName))
         {

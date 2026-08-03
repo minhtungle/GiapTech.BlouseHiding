@@ -12,7 +12,7 @@ public class WebApiFactory(string connectionString) : WebApplicationFactory<Prog
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder
-            .UseSetting("ConnectionStrings:GiapTech.BlouseHidingDb", connectionString);
+            .UseSetting("ConnectionStrings:Postgres", connectionString);
 
         builder.ConfigureTestServices(services =>
         {
@@ -22,9 +22,13 @@ public class WebApiFactory(string connectionString) : WebApplicationFactory<Prog
                 {
                     var mock = new Mock<IUser>();
                     mock.SetupGet(x => x.Roles).Returns(TestApp.GetRoles());
-                    mock.SetupGet(x => x.Id).Returns(TestApp.GetUserId());
+                    mock.SetupGet(x => x.Id).Returns(TestApp.GetUserId()?.ToString());
                     return mock.Object;
                 });
+
+            services
+                .RemoveAll<IOtpSender>()
+                .AddTransient<IOtpSender, CapturingOtpSender>();
         });
     }
 }

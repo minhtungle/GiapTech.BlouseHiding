@@ -1,8 +1,10 @@
+using System.Text.Json.Serialization;
 using Azure.Identity;
 using GiapTech.BlouseHiding.Application.Common.Interfaces;
 using GiapTech.BlouseHiding.Infrastructure.Data;
 using GiapTech.BlouseHiding.Web.Services;
 using Microsoft.AspNetCore.Mvc;
+using HttpJsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -23,12 +25,16 @@ public static class DependencyInjection
         builder.Services.Configure<ApiBehaviorOptions>(options =>
             options.SuppressModelStateInvalidFilter = true);
 
+        // Enum dạng string trong JSON (vd "BenhVienTu" thay vì số thứ tự) — dễ đọc/ổn định hơn khi
+        // thêm giá trị enum mới ở giữa, khớp ví dụ response trong docs/backend/API-DESIGN.md.
+        builder.Services.Configure<HttpJsonOptions>(options =>
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
         builder.Services.AddEndpointsApiExplorer();
 
         builder.Services.AddOpenApi(options =>
         {
             options.AddOperationTransformer<ApiExceptionOperationTransformer>();
-            options.AddOperationTransformer<IdentityApiOperationTransformer>();
             options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
         });
 

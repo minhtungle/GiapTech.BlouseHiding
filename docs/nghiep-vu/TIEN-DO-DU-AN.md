@@ -34,8 +34,8 @@ Nếu có mục không đạt, ghi rõ lý do + kế hoạch xử lý vào nhậ
 | Giai đoạn | Trạng thái | Ghi chú ngắn |
 |---|---|---|
 | 0.1 — UI Shell | 🟨 Gần xong | Còn thiếu tin nhắn/thông báo thật, export PDF CV |
-| 0.2 — Backend & hạ tầng | 🟨 Gần xong | Danh mục (đọc+ghi) + CI/CD xong; Identity thật, Jobs/ATS/Credit chưa làm |
-| 1 — MVP | ⬜ Chưa bắt đầu | |
+| 0.2 — Backend & hạ tầng | 🟨 Gần xong | Danh mục (đọc+ghi) + CI/CD xong; Jobs/ATS/Credit chưa làm |
+| 1 — MVP | 🟨 Đang làm | Identity thật (JWT+OTP giả lập) + tạo tổ chức xong; hồ sơ ứng viên/Jobs/ATS/Credit chưa làm |
 | 2 — Hoàn thiện | ⬜ Chưa bắt đầu | |
 | 3 — Mở rộng | ⬜ Chưa bắt đầu | |
 
@@ -100,16 +100,55 @@ trợ; `POST /api/v1/ops/catalog/specialties` không token trả 401, `GET /api/
 `npm run build` + `npm run lint` sạch ở cả `web/` và `web-admin/` sau khi nối API.
 
 Còn thiếu (chặn việc chốt giai đoạn):
-- Identity thật (đăng ký/đăng nhập/OTP/OAuth) — mới có khung Identity mặc định của template, chưa nối
-  role/luồng thật của dự án.
-- Jobs, Applications/ATS, Credit/Payment — chưa bắt đầu bounded context nào trong số này.
+- Jobs, Applications/ATS, Credit/Payment — chưa bắt đầu bounded context nào trong số này (Identity đã
+  làm, xem log Giai đoạn 1 bên dưới).
 - Form thêm/sửa danh mục ở `web-admin/` (`/ops/catalog`, `jobs/new`) chưa gọi Command thật — mới nối
   phần đọc (dropdown/danh sách), nút submit còn tĩnh.
 - `web/` và `web-admin/` vẫn dùng mock data cho mọi màn hình khác ngoài danh mục (Jobs/ATS/Credit/...).
 
 ### Giai đoạn 1 — MVP
 
-*(Chưa bắt đầu — điền nhật ký khi có tiến độ thật)*
+**Trạng thái: 🟨 Đang làm — chưa đủ điều kiện chốt**
+
+Đã làm:
+- Identity thật thay khung ASP.NET Identity mặc định của template: mở rộng `ApplicationUser` (Id
+  `Guid`, `role`/`status`/`locale`/`email_verified_at`/`phone_verified_at` khớp ERD), JWT access token
+  (15 phút, claim role/email/nameidentifier) + refresh token xoay vòng (hash SHA-256 lưu bảng
+  `refresh_tokens`, thu hồi khi logout/dùng lại token cũ).
+- Endpoint `/api/v1/auth/{register,verify-otp,login,refresh,logout,forgot-password,reset-password}` +
+  `/api/v1/users/me` (GET/DELETE) đúng path đã thiết kế ở `API-DESIGN.md` mục 2 — thay hoàn toàn
+  `MapIdentityApi`/`AddBearerToken` mặc định của template (path/scheme không khớp thiết kế).
+  Xóa `IdentityApiOperationTransformer` (dead code sau khi bỏ `MapIdentityApi`).
+- OTP đăng ký + quên mật khẩu — **driver giả lập nội bộ** (`LoggingOtpSender`, log ra thay vì gửi email/
+  SMS thật, qua interface `IOtpSender` nên đổi driver thật sau không ảnh hưởng luồng nghiệp vụ). Chưa
+  chốt nhà cung cấp SMTP/SMS thật, chỉ áp dụng cho MVP demo.
+- `DELETE /users/me` sửa từ xóa cứng (template mặc định) sang **soft-delete + anonymize** đúng CLAUDE.md
+  rule bất di bất dịch #4/NĐ 13/2023 — set `status=deleted`, ẩn danh email/SĐT, xóa password hash.
+- Bounded context Employer tối thiểu: `Organization`/`EmployerMember` entity + `POST /organizations`
+  (tạo tổ chức lần đầu → tự tạo `owner` member), `[Authorize(Roles = "employer")]`.
+- Enum toàn API chuyển sang serialize dạng string (`JsonStringEnumConverter` toàn cục) thay vì số thứ
+  tự — áp dụng lùi cho cả Catalog đã có từ Giai đoạn 0.2.
+- Migration `InitialCreate` viết lại từ đầu (schema Identity đổi `Id` từ `string` sang `Guid` — thay
+  đổi phá vỡ, chấp nhận được vì migration cũ chưa từng lên production, chỉ tồn tại trong nhánh feature
+  chưa merge `main`).
+
+Verify đã chạy: `dotnet test` 11/11 pass (3 unit + 8 functional — functional dùng Testcontainers Postgres
+thật, có test riêng cho rotate refresh token, revoke khi logout, sai mật khẩu, reset password đổi được
+mật khẩu và login lại được); migration áp thành công vào Postgres thật (`\d "AspNetUsers"` xác nhận `Id
+uuid`); chạy `dotnet run --project src/Web` thật + curl toàn bộ luồng
+register→verify-otp→login→GET /users/me (200 có token, 401 không token)→refresh (xoay vòng, token cũ
+dùng lại bị 401)→logout→forgot-password→reset-password→login lại bằng mật khẩu mới — tất cả đúng như
+thiết kế; `POST /organizations` tạo tổ chức + owner member thành công với JWT role `employer`.
+
+Còn thiếu (chặn việc chốt giai đoạn):
+- OAuth Google/Zalo — chưa làm, quyết định hoãn sang sau khi Identity cốt lõi ổn định (đã xác nhận với
+  người dùng).
+- `POST /organizations/{id}/members/invite` + luồng chấp nhận lời mời (`organization_invitations`) —
+  chưa làm, mới có tạo tổ chức lần đầu.
+- Hồ sơ ứng viên (`candidate_profiles`, CCHN, CV Builder), Jobs, Applications/ATS, Credit/Payment —
+  chưa bắt đầu bounded context nào trong số này.
+- Chưa nối `web/`/`web-admin/` tới API Identity thật (màn hình đăng ký/đăng nhập vẫn dùng mock/form
+  tĩnh) — ưu tiên tiếp theo sau khi có thêm bounded context để có gì nối.
 
 ### Giai đoạn 2 — Hoàn thiện
 

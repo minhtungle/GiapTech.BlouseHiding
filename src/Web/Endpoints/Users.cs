@@ -1,7 +1,7 @@
-﻿using GiapTech.BlouseHiding.Infrastructure.Identity;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using GiapTech.BlouseHiding.Application.Auth.Queries.GetCurrentUser;
+using GiapTech.BlouseHiding.Application.Common.Interfaces;
+using GiapTech.BlouseHiding.Application.Common.Models;
 
 namespace GiapTech.BlouseHiding.Web.Endpoints;
 
@@ -9,21 +9,21 @@ public class Users : IEndpointGroup
 {
     public static void Map(RouteGroupBuilder groupBuilder)
     {
-        groupBuilder.MapIdentityApi<ApplicationUser>();
-
-        groupBuilder.MapPost(Logout, "logout").RequireAuthorization();
+        groupBuilder.MapGet(GetMe, "me").RequireAuthorization();
+        groupBuilder.MapDelete(DeleteMe, "me").RequireAuthorization();
     }
 
-    [EndpointSummary("Log out")]
-    [EndpointDescription("Logs out the current user by clearing the authentication cookie.")]
-    public static async Task<Results<Ok, UnauthorizedHttpResult>> Logout(SignInManager<ApplicationUser> signInManager, [FromBody] object empty)
+    public static async Task<AuthUserDto> GetMe(ClaimsPrincipal principal, ISender sender, CancellationToken cancellationToken)
     {
-        if (empty != null)
-        {
-            await signInManager.SignOutAsync();
-            return TypedResults.Ok();
-        }
+        var userId = Guid.Parse(principal.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        return await sender.Send(new GetCurrentUserQuery { UserId = userId }, cancellationToken);
+    }
 
-        return TypedResults.Unauthorized();
+    public static async Task<IResult> DeleteMe(ClaimsPrincipal principal, IIdentityService identityService)
+    {
+        var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var result = await identityService.DeleteUserAsync(userId);
+
+        return result.Succeeded ? TypedResults.NoContent() : TypedResults.BadRequest(result.Errors);
     }
 }

@@ -14,5 +14,15 @@ public interface IApplicationDbContext
 
     DbSet<JobPackageTranslation> JobPackageTranslations { get; }
 
+    DbSet<Organization> Organizations { get; }
+
+    DbSet<EmployerMember> EmployerMembers { get; }
+
+    DbSet<OrganizationInvitation> OrganizationInvitations { get; }
+
+    DbSet<RefreshToken> RefreshTokens { get; }
+
+    DbSet<OtpCode> OtpCodes { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

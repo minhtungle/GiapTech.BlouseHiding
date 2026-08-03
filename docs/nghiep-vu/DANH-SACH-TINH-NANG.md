@@ -57,14 +57,18 @@
 ## Giai đoạn 1 — MVP
 
 ### Tài khoản & định danh
-- ⬜ Đăng ký/đăng nhập email + SĐT, OTP
+- ✅ Đăng ký/đăng nhập email, OTP — OTP hiện là **driver giả lập nội bộ** (log thay vì gửi email/SMS
+  thật, xem docs/nghiep-vu/TIEN-DO-DU-AN.md), chưa chốt nhà cung cấp SMTP/SMS thật. Xác thực SĐT
+  (`phone_verified_at`) chưa làm — mới có email
 - ⬜ OAuth Google
 - ⬜ OAuth Zalo
-- ⬜ RBAC (`candidate`/`employer`/`admin`/`moderator` — site Client/Admin/Vận hành)
-- ⬜ Đa thành viên HR trong 1 tổ chức
+- ✅ RBAC (`candidate`/`employer`/`admin`/`moderator` — site Client/Admin/Vận hành) — JWT access token
+  (15 phút) + refresh token xoay vòng (hash lưu DB), claim role dùng cho `[Authorize(Roles=...)]`
+- 🟨 Đa thành viên HR trong 1 tổ chức — `POST /organizations` (tạo tổ chức lần đầu → owner member) đã
+  làm; `POST /organizations/{id}/members/invite` chưa làm
 - ⬜ Mời thành viên HR qua email (kể cả email chưa có tài khoản — `organization_invitations`)
 - ⬜ Chọn/ghi nhớ ngôn ngữ giao diện (`users.locale`), email/thông báo gửi đúng ngôn ngữ đã chọn
-- ⬜ Xóa tài khoản (`DELETE /users/me` — soft-delete + anonymize PII, giữ audit log/application đã ẩn danh)
+- ✅ Xóa tài khoản (`DELETE /users/me` — soft-delete + anonymize PII, giữ audit log/application đã ẩn danh)
 
 ### Hồ sơ ứng viên
 - ⬜ Hồ sơ cơ bản (học vấn, kinh nghiệm, kỹ năng)
