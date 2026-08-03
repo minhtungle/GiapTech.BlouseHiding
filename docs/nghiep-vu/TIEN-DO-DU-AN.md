@@ -371,11 +371,19 @@ khỏi hàng chờ; accept sai email bị chặn 400; mời khi không phải th
 thường được nhưng xoá owner bị chặn 400. Migration EF Core cho thay đổi navigation property
 (`Organization.Invitations`) sinh ra rỗng (không đổi shape DB) — đã xoá, không giữ migration rác.
 
+Bổ sung ngay sau — nối `web-admin/src/features/users/` (trước đó dùng `@faker-js/faker` với role giả
+superadmin/admin/cashier/manager, không khớp domain thật) tới API thành viên tổ chức vừa xây. Viết lại
+hoàn toàn thay vì sửa: xóa toàn bộ data-table generic (columns/dialogs/schema/provider của
+shadcn-admin gốc — pagination/facet-filter/bulk-delete không cần cho domain thật vì số thành viên 1 tổ
+chức nhỏ, MVP), thay bằng 1 trang đơn giản — bảng thành viên (email/vai trò/ngày tham gia, nút xoá trừ
+owner), bảng lời mời đang chờ (chỉ hiện khi có), dialog mời thành viên mới (email + chọn vai trò
+`hr_manager`/`hr_member`), dialog xác nhận xoá. Route `/users` đơn giản hóa theo (bỏ `usersSearchSchema`
+phức tạp không cần). Thêm `organizationsApi.getMembers/inviteMember/removeMember` vào `lib/api.ts`.
+Verify: `tsc -b`/`build`/`lint` sạch; `vitest run` 101/102 (17 test file, giảm 4 file so với trước vì
+xóa test cũ của users theo — 1 fail vẫn là `search-provider.test.tsx` flaky không liên quan, xác nhận
+không mention gì tới route `/users`).
+
 Còn thiếu (chặn việc chốt giai đoạn):
-- `web-admin/src/features/users/` — đã có API thật (`GET/POST/DELETE .../members`,
-  `POST /invitations/{token}/accept`) nhưng frontend **chưa nối** — vẫn dùng `@faker-js/faker` với role
-  không khớp domain thật (superadmin/admin/cashier/manager thay vì employer/admin/moderator/candidate)
-  — việc tiếp theo ngay sau log này.
 - OAuth, Payments, học vấn/kinh nghiệm/CME/CV Builder, đổi mật khẩu khi đã đăng nhập, hoàn Credit thủ
   công khi tranh chấp — vẫn như log trước, chưa có gì thay đổi ở đợt này.
 

@@ -138,6 +138,24 @@ export type MyOrganization = {
   memberRole: string
 }
 
+export type OrganizationMember = {
+  id: string
+  userId: string
+  email: string
+  memberRole: 'Owner' | 'HrManager' | 'HrMember'
+  joinedAt: string | null
+}
+export type PendingMemberInvitation = {
+  id: string
+  email: string
+  invitedRole: 'HrManager' | 'HrMember'
+  expiresAt: string
+}
+export type OrganizationMembers = {
+  members: OrganizationMember[]
+  pendingInvitations: PendingMemberInvitation[]
+}
+
 export const organizationsApi = {
   getMine: () => http.get<MyOrganization[]>('/organizations/mine').then((r) => r.data),
   create: (input: {
@@ -154,6 +172,12 @@ export const organizationsApi = {
     http
       .get<ApiCreditTransaction[]>(`/organizations/${organizationId}/credit-transactions`)
       .then((r) => r.data),
+  getMembers: (organizationId: string) =>
+    http.get<OrganizationMembers>(`/organizations/${organizationId}/members`).then((r) => r.data),
+  inviteMember: (organizationId: string, email: string, invitedRole: 'HrManager' | 'HrMember') =>
+    http.post<string>(`/organizations/${organizationId}/members/invite`, { email, invitedRole }),
+  removeMember: (organizationId: string, memberId: string) =>
+    http.delete(`/organizations/${organizationId}/members/${memberId}`),
 }
 
 export type CandidateSearchResult = {

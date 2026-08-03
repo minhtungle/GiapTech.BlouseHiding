@@ -60,9 +60,10 @@
   dialog nhập lý do khi từ chối), tìm/mở hồ sơ ứng viên chủ động (`features/candidates/`, filter
   chuyên khoa/địa điểm, ẩn liên hệ tới khi mở, nút mở hồ sơ trừ Credit thật, báo lỗi rõ khi không đủ
   Credit), form thêm/sửa danh mục ở `/ops/catalog` (chuyên khoa + địa điểm dạng cây cha-con qua dialog,
-  gói tin Free/Eco/Pro/Max — hạng gói không đổi được sau khi tạo, đúng ràng buộc backend)**. **Chưa
-  nối**: `/ops/payments`/`/ops/reports` (chưa có bounded context), trang quản lý người dùng
-  (`features/users/` vẫn dùng faker + role giả).
+  gói tin Free/Eco/Pro/Max — hạng gói không đổi được sau khi tạo, đúng ràng buộc backend), thành viên
+  tổ chức (`features/users/` viết lại hoàn toàn — bỏ data-table generic + faker của shadcn-admin gốc,
+  thay bằng bảng thành viên + lời mời đang chờ, dialog mời thành viên mới, xoá thành viên có xác nhận,
+  không cho xoá owner)**. **Chưa nối**: `/ops/payments`/`/ops/reports` (chưa có bounded context).
 
 ## Giai đoạn 1 — MVP
 
