@@ -7,6 +7,7 @@ import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
+import { LanguageSwitcher } from '@/components/language-switcher'
 import { ThemeSwitch } from '@/components/theme-switch'
 
 const TARGET_LABEL: Record<string, string> = {
@@ -21,6 +22,7 @@ export function OpsReports() {
     <>
       <Header>
         <div className='ms-auto flex items-center gap-2'>
+          <LanguageSwitcher />
           <ThemeSwitch />
           <ConfigDrawer />
           <ProfileDropdown />

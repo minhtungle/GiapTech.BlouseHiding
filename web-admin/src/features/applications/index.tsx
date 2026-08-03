@@ -14,6 +14,7 @@ import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
+import { LanguageSwitcher } from '@/components/language-switcher'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { APPLICATION_STAGES, APPLICATION_STAGE_LABEL, type ApplicationStageValue } from './constants'
 import { KanbanCard } from './kanban-card'
@@ -65,6 +66,7 @@ export function Applications() {
       <Header>
         <div className='ms-auto flex items-center gap-2'>
           <Search />
+          <LanguageSwitcher />
           <ThemeSwitch />
           <ConfigDrawer />
           <ProfileDropdown />

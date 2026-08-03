@@ -427,7 +427,39 @@ ai import (giữ lại `MOCK_REPORT_QUEUE` vì `ops-reports` vẫn cố ý dùng
 Verify: `tsc -b`/`build`/`lint` sạch; `vitest run` 101/102 (1 fail flaky `search-provider.test.tsx`
 không liên quan, đã ghi nhiều lần ở các log trước, không chặn việc chốt phần này).
 
+Bổ sung tiếp — **[ADR-0010](../kien-truc/adr/0010-da-ngon-ngu-cho-web-admin.md): đảo ngược ADR-0008
+mục 5**, thêm đa ngôn ngữ thật cho `web-admin/`. Lý do phát sinh: có NTD/nhân sự phía tổ chức y tế
+không nói được tiếng Việt (cơ sở y tế có vốn/quản lý nước ngoài) cần tự vào `web-admin/` đăng tin/quản
+lý ứng viên — giả định gốc "công cụ nội bộ, không hướng quốc tế" của ADR-0008 không còn đúng. Áp dụng
+cùng 6 ngôn ngữ như `web/` nhưng dùng **`react-i18next`** (không dùng `next-intl` — thư viện đó gắn
+chặt Next.js App Router, không cài được cho Vite SPA). Cấu trúc `web-admin/src/messages/{locale}/
+{namespace}.json` — cùng tư duy tổ chức với `web/messages/` nhưng thư mục riêng, không dùng chung.
+Chọn ngôn ngữ lưu `localStorage` (không routing URL, không SSR — khác `web/`).
+Dựng xong khung `i18n.ts` (config `react-i18next` + `i18next-browser-languagedetector`) và namespace
+`common` đầu tiên (6 locale — `vi`/`en` dịch tay thật, `ja`/`zh`/`ko`/`es` tạm giữ tiếng Việt làm
+placeholder chờ dịch thuật vì không đủ độ tin cậy dịch tay ngôn ngữ chuyên môn, đúng nguyên tắc "không
+dịch máy tự động lấp chỗ trống" của ADR-0006). Rút chuỗi hardcode ở `sidebar-data.ts` (đổi `title`/
+`plan` từ literal sang key dịch) + `nav-group.tsx`/`team-switcher.tsx` (gọi `t()` khi render). Thêm
+component `LanguageSwitcher` (dropdown Globe icon, tên ngôn ngữ theo bản ngữ — cùng nguyên tắc
+`LanguageSwitcher` của `web/`), chèn vào Header của toàn bộ 15 feature page (script `sed`/`perl` áp
+dụng đồng loạt do pattern `<ThemeSwitch />` hoàn toàn nhất quán ở mọi file — đã kiểm tra kỹ trước khi
+áp dụng, sau đó lint autofix sắp lại thứ tự import).
+Verify: `tsc -b`/`build`/`lint` sạch; `vitest run` 101/102 (1 fail flaky không liên quan, như log
+trước). **Verify thật bằng browser** (Playwright, đăng nhập bằng tài khoản test qua OTP giả lập, chạy
+backend + `web-admin/` dev server thật): xác nhận sidebar hiện đúng tiếng Việt lúc đăng nhập → bấm
+dropdown Globe → chọn English → toàn bộ sidebar đổi ngay sang "Job Postings"/"Dashboard"/"Credit
+Wallet"/... đúng bản dịch, kèm ảnh chụp màn hình xác nhận trực quan. Phát hiện + vá 1 lỗi nhỏ trong lúc
+verify: `plan: 'nav.brandPlan'` sai namespace path (đúng phải là `plan: 'brandPlan'`, không nằm trong
+`nav`) — sửa ngay, verify lại xác nhận đúng.
+
 Còn thiếu (chặn việc chốt giai đoạn):
+- **Rút chuỗi hardcode các namespace còn lại** ở `web-admin/` — chỉ mới xong `common` (sidebar/nav).
+  Toàn bộ `features/**/*.tsx` (jobs, credit, candidates, users, ops-*) vẫn hardcode tiếng Việt trực
+  tiếp trong component — cần rút theo từng feature, cập nhật `TIEN-DO-CHI-TIET.md` khi xong mỗi cái.
+- Dịch thuật thật cho `ja`/`zh`/`ko`/`es` ở cả 2 app — hiện đều tạm dùng tiếng Việt làm placeholder,
+  chưa thuê dịch giả/vendor.
+- Đồng bộ lựa chọn ngôn ngữ `web-admin/` với `users.locale` ở backend — chưa quyết định (ADR-0010 mục
+  5 để ngỏ), hiện 2 app không chia sẻ lựa chọn ngôn ngữ dù cùng 1 tài khoản.
 - Cổng thanh toán tự động (VNPay/Momo/ZaloPay) — hoãn theo ADR-0003, chưa chọn nhà cung cấp cụ thể.
 - `/ops/reports` — chưa có bounded context Report ở backend, `web-admin/` vẫn cố ý dùng mock.
 - OAuth, học vấn/kinh nghiệm/CME/CV Builder, đổi mật khẩu khi đã đăng nhập, hoàn Credit thủ công khi

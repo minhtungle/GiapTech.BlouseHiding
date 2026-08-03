@@ -1,0 +1,22 @@
+{
+  "brand": "BlouseHiding",
+  "brandPlan": "Admin / Vận hành",
+  "languageSwitcher": {
+    "label": "Ngôn ngữ"
+  },
+  "nav": {
+    "employerGroup": "Nhà tuyển dụng (Admin)",
+    "opsGroup": "Vận hành",
+    "dashboard": "Dashboard",
+    "jobs": "Tin tuyển dụng",
+    "ats": "ATS — Ứng viên",
+    "credit": "Ví Credit",
+    "candidates": "Tìm ứng viên",
+    "members": "Thành viên",
+    "chats": "Tin nhắn",
+    "opsVerification": "Duyệt CCHN & tổ chức",
+    "opsPayments": "Đối soát thanh toán",
+    "opsReports": "Xử lý báo cáo",
+    "opsCatalog": "Danh mục & gói tin"
+  }
+}

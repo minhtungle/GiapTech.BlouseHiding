@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { ChevronsUpDown, Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +26,7 @@ type TeamSwitcherProps = {
 }
 
 export function TeamSwitcher({ teams }: TeamSwitcherProps) {
+  const { t } = useTranslation()
   const { isMobile } = useSidebar()
   const [activeTeam, setActiveTeam] = React.useState(teams[0])
 
@@ -44,7 +46,7 @@ export function TeamSwitcher({ teams }: TeamSwitcherProps) {
                 <span className='truncate font-semibold'>
                   {activeTeam.name}
                 </span>
-                <span className='truncate text-xs'>{activeTeam.plan}</span>
+                <span className='truncate text-xs'>{t(activeTeam.plan)}</span>
               </div>
               <ChevronsUpDown className='ms-auto' />
             </SidebarMenuButton>

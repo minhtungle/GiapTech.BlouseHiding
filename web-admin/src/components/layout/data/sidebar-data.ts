@@ -26,6 +26,8 @@ import {
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
+// title/plan dưới đây là KEY dịch (namespace "common", xem src/messages/) — không phải chuỗi hiển
+// thị trực tiếp. NavGroup/nav-group.tsx phải gọi qua t(item.title), không render item.title thẳng.
 // TODO (Giai đoạn 0.2): tách nav theo role thật (Admin NTD vs Vận hành) khi nối
 // auth thật — hiện tại là placeholder chung cho cả 2 vai trò, xem ADR-0008.
 export const sidebarData: SidebarData = {
@@ -38,45 +40,45 @@ export const sidebarData: SidebarData = {
     {
       name: 'BlouseHiding',
       logo: Briefcase,
-      plan: 'Admin / Vận hành',
+      plan: 'brandPlan',
     },
   ],
   navGroups: [
     {
-      title: 'Nhà tuyển dụng (Admin)',
+      title: 'nav.employerGroup',
       items: [
         {
-          title: 'Dashboard',
+          title: 'nav.dashboard',
           url: '/',
           icon: LayoutDashboard,
         },
         {
-          title: 'Tin tuyển dụng',
+          title: 'nav.jobs',
           url: '/jobs',
           icon: Briefcase,
         },
         {
-          title: 'ATS — Ứng viên',
+          title: 'nav.ats',
           url: '/jobs',
           icon: ClipboardCheck,
         },
         {
-          title: 'Ví Credit',
+          title: 'nav.credit',
           url: '/credit',
           icon: Wallet,
         },
         {
-          title: 'Tìm ứng viên',
+          title: 'nav.candidates',
           url: '/candidates',
           icon: UserSearch,
         },
         {
-          title: 'Thành viên',
+          title: 'nav.members',
           url: '/users',
           icon: Users,
         },
         {
-          title: 'Tin nhắn',
+          title: 'nav.chats',
           url: '/chats',
           badge: '3',
           icon: MessagesSquare,
@@ -84,25 +86,25 @@ export const sidebarData: SidebarData = {
       ],
     },
     {
-      title: 'Vận hành',
+      title: 'nav.opsGroup',
       items: [
         {
-          title: 'Duyệt CCHN & tổ chức',
+          title: 'nav.opsVerification',
           url: '/ops/verification',
           icon: ShieldCheck,
         },
         {
-          title: 'Đối soát thanh toán',
+          title: 'nav.opsPayments',
           url: '/ops/payments',
           icon: Landmark,
         },
         {
-          title: 'Xử lý báo cáo',
+          title: 'nav.opsReports',
           url: '/ops/reports',
           icon: Flag,
         },
         {
-          title: 'Danh mục & gói tin',
+          title: 'nav.opsCatalog',
           url: '/ops/catalog',
           icon: BookMarked,
         },

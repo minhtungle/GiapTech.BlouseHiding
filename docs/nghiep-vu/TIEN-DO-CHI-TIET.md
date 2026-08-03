@@ -37,7 +37,7 @@
 | Xóa tài khoản (soft-delete + anonymize) | ✅ `DELETE /users/me` | ✅ `/settings` → `DeleteAccountButton`, 2-click confirm | — (chưa có màn hình cho Vận hành khoá/xoá user khác) |
 | OAuth Google | ⬜ | 🟨 nút có trên `/auth/login` nhưng **không có logic**, chỉ UI tĩnh | — |
 | OAuth Zalo | ⬜ | 🟨 tương tự Google, chỉ UI tĩnh | — |
-| Chọn/ghi nhớ ngôn ngữ giao diện (lưu `users.locale`) | ⬜ | 🟨 `LanguageSwitcher` đổi route theo `next-intl` (hoạt động), nhưng **không lưu** lựa chọn vào user profile — mất khi đăng nhập máy khác | — (chỉ tiếng Việt theo ADR-0008) |
+| Chọn/ghi nhớ ngôn ngữ giao diện (lưu `users.locale`) | ⬜ | 🟨 `LanguageSwitcher` đổi route theo `next-intl` (hoạt động), nhưng **không lưu** lựa chọn vào user profile — mất khi đăng nhập máy khác | 🟨 `LanguageSwitcher` (dropdown Globe ở Header, `react-i18next`) đổi được — chỉ namespace `common` (sidebar/nav) đã rút chuỗi, các namespace khác (jobs/credit/ops...) vẫn hardcode tiếng Việt (xem ADR-0010). Không lưu vào `users.locale`, chỉ `localStorage` |
 
 ---
 
@@ -194,7 +194,7 @@ Những mục này **không nằm trong checklist cũ**, phát hiện khi rà so
 2. **`web/lib/mock-data.ts`**: 8/11 export là code chết (không ai import) — `MOCK_JOBS`, `getJobById`, `getOrganizationById`, `getJobsByOrganization`, `MOCK_SPECIALTIES`, `MOCK_LOCATIONS`, `MOCK_EMPLOYMENT_TYPES`, `MOCK_APPLICATIONS`. Nên xóa khi dọn dẹp.
 3. **Route Handler tồn tại nhưng chưa có UI gọi** ở `web/`: sửa/xoá CCHN (`PUT`/`DELETE /api/candidates/me/licenses/{id}`), thêm chuyên khoa (`POST /api/candidates/me/specialties`) — hồ sơ ứng viên hiện không có cách sửa CCHN hay thêm chuyên khoa qua giao diện dù backend + proxy đã sẵn.
 4. **`jobsApi`/`applicationsApi` có hàm chưa được gọi** ở `web-admin/`: `update` (sửa tin), `close` (đóng tin), `renew` (gia hạn), `getById` (xem chi tiết đơn riêng), `addNote`, `score`, `getHistory` — tất cả đã có API thật và đã nối vào `lib/api.ts` nhưng chưa có UI/nút bấm nào gọi tới.
-5. **Chuỗi tiếng Việt hardcode** ở `web/` thay vì qua `next-intl`, rải rác ở: `profile-form.tsx`, `profile/page.tsx`, `license-section.tsx`, `settings/page.tsx`, `delete-account-button.tsx`, `dashboard/page.tsx`, home `page.tsx`, `jobs/[id]/page.tsx` (hàm `formatSalary`). Vi phạm CLAUDE.md mục 4 quy tắc #10 (không hardcode chuỗi tiếng Việt ở `web/`).
+5. **Chuỗi tiếng Việt hardcode** ở `web/` thay vì qua `next-intl`, rải rác ở: `profile-form.tsx`, `profile/page.tsx`, `license-section.tsx`, `settings/page.tsx`, `delete-account-button.tsx`, `dashboard/page.tsx`, home `page.tsx`, `jobs/[id]/page.tsx` (hàm `formatSalary`). Vi phạm CLAUDE.md mục 4 quy tắc #10. **Tương tự ở `web-admin/`**: sau [ADR-0010](../kien-truc/adr/0010-da-ngon-ngu-cho-web-admin.md), quy tắc #10 áp dụng cho cả 2 app — mới rút chuỗi namespace `common` (sidebar/nav), toàn bộ `features/**/*.tsx` (jobs, credit, ops-*, candidates, users...) vẫn hardcode tiếng Việt, cần rút tiếp theo từng feature.
 6. **`web-admin/` sidebar chưa tách theo role thật** — Admin (NTD) và Vận hành đang thấy chung 1 sidebar (có TODO comment xác nhận), chưa ẩn/hiện mục theo role JWT thật.
 7. **Vận hành thiếu 3 màn hình**: cộng Credit thủ công (đã có API, chưa có UI), quản lý người dùng hệ thống (chưa có cả API lẫn UI — khác "Thành viên tổ chức"), dashboard tổng quan nền tảng.
 8. **`/tasks`, `/apps`, `/chats`, trang Settings cá nhân** ở `web-admin/` là tàn dư template shadcn-admin gốc, không thuộc nghiệp vụ — cân nhắc gỡ khỏi điều hướng để tránh gây nhầm lẫn "đây có phải tính năng thật không".
