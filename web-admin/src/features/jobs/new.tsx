@@ -1,5 +1,7 @@
 import { Link } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { ChevronLeft } from 'lucide-react'
+import { catalogApi } from '@/lib/api'
 import {
   MOCK_SPECIALTIES,
   MOCK_LOCATIONS,
@@ -24,6 +26,35 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ThemeSwitch } from '@/components/theme-switch'
 
 export function NewJob() {
+  const { data: apiSpecialties } = useQuery({
+    queryKey: ['catalog', 'specialties'],
+    queryFn: catalogApi.getSpecialties,
+  })
+  const { data: apiLocations } = useQuery({
+    queryKey: ['catalog', 'locations'],
+    queryFn: catalogApi.getLocations,
+  })
+  const { data: apiJobPackages } = useQuery({
+    queryKey: ['catalog', 'job-packages'],
+    queryFn: catalogApi.getJobPackages,
+  })
+
+  const specialties = apiSpecialties?.length
+    ? apiSpecialties.map((s) => s.name)
+    : MOCK_SPECIALTIES
+  const locations = apiLocations?.length
+    ? apiLocations.map((l) => l.name)
+    : MOCK_LOCATIONS
+  const jobPackages = apiJobPackages?.length
+    ? apiJobPackages.map((pkg) => ({
+        id: pkg.id,
+        name: pkg.tier,
+        priceLabel: pkg.price === 0 ? '0đ' : `${pkg.price.toLocaleString('vi-VN')}đ`,
+        durationDays: pkg.durationDays,
+        note: pkg.name,
+      }))
+    : MOCK_JOB_PACKAGES
+
   return (
     <>
       <Header>
@@ -65,7 +96,7 @@ export function NewJob() {
                       <SelectValue placeholder='Chọn chuyên khoa' />
                     </SelectTrigger>
                     <SelectContent>
-                      {MOCK_SPECIALTIES.map((s) => (
+                      {specialties.map((s) => (
                         <SelectItem key={s} value={s}>
                           {s}
                         </SelectItem>
@@ -80,7 +111,7 @@ export function NewJob() {
                       <SelectValue placeholder='Chọn địa điểm' />
                     </SelectTrigger>
                     <SelectContent>
-                      {MOCK_LOCATIONS.map((l) => (
+                      {locations.map((l) => (
                         <SelectItem key={l} value={l}>
                           {l}
                         </SelectItem>
@@ -130,7 +161,7 @@ export function NewJob() {
               <CardTitle className='text-base'>Chọn gói đăng tin</CardTitle>
             </CardHeader>
             <CardContent className='space-y-3'>
-              {MOCK_JOB_PACKAGES.map((pkg) => (
+              {jobPackages.map((pkg) => (
                 <label
                   key={pkg.id}
                   className='flex cursor-pointer items-center justify-between rounded-md border p-3 text-sm has-[input:checked]:border-accent-jade has-[input:checked]:bg-accent-jade/5'
@@ -141,7 +172,7 @@ export function NewJob() {
                       name='package'
                       value={pkg.id}
                       className='sr-only'
-                      defaultChecked={pkg.id === 'pkg-pro'}
+                      defaultChecked={pkg.name === 'Pro'}
                     />
                     <span className='font-medium'>{pkg.name}</span>
                     <span className='block text-xs text-muted-foreground'>

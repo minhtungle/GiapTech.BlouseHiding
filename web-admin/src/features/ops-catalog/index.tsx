@@ -1,4 +1,6 @@
+import { useQuery } from '@tanstack/react-query'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { catalogApi } from '@/lib/api'
 import {
   MOCK_SPECIALTIES,
   MOCK_LOCATIONS,
@@ -42,6 +44,35 @@ function CatalogList({ items }: { items: string[] }) {
 }
 
 export function OpsCatalog() {
+  const { data: apiSpecialties } = useQuery({
+    queryKey: ['catalog', 'specialties'],
+    queryFn: catalogApi.getSpecialties,
+  })
+  const { data: apiLocations } = useQuery({
+    queryKey: ['catalog', 'locations'],
+    queryFn: catalogApi.getLocations,
+  })
+  const { data: apiJobPackages } = useQuery({
+    queryKey: ['catalog', 'job-packages'],
+    queryFn: catalogApi.getJobPackages,
+  })
+
+  const specialties = apiSpecialties?.length
+    ? apiSpecialties.map((s) => s.name)
+    : MOCK_SPECIALTIES
+  const locations = apiLocations?.length
+    ? apiLocations.map((l) => l.name)
+    : MOCK_LOCATIONS
+  const jobPackages = apiJobPackages?.length
+    ? apiJobPackages.map((pkg) => ({
+        id: pkg.id,
+        name: pkg.tier,
+        priceLabel: pkg.price === 0 ? '0đ' : `${pkg.price.toLocaleString('vi-VN')}đ`,
+        durationDays: pkg.durationDays,
+        note: pkg.name,
+      }))
+    : MOCK_JOB_PACKAGES
+
   return (
     <>
       <Header>
@@ -72,7 +103,7 @@ export function OpsCatalog() {
                 Thêm chuyên khoa
               </Button>
             </div>
-            <CatalogList items={MOCK_SPECIALTIES} />
+            <CatalogList items={specialties} />
           </TabsContent>
 
           <TabsContent value='location' className='space-y-4'>
@@ -82,7 +113,7 @@ export function OpsCatalog() {
                 Thêm địa điểm
               </Button>
             </div>
-            <CatalogList items={MOCK_LOCATIONS} />
+            <CatalogList items={locations} />
           </TabsContent>
 
           <TabsContent value='package'>
@@ -108,7 +139,7 @@ export function OpsCatalog() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {MOCK_JOB_PACKAGES.map((pkg) => (
+                    {jobPackages.map((pkg) => (
                       <TableRow key={pkg.id}>
                         <TableCell className='font-medium'>
                           {pkg.name}

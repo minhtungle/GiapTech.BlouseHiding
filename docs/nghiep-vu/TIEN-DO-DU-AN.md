@@ -34,7 +34,7 @@ Nếu có mục không đạt, ghi rõ lý do + kế hoạch xử lý vào nhậ
 | Giai đoạn | Trạng thái | Ghi chú ngắn |
 |---|---|---|
 | 0.1 — UI Shell | 🟨 Gần xong | Còn thiếu tin nhắn/thông báo thật, export PDF CV |
-| 0.2 — Backend & hạ tầng | 🟨 Đang làm | Danh mục (đọc) xong; CI/CD, Command CRUD danh mục, Identity chưa làm |
+| 0.2 — Backend & hạ tầng | 🟨 Gần xong | Danh mục (đọc+ghi) + CI/CD xong; Identity thật, Jobs/ATS/Credit chưa làm |
 | 1 — MVP | ⬜ Chưa bắt đầu | |
 | 2 — Hoàn thiện | ⬜ Chưa bắt đầu | |
 | 3 — Mở rộng | ⬜ Chưa bắt đầu | |
@@ -63,11 +63,12 @@ Còn thiếu (chặn việc chốt giai đoạn):
 - Tin nhắn/thông báo thật — đang dùng route demo có sẵn của template `web-admin/`, chưa thay dữ liệu
   cho đúng ngữ cảnh dự án.
 - CV Builder chưa xuất PDF thật (nút bị disable, có ghi chú "sắp ra mắt").
-- `/ops/catalog` (Vận hành) vẫn dùng mock data — chưa nối API thật (xem Giai đoạn 0.2).
+- `/ops/catalog` (Vận hành) đã nối API thật cho phần đọc (xem Giai đoạn 0.2) — form thêm/sửa vẫn
+  chưa nối (còn dùng nút tĩnh).
 
 ### Giai đoạn 0.2 — Backend & hạ tầng
 
-**Trạng thái: 🟨 Đang làm — chưa đủ điều kiện chốt**
+**Trạng thái: 🟨 Gần xong — chưa đủ điều kiện chốt**
 
 Đã làm:
 - Scaffold solution .NET 10 Clean Architecture (Jason Taylor Template, PostgreSQL, API-only).
@@ -81,18 +82,30 @@ Còn thiếu (chặn việc chốt giai đoạn):
   `*_translations`) — Domain entity → EF Core config → migration → Application Query
   (`ICurrentLocale` resolve theo `Accept-Language`) → endpoint `GET /api/v1/catalog/*`. Seed data khớp
   mock đang dùng ở frontend.
+- Command Create/Update cho Specialty/Location/JobPackage (`POST`/`PUT` `/api/v1/ops/catalog/*`,
+  `/api/v1/ops/job-packages/*`), mỗi command có FluentValidation validator (kiểm tra field bắt buộc +
+  `CatalogLocales.IsSupported` cho bản dịch) và `[Authorize(Roles = "admin,moderator")]` theo đúng vai
+  trò Vận hành ở `THUAT-NGU.md`.
+- Nối `web/` (trang tìm việc) và `web-admin/` (`jobs/new`, `ops/catalog`) tới API danh mục thật qua
+  `lib/api.ts` ở mỗi app, fallback về mock data khi API lỗi/rỗng (demo offline vẫn chạy được).
+- CI/CD cơ bản: 3 GitHub Actions workflow độc lập theo path filter — `backend.yml` (`dotnet build` +
+  `dotnet test`), `web.yml` (`npm run lint` + `npm run build`), `web-admin.yml` (`npm run lint` +
+  `npm run format:check` + `npm run build`).
 
-Verify đã chạy: `dotnet build`/`dotnet test` sạch nhiều lần; migration áp thành công vào Postgres thật
-qua Docker Compose (`\dt` xác nhận đúng bảng); chạy `dotnet run --project src/Web` thật + curl xác nhận
-cả 6 locale trả đúng tên đã dịch, fallback đúng khi header thiếu/không hỗ trợ.
+Verify đã chạy: `dotnet build`/`dotnet test` sạch (Release config, khớp CI); `dotnet ef` migration áp
+thành công vào Postgres thật qua Docker Compose (`\dt` xác nhận đúng bảng); chạy `dotnet run --project
+src/Web` thật + curl xác nhận cả 6 locale trả đúng tên đã dịch, fallback đúng khi header thiếu/không hỗ
+trợ; `POST /api/v1/ops/catalog/specialties` không token trả 401, `GET /api/v1/catalog/*` vẫn public;
+`curl http://localhost:3000/vi/jobs` trả tên chuyên khoa/địa điểm thật từ Postgres (không phải mock);
+`npm run build` + `npm run lint` sạch ở cả `web/` và `web-admin/` sau khi nối API.
 
 Còn thiếu (chặn việc chốt giai đoạn):
-- CI/CD cơ bản (build/test/lint tự động) — chưa làm.
-- Command Create/Update cho danh mục (Vận hành quản lý) — mới có Query đọc.
 - Identity thật (đăng ký/đăng nhập/OTP/OAuth) — mới có khung Identity mặc định của template, chưa nối
   role/luồng thật của dự án.
 - Jobs, Applications/ATS, Credit/Payment — chưa bắt đầu bounded context nào trong số này.
-- `web/` và `web-admin/` vẫn dùng mock data cho mọi màn hình trừ danh mục — chưa nối API thật.
+- Form thêm/sửa danh mục ở `web-admin/` (`/ops/catalog`, `jobs/new`) chưa gọi Command thật — mới nối
+  phần đọc (dropdown/danh sách), nút submit còn tĩnh.
+- `web/` và `web-admin/` vẫn dùng mock data cho mọi màn hình khác ngoài danh mục (Jobs/ATS/Credit/...).
 
 ### Giai đoạn 1 — MVP
 

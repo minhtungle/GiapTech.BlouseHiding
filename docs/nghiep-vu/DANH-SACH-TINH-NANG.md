@@ -36,17 +36,23 @@
 - ✅ Khởi tạo solution Clean Architecture (từ Jason Taylor Template — Mediator/Mapster thay
   MediatR/AutoMapper, xem [ADR-0009](../kien-truc/adr/0009-mediator-mapster-thay-mediatr-automapper.md))
 - ✅ Docker Compose môi trường dev (Postgres, Redis, RabbitMQ, MinIO)
-- ⬜ CI/CD cơ bản (build, test, lint) — cho cả `web/`, `web-admin/`, backend
+- ✅ CI/CD cơ bản (GitHub Actions, path-filter riêng): `backend.yml` (`dotnet build` + `dotnet test`),
+  `web.yml` (`npm run lint` + `npm run build`), `web-admin.yml` (`npm run lint` + `format:check` +
+  `npm run build`)
 - ✅ Danh mục chuẩn: `specialties`, `locations`, `job_packages` + bảng `*_translations` (Domain +
   Infrastructure + Query + endpoint `GET /api/v1/catalog/*`, đã seed data khớp mock cũ ở frontend).
   `employment_types` là enum thuần (không bảng riêng), endpoint `GET /catalog/employment-types` chỉ
   echo tên enum — nhãn dịch nằm ở file dịch frontend, không lưu DB
+- ✅ Command Create/Update cho Specialty/Location/JobPackage (`POST`/`PUT` `/api/v1/ops/catalog/*`,
+  `/api/v1/ops/job-packages/*`), `[Authorize(Roles = "admin,moderator")]`, validator kiểm tra field bắt
+  buộc + đủ 5 locale không phải `vi` (`CatalogLocales.IsSupported`)
 - ✅ Middleware `Accept-Language` phía backend (`ICurrentLocale`/`CurrentLocale`, verify qua curl cả
   6 locale + fallback đúng khi thiếu header hoặc locale không hỗ trợ)
-- 🟨 Nối API thật thay mock data, theo thứ tự: **danh mục (xong)** → Identity (login/register) → Jobs →
-  Applications/ATS → Credit/Payment — màn hình nào nối xong bỏ mock riêng màn đó, không cần đợi tất cả.
-  Chưa có Command CRUD cho danh mục (chỉ mới Query đọc) — `/ops/catalog` ở `web-admin/` vẫn đang mock,
-  sẽ nối khi làm Command Create/Update
+- 🟨 Nối API thật thay mock data, theo thứ tự: **danh mục — phần đọc (xong)** → Identity (login/register)
+  → Jobs → Applications/ATS → Credit/Payment — màn hình nào nối xong bỏ mock riêng màn đó, không cần
+  đợi tất cả. `web/` (trang tìm việc) và `web-admin/` (`jobs/new`, `ops/catalog`) đã nối phần đọc danh
+  mục tới API thật (fallback mock khi API lỗi/rỗng); form thêm/sửa ở `/ops/catalog` chưa gọi Command
+  thật (nút còn tĩnh)
 
 ## Giai đoạn 1 — MVP
 

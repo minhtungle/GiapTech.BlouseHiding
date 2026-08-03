@@ -13,16 +13,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  MOCK_JOBS,
-  MOCK_SPECIALTIES,
-  MOCK_LOCATIONS,
-  MOCK_EMPLOYMENT_TYPES,
-} from "@/lib/mock-data";
+import { MOCK_JOBS, MOCK_EMPLOYMENT_TYPES } from "@/lib/mock-data";
 
 const ALL = "all";
 
-export function JobsBrowser() {
+export function JobsBrowser({
+  specialties,
+  locations,
+}: {
+  specialties: string[];
+  locations: string[];
+}) {
   const t = useTranslations("jobs");
   const [specialty, setSpecialty] = useState(ALL);
   const [location, setLocation] = useState(ALL);
@@ -75,7 +76,7 @@ export function JobsBrowser() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={ALL}>{t("specialty")} — Tất cả</SelectItem>
-                  {MOCK_SPECIALTIES.map((s) => (
+                  {specialties.map((s) => (
                     <SelectItem key={s} value={s}>
                       {s}
                     </SelectItem>
@@ -94,7 +95,7 @@ export function JobsBrowser() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={ALL}>{t("location")} — Tất cả</SelectItem>
-                  {MOCK_LOCATIONS.map((l) => (
+                  {locations.map((l) => (
                     <SelectItem key={l} value={l}>
                       {l}
                     </SelectItem>

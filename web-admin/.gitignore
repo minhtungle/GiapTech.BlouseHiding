@@ -13,7 +13,9 @@ dist-ssr
 *.local
 .tanstack/
 
+# chỉ commit .env.example (giá trị mẫu), xem docs/ha-tang/BIEN-MOI-TRUONG.md
 .env
+!.env.example
 
 # Editor directories and files
 .vscode/*

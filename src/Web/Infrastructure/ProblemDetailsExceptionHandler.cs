@@ -1,6 +1,7 @@
 using GiapTech.BlouseHiding.Application.Common.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using NotFoundException = GiapTech.BlouseHiding.Application.Common.Exceptions.NotFoundException;
 
 namespace GiapTech.BlouseHiding.Web.Infrastructure;
 
