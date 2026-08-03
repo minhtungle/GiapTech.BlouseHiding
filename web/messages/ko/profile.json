@@ -16,13 +16,13 @@
   "expiresAt": "만료일",
   "welcomeBack": "다시 오신 것을 환영합니다",
   "stage": {
-    "moi": "신규",
-    "dang_xem": "검토중",
-    "phu_hop": "서류합격",
-    "phong_van": "면접",
-    "offer": "오퍼",
-    "trung_tuyen": "합격",
-    "tu_choi": "불합격"
+    "New": "신규",
+    "Reviewing": "검토중",
+    "Shortlisted": "서류합격",
+    "Interview": "면접",
+    "Offer": "오퍼",
+    "Hired": "합격",
+    "Rejected": "불합격"
   },
   "settingsTitle": "계정 설정",
   "changePassword": "비밀번호 변경",

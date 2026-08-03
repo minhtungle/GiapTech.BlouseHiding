@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import {
   ShieldCheck,
   Stethoscope,
@@ -11,11 +11,20 @@ import {
 import { Link } from "@/i18n/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { getJobById } from "@/lib/mock-data";
+import { getJobById } from "@/lib/api";
+import { getCurrentUser } from "@/lib/session";
+import { ApplyButton } from "./apply-button";
+
+function formatSalary(job: { salaryMin: number | null; salaryMax: number | null; salaryNegotiable: boolean }) {
+  if (job.salaryNegotiable) return "Thỏa thuận";
+  if (!job.salaryMin && !job.salaryMax) return "Thỏa thuận";
+  const format = (n: number) => `${(n / 1_000_000).toFixed(0)} triệu`;
+  if (job.salaryMin && job.salaryMax) return `${format(job.salaryMin)} - ${format(job.salaryMax)}`;
+  return format((job.salaryMin ?? job.salaryMax)!);
+}
 
 export default async function JobDetailPage({
   params,
@@ -23,10 +32,12 @@ export default async function JobDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const job = getJobById(id);
+  const locale = await getLocale();
+  const job = await getJobById(id, locale);
   if (!job) notFound();
 
   const t = await getTranslations("jobs");
+  const currentUser = await getCurrentUser();
 
   return (
     <>
@@ -44,19 +55,13 @@ export default async function JobDetailPage({
           <div className="mb-6 flex flex-col gap-4 rounded-lg border border-line bg-paper-raised p-6 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="mb-2 flex flex-wrap items-center gap-2">
-                {job.requiresLicense && (
+                {job.requiredLicense && (
                   <Badge
                     variant="outline"
                     className="gap-1 border-accent-jade/40 text-accent-jade"
                   >
                     <ShieldCheck className="size-3" />
                     {t("requireLicense")}
-                  </Badge>
-                )}
-                {job.organizationVerified && (
-                  <Badge className="gap-1 bg-accent-jade text-white">
-                    <ShieldCheck className="size-3" />
-                    Đã xác thực
                   </Badge>
                 )}
               </div>
@@ -68,11 +73,11 @@ export default async function JobDetailPage({
               <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-ink-muted">
                 <span className="inline-flex items-center gap-1.5">
                   <Stethoscope className="size-3.5" />
-                  {job.specialty}
+                  {job.specialtyName}
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <MapPin className="size-3.5" />
-                  {job.location}
+                  {job.locationName}
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <Briefcase className="size-3.5" />
@@ -80,14 +85,12 @@ export default async function JobDetailPage({
                 </span>
                 <span className="inline-flex items-center gap-1.5 font-medium text-ink">
                   <Wallet className="size-3.5" />
-                  {job.salaryLabel}
+                  {formatSalary(job)}
                 </span>
               </div>
             </div>
 
-            <Button size="lg" className="sm:w-auto">
-              {t("applyNow")}
-            </Button>
+            <ApplyButton jobId={job.id} isLoggedIn={currentUser !== null} />
           </div>
 
           <div className="grid gap-6 sm:grid-cols-3">
@@ -96,36 +99,32 @@ export default async function JobDetailPage({
                 <CardHeader>
                   <CardTitle>{t("jobDescription")}</CardTitle>
                 </CardHeader>
-                <CardContent className="text-sm leading-relaxed text-ink-muted">
+                <CardContent className="whitespace-pre-line text-sm leading-relaxed text-ink-muted">
                   {job.description}
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t("requirements")}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="list-disc space-y-1.5 pl-5 text-sm text-ink-muted">
-                    {job.requirements.map((r) => (
-                      <li key={r}>{r}</li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
+              {job.requirements && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{t("requirements")}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="whitespace-pre-line text-sm leading-relaxed text-ink-muted">
+                    {job.requirements}
+                  </CardContent>
+                </Card>
+              )}
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t("benefits")}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="list-disc space-y-1.5 pl-5 text-sm text-ink-muted">
-                    {job.benefits.map((b) => (
-                      <li key={b}>{b}</li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
+              {job.benefits && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{t("benefits")}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="whitespace-pre-line text-sm leading-relaxed text-ink-muted">
+                    {job.benefits}
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             <div>
@@ -137,7 +136,7 @@ export default async function JobDetailPage({
                   <p className="font-medium text-ink">
                     {job.organizationName}
                   </p>
-                  <p>{job.location}</p>
+                  <p>{job.locationName}</p>
                   <Separator />
                   <Link
                     href={`/organizations/${job.organizationId}`}

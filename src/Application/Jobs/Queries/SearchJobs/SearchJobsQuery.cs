@@ -7,6 +7,7 @@ public record SearchJobsQuery : IQuery<List<JobDto>>
 {
     public Guid? SpecialtyId { get; init; }
     public Guid? LocationId { get; init; }
+    public Guid? OrganizationId { get; init; }
     public EmploymentType? EmploymentType { get; init; }
     public int? SalaryMin { get; init; }
     public string? Keyword { get; init; }
@@ -37,6 +38,11 @@ public class SearchJobsQueryHandler : IQueryHandler<SearchJobsQuery, List<JobDto
         if (query.LocationId is not null)
         {
             jobs = jobs.Where(j => j.LocationId == query.LocationId);
+        }
+
+        if (query.OrganizationId is not null)
+        {
+            jobs = jobs.Where(j => j.OrganizationId == query.OrganizationId);
         }
 
         if (query.EmploymentType is not null)

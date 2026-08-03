@@ -1,15 +1,12 @@
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { ShieldCheck, ShieldQuestion, MapPin, Building2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  getOrganizationById,
-  getJobsByOrganization,
-} from "@/lib/mock-data";
+import { getOrganizationById, getOrganizationJobs } from "@/lib/api";
 
 export default async function OrganizationPage({
   params,
@@ -17,12 +14,14 @@ export default async function OrganizationPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const org = getOrganizationById(id);
+  const locale = await getLocale();
+  const org = await getOrganizationById(id, locale);
   if (!org) notFound();
 
   const t = await getTranslations("organizations");
   const tJobs = await getTranslations("jobs");
-  const jobs = getJobsByOrganization(org.id);
+  const jobs = await getOrganizationJobs(org.id, locale);
+  const isVerified = org.verifyStatus === "Verified";
 
   return (
     <>
@@ -36,7 +35,7 @@ export default async function OrganizationPage({
               </div>
               <div>
                 <div className="mb-1 flex flex-wrap items-center gap-2">
-                  {org.verified ? (
+                  {isVerified ? (
                     <Badge className="gap-1 bg-accent-jade text-white">
                       <ShieldCheck className="size-3" />
                       {t("verified")}
@@ -56,7 +55,8 @@ export default async function OrganizationPage({
                 </h1>
                 <p className="mt-1 flex items-center gap-1.5 text-sm text-ink-muted">
                   <MapPin className="size-3.5" />
-                  {org.type} · {org.location}
+                  {org.orgType}
+                  {org.address ? ` · ${org.address}` : ""}
                 </p>
               </div>
             </div>
@@ -67,7 +67,7 @@ export default async function OrganizationPage({
               <CardHeader>
                 <CardTitle className="text-base">{t("aboutTitle")}</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm leading-relaxed text-ink-muted">
+              <CardContent className="whitespace-pre-line text-sm leading-relaxed text-ink-muted">
                 {org.description}
               </CardContent>
             </Card>
@@ -76,7 +76,7 @@ export default async function OrganizationPage({
                 <CardTitle className="text-base">{t("activeJobs")}</CardTitle>
               </CardHeader>
               <CardContent className="text-2xl font-semibold text-ink">
-                {org.activeJobs}
+                {jobs.length}
               </CardContent>
             </Card>
           </div>
@@ -98,13 +98,10 @@ export default async function OrganizationPage({
                         {job.title}
                       </CardTitle>
                       <p className="text-sm text-ink-muted">
-                        {job.specialty} · {job.location}
+                        {job.specialtyName} · {job.locationName}
                       </p>
                     </CardHeader>
                     <CardContent className="flex items-center justify-between text-sm">
-                      <span className="font-medium text-ink">
-                        {job.salaryLabel}
-                      </span>
                       <span className="text-accent-jade">
                         {tJobs("applyNow")} →
                       </span>

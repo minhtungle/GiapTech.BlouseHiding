@@ -17,5 +17,9 @@
   "benefits": "Quyền lợi",
   "aboutOrg": "Về cơ sở y tế",
   "shareJob": "Chia sẻ tin này",
-  "clearFilters": "Xóa bộ lọc"
+  "clearFilters": "Xóa bộ lọc",
+  "applySuccess": "Ứng tuyển thành công! Bạn có thể theo dõi trạng thái ở bảng điều khiển.",
+  "applyError": "Ứng tuyển không thành công. Vui lòng thử lại.",
+  "applyNeedLogin": "Vui lòng đăng nhập để ứng tuyển",
+  "applying": "Đang gửi..."
 }

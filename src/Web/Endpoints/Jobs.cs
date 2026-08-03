@@ -31,13 +31,14 @@ public class Jobs : IEndpointGroup
     }
 
     public static async Task<List<JobDto>> Search(
-        Guid? specialty, Guid? location, EmploymentType? employmentType, int? salaryMin, string? keyword,
+        Guid? specialty, Guid? location, Guid? organizationId, EmploymentType? employmentType, int? salaryMin, string? keyword,
         ISender sender, CancellationToken cancellationToken)
     {
         var query = new SearchJobsQuery
         {
             SpecialtyId = specialty,
             LocationId = location,
+            OrganizationId = organizationId,
             EmploymentType = employmentType,
             SalaryMin = salaryMin,
             Keyword = keyword,

@@ -16,13 +16,13 @@
   "expiresAt": "有効期限",
   "welcomeBack": "おかえりなさい",
   "stage": {
-    "moi": "新規",
-    "dang_xem": "確認中",
-    "phu_hop": "書類通過",
-    "phong_van": "面接",
-    "offer": "内定",
-    "trung_tuyen": "採用",
-    "tu_choi": "不採用"
+    "New": "新規",
+    "Reviewing": "確認中",
+    "Shortlisted": "書類通過",
+    "Interview": "面接",
+    "Offer": "内定",
+    "Hired": "採用",
+    "Rejected": "不採用"
   },
   "settingsTitle": "アカウント設定",
   "changePassword": "パスワード変更",

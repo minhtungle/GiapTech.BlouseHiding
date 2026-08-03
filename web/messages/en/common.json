@@ -6,7 +6,9 @@
     "organizations": "Healthcare Facilities",
     "about": "About",
     "login": "Log in",
-    "register": "Sign up"
+    "register": "Sign up",
+    "dashboard": "Dashboard",
+    "logout": "Log out"
   },
   "footer": {
     "rights": "All rights reserved by BlouseHiding",

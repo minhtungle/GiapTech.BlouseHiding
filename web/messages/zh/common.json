@@ -6,7 +6,9 @@
     "organizations": "医疗机构",
     "about": "关于我们",
     "login": "登录",
-    "register": "注册"
+    "register": "注册",
+    "dashboard": "控制台",
+    "logout": "退出登录"
   },
   "footer": {
     "rights": "版权所有 BlouseHiding",

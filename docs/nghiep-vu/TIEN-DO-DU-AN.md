@@ -35,7 +35,7 @@ Nếu có mục không đạt, ghi rõ lý do + kế hoạch xử lý vào nhậ
 |---|---|---|
 | 0.1 — UI Shell | 🟨 Gần xong | Còn thiếu tin nhắn/thông báo thật, export PDF CV |
 | 0.2 — Backend & hạ tầng | 🟨 Gần xong | Danh mục (đọc+ghi) + CI/CD xong; Jobs/ATS/Credit chưa làm |
-| 1 — MVP | 🟨 Đang làm | Identity + tổ chức (+duyệt) + hồ sơ ứng viên (core) + Jobs (core) + Applications/ATS + Credit/Unlock xong; Payments thật + nối frontend chưa làm |
+| 1 — MVP | 🟨 Đang làm | Backend: Identity+Jobs+Applications+Credit xong. `web/` đã nối Identity/Jobs/Applications/Hồ sơ ứng viên; `web-admin/` + Payments thật chưa làm |
 | 2 — Hoàn thiện | ⬜ Chưa bắt đầu | |
 | 3 — Mở rộng | ⬜ Chưa bắt đầu | |
 
@@ -246,6 +246,34 @@ khác nhau khi ví chỉ đủ cho 1 lần — xác nhận `ExecuteUpdateAsync` 
 động)→Vận hành cộng bonus 100→`GET /candidates/search` (contact ẩn)→`POST .../unlock` (trừ 15, còn
 85, contact hiện đúng email)→unlock lại cùng candidate (idempotent, vẫn 85, không trừ thêm).
 
+- **Nối `web/` (Client) tới API thật** — Identity + Jobs + Applications + Hồ sơ ứng viên (core), gap
+  lớn nhất được ghi nhận ở log trước. Kiến trúc: JWT access+refresh token lưu **httpOnly cookie** qua
+  Next.js Route Handler (`web/app/api/auth/*`, `web/lib/auth-cookies.ts`) — quyết định đã xác nhận với
+  người dùng (thay vì Context/localStorage phía client) để Server Component đọc được cookie qua
+  `cookies()` mà không mất lợi thế SSR. `web/lib/backend-fetch.ts` tự refresh access token 1 lần khi
+  gặp 401 trước khi trả lỗi. Route bảo vệ (`dashboard`/`profile`/`settings`) tự redirect `/auth/login`
+  nếu chưa đăng nhập qua `getCurrentUser()` (gọi `GET /users/me` bằng cookie).
+  Màn hình đã nối: đăng ký→verify-otp (trang mới)→đăng nhập→quên/đặt lại mật khẩu (2 trang mới);
+  `SiteHeader` chuyển `async` để tự hiển thị email/nút đăng xuất khi đã đăng nhập; tìm việc (`/jobs`
+  filter qua URL query thay vì client-state, giữ SSR) + chi tiết tin + nút ứng tuyển thật
+  (`ApplyButton`, redirect login nếu chưa đăng nhập); dashboard (đơn ứng tuyển thật, % hoàn thiện hồ
+  sơ thật) + hồ sơ (`ProfileForm`) + CCHN (`LicenseSection`, thêm CCHN mới) + xóa tài khoản.
+  `profile/cv` (CV Builder) **cố ý giữ mock** — quyết định đã xác nhận, chờ backend CV Builder.
+  Phát hiện + vá 2 gap backend nhỏ trong lúc nối: (1) thiếu `GET /organizations/{id}` Public (đã thiết
+  kế ở API-DESIGN.md mục 4 từ đầu nhưng chưa implement) — thêm `GetOrganizationByIdQuery`; (2)
+  `SearchJobsQuery` thiếu filter `organizationId` (cần để trang tổ chức công khai lấy tin — không dùng
+  `GET /organizations/{id}/jobs` vì endpoint đó yêu cầu member và trả mọi trạng thái, không phù hợp
+  công khai) — thêm param `OrganizationId` vào query.
+
+Verify đã chạy: `dotnet test` vẫn 41/41 pass sau 2 thay đổi backend nhỏ trên; `npm run build`/`lint`
+sạch ở `web/`. Verify curl end-to-end thật qua cookie jar mô phỏng browser: register→verify-otp→login
+(cookie `access_token`/`refresh_token` set đúng, httpOnly xác nhận qua `curl -c`)→`GET /dashboard` có
+cookie trả 200 và hiện đúng email/đơn ứng tuyển, không cookie redirect 307 về `/auth/login` (test cả
+`dashboard`/`profile`/`settings`)→tạo hồ sơ qua `PUT /api/candidates/me`→ứng tuyển qua
+`POST /api/jobs/{id}/apply` (proxy) thành công→dashboard hiện đúng đơn với stage "Mới"→thêm CCHN qua
+`POST /api/candidates/me/licenses`→profile hiện đúng CCHN "Chờ xác thực"→completion% tăng đúng
+(20→60% sau khi có fullName+headline+license, xác nhận qua cả DB trực tiếp và HTML render).
+
 Còn thiếu (chặn việc chốt giai đoạn):
 - OAuth Google/Zalo — chưa làm, quyết định hoãn sang sau khi Identity cốt lõi ổn định (đã xác nhận với
   người dùng).
@@ -253,8 +281,8 @@ Còn thiếu (chặn việc chốt giai đoạn):
   chưa làm, mới có tạo tổ chức lần đầu.
 - Hồ sơ ứng viên: học vấn/kinh nghiệm (`experiences`/`educations`), CME (`continuing_certificates`), CV
   Builder + export PDF — chưa làm, quyết định tách khỏi vòng "core" (profile+CCHN+chuyên khoa) đã xác
-  nhận với người dùng. Upload document CCHN hiện giả định URL có sẵn, chưa nối
-  `POST /uploads/presigned-url`/MinIO thật.
+  nhận với người dùng. Upload document CCHN hiện giả định URL có sẵn (`web/` gửi placeholder URL),
+  chưa nối `POST /uploads/presigned-url`/MinIO thật.
 - Payments thật (`payments`/`job_purchases`/`pending_payment`/`/ops/payments/*`, nạp Credit qua
   `manual_transfer`) — chưa làm, bounded context riêng đã xác nhận tách khỏi Jobs và Credit. Đang dùng
   giải pháp tạm (Free tier cho Jobs, credit-bonus thủ công cho Credit) — cả 2 sẽ cần nối lại khi
@@ -264,9 +292,12 @@ Còn thiếu (chặn việc chốt giai đoạn):
 - Applications: ứng tuyển bằng CV riêng (upload) chưa làm, chỉ hỗ trợ CV nền tảng (`CandidateProfile`).
 - Hoàn Credit thủ công khi tranh chấp (`/ops/organizations/{id}/credit-refund`) — chưa làm, khác
   `credit-bonus` đã có (dùng khi tranh chấp cụ thể, ghi rõ lý do, không phải nạp thường).
-- Chưa nối `web/`/`web-admin/` tới bất kỳ API thật nào đã xây (Identity/Hồ sơ ứng viên/Jobs/
-  Applications/Credit — màn hình vẫn dùng mock/form tĩnh) — đây là gap lớn nhất còn lại của toàn Giai
-  đoạn 1, nên cân nhắc ưu tiên tiếp theo thay vì tiếp tục mở rộng backend.
+- Đổi mật khẩu khi đã đăng nhập (`settings` trang) — chưa có endpoint backend riêng, chỉ có
+  forgot/reset-password qua OTP; phần UI đổi mật khẩu ở `settings` vẫn để tĩnh.
+- `web-admin/` (Admin NTD/Vận hành) — vẫn dùng mock cho mọi màn hình trừ danh mục (đọc), chưa nối
+  Jobs/Applications/Credit/duyệt tổ chức/duyệt CCHN thật dù backend đã sẵn sàng — ưu tiên tiếp theo.
+- Tin nhắn/thông báo, tìm kiếm ứng viên chủ động ở `web-admin/` (Credit unlock UI phía NTD) — backend
+  đã có (`GET /candidates/search`, `POST /candidates/{id}/unlock`), chưa nối frontend nào.
 
 ### Giai đoạn 2 — Hoàn thiện
 

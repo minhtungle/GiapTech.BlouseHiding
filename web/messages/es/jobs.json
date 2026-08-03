@@ -17,5 +17,9 @@
   "benefits": "Beneficios",
   "aboutOrg": "Sobre el centro de salud",
   "shareJob": "Compartir este empleo",
-  "clearFilters": "Limpiar filtros"
+  "clearFilters": "Limpiar filtros",
+  "applySuccess": "¡Postulación enviada! Puedes seguir el estado en tu panel.",
+  "applyError": "No se pudo enviar la postulación. Intenta de nuevo.",
+  "applyNeedLogin": "Inicia sesión para postular",
+  "applying": "Enviando..."
 }

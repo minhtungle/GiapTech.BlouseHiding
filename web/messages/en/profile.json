@@ -16,13 +16,13 @@
   "expiresAt": "Expires on",
   "welcomeBack": "Welcome back",
   "stage": {
-    "moi": "New",
-    "dang_xem": "In review",
-    "phu_hop": "Shortlisted",
-    "phong_van": "Interview",
-    "offer": "Offer",
-    "trung_tuyen": "Hired",
-    "tu_choi": "Rejected"
+    "New": "New",
+    "Reviewing": "In review",
+    "Shortlisted": "Shortlisted",
+    "Interview": "Interview",
+    "Offer": "Offer",
+    "Hired": "Hired",
+    "Rejected": "Rejected"
   },
   "settingsTitle": "Account settings",
   "changePassword": "Change password",

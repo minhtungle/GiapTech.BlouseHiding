@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
 import { ShieldCheck, Stethoscope, MapPin, Briefcase } from "lucide-react";
-import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { Link, useRouter, usePathname } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -13,34 +13,51 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MOCK_JOBS, MOCK_EMPLOYMENT_TYPES } from "@/lib/mock-data";
+import type { ApiJob, ApiSpecialty, ApiLocation } from "@/lib/api";
 
 const ALL = "all";
+
+function formatSalary(job: ApiJob) {
+  if (job.salaryNegotiable || (!job.salaryMin && !job.salaryMax)) return "Thỏa thuận";
+  const format = (n: number) => `${(n / 1_000_000).toFixed(0)} triệu`;
+  if (job.salaryMin && job.salaryMax) return `${format(job.salaryMin)} - ${format(job.salaryMax)}`;
+  return format((job.salaryMin ?? job.salaryMax)!);
+}
 
 export function JobsBrowser({
   specialties,
   locations,
+  employmentTypes,
+  jobs,
 }: {
-  specialties: string[];
-  locations: string[];
+  specialties: ApiSpecialty[];
+  locations: ApiLocation[];
+  employmentTypes: string[];
+  jobs: ApiJob[];
 }) {
   const t = useTranslations("jobs");
-  const [specialty, setSpecialty] = useState(ALL);
-  const [location, setLocation] = useState(ALL);
-  const [employmentType, setEmploymentType] = useState(ALL);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  const filtered = useMemo(() => {
-    return MOCK_JOBS.filter((job) => {
-      if (specialty !== ALL && job.specialty !== specialty) return false;
-      if (location !== ALL && job.location !== location) return false;
-      if (employmentType !== ALL && job.employmentType !== employmentType)
-        return false;
-      return true;
-    });
-  }, [specialty, location, employmentType]);
+  const specialty = searchParams.get("specialty") ?? ALL;
+  const location = searchParams.get("location") ?? ALL;
+  const employmentType = searchParams.get("employmentType") ?? ALL;
+  const hasActiveFilter = specialty !== ALL || location !== ALL || employmentType !== ALL;
 
-  const hasActiveFilter =
-    specialty !== ALL || location !== ALL || employmentType !== ALL;
+  function updateFilter(key: string, value: string) {
+    const next = new URLSearchParams(searchParams.toString());
+    if (value === ALL) {
+      next.delete(key);
+    } else {
+      next.set(key, value);
+    }
+    router.push(`${pathname}?${next.toString()}`);
+  }
+
+  function clearFilters() {
+    router.push(pathname);
+  }
 
   return (
     <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
@@ -54,11 +71,7 @@ export function JobsBrowser({
               <button
                 type="button"
                 className="text-xs text-accent-jade underline-offset-2 hover:underline"
-                onClick={() => {
-                  setSpecialty(ALL);
-                  setLocation(ALL);
-                  setEmploymentType(ALL);
-                }}
+                onClick={clearFilters}
               >
                 {t("clearFilters")}
               </button>
@@ -70,15 +83,15 @@ export function JobsBrowser({
               <label className="mb-1.5 block text-sm font-medium text-ink">
                 {t("specialty")}
               </label>
-              <Select value={specialty} onValueChange={setSpecialty}>
+              <Select value={specialty} onValueChange={(v) => updateFilter("specialty", v)}>
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={ALL}>{t("specialty")} — Tất cả</SelectItem>
                   {specialties.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {s}
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -89,15 +102,15 @@ export function JobsBrowser({
               <label className="mb-1.5 block text-sm font-medium text-ink">
                 {t("location")}
               </label>
-              <Select value={location} onValueChange={setLocation}>
+              <Select value={location} onValueChange={(v) => updateFilter("location", v)}>
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={ALL}>{t("location")} — Tất cả</SelectItem>
                   {locations.map((l) => (
-                    <SelectItem key={l} value={l}>
-                      {l}
+                    <SelectItem key={l.id} value={l.id}>
+                      {l.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -110,7 +123,7 @@ export function JobsBrowser({
               </label>
               <Select
                 value={employmentType}
-                onValueChange={setEmploymentType}
+                onValueChange={(v) => updateFilter("employmentType", v)}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue />
@@ -119,7 +132,7 @@ export function JobsBrowser({
                   <SelectItem value={ALL}>
                     {t("employmentType")} — Tất cả
                   </SelectItem>
-                  {MOCK_EMPLOYMENT_TYPES.map((e) => (
+                  {employmentTypes.map((e) => (
                     <SelectItem key={e} value={e}>
                       {e}
                     </SelectItem>
@@ -133,16 +146,16 @@ export function JobsBrowser({
 
       <div>
         <p className="mb-4 text-sm text-ink-muted">
-          {t("resultsCount", { count: filtered.length })}
+          {t("resultsCount", { count: jobs.length })}
         </p>
 
-        {filtered.length === 0 ? (
+        {jobs.length === 0 ? (
           <div className="rounded-lg border border-dashed border-line bg-paper-raised p-10 text-center text-ink-muted">
             {t("noResults")}
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
-            {filtered.map((job) => (
+            {jobs.map((job) => (
               <Link key={job.id} href={`/jobs/${job.id}`}>
                 <Card className="h-full transition-shadow hover:shadow-md">
                   <CardHeader>
@@ -150,7 +163,7 @@ export function JobsBrowser({
                       <CardTitle className="text-base leading-snug">
                         {job.title}
                       </CardTitle>
-                      {job.requiresLicense && (
+                      {job.requiredLicense && (
                         <Badge
                           variant="outline"
                           className="shrink-0 gap-1 border-accent-jade/40 text-accent-jade"
@@ -167,18 +180,18 @@ export function JobsBrowser({
                   <CardContent className="flex flex-col gap-2 text-sm text-ink-muted">
                     <span className="inline-flex items-center gap-1.5">
                       <Stethoscope className="size-3.5" />
-                      {job.specialty}
+                      {job.specialtyName}
                     </span>
                     <span className="inline-flex items-center gap-1.5">
                       <MapPin className="size-3.5" />
-                      {job.location}
+                      {job.locationName}
                     </span>
                     <span className="inline-flex items-center gap-1.5">
                       <Briefcase className="size-3.5" />
                       {job.employmentType}
                     </span>
                     <div className="mt-1 font-medium text-ink">
-                      {job.salaryLabel}
+                      {formatSalary(job)}
                     </div>
                   </CardContent>
                 </Card>

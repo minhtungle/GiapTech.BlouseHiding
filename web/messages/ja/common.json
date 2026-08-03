@@ -6,7 +6,9 @@
     "organizations": "医療機関",
     "about": "紹介",
     "login": "ログイン",
-    "register": "新規登録"
+    "register": "新規登録",
+    "dashboard": "ダッシュボード",
+    "logout": "ログアウト"
   },
   "footer": {
     "rights": "BlouseHiding 無断複写・転載を禁じます",

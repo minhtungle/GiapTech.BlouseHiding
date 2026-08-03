@@ -124,7 +124,7 @@
 
 | Method | Path | Quyền | Mô tả |
 |---|---|---|---|
-| GET | `/jobs` | Public | Tìm kiếm/lọc: `?specialty=&location=&employmentType=&salaryMin=&keyword=` |
+| GET | `/jobs` | Public | Tìm kiếm/lọc: `?specialty=&location=&organizationId=&employmentType=&salaryMin=&keyword=`. `organizationId` dùng để lấy danh sách tin **công khai** (chỉ `published`) của 1 tổ chức — khác `GET /organizations/{id}/jobs` (yêu cầu member, trả mọi trạng thái) |
 | GET | `/jobs/{id}` | Public | Chi tiết tin (chỉ tin `published`, trừ khi là chủ sở hữu) |
 | POST | `/jobs` | Employer (member) | Tạo tin (status = `draft`) |
 | PUT | `/jobs/{id}` | Employer (member cùng org) | Sửa tin (chỉ khi `draft`/`rejected`) |

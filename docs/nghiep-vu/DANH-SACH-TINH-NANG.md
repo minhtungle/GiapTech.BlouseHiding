@@ -48,11 +48,14 @@
   buộc + đủ 5 locale không phải `vi` (`CatalogLocales.IsSupported`)
 - ✅ Middleware `Accept-Language` phía backend (`ICurrentLocale`/`CurrentLocale`, verify qua curl cả
   6 locale + fallback đúng khi thiếu header hoặc locale không hỗ trợ)
-- 🟨 Nối API thật thay mock data, theo thứ tự: **danh mục — phần đọc (xong)** → Identity (login/register)
-  → Jobs → Applications/ATS → Credit/Payment — màn hình nào nối xong bỏ mock riêng màn đó, không cần
-  đợi tất cả. `web/` (trang tìm việc) và `web-admin/` (`jobs/new`, `ops/catalog`) đã nối phần đọc danh
-  mục tới API thật (fallback mock khi API lỗi/rỗng); form thêm/sửa ở `/ops/catalog` chưa gọi Command
-  thật (nút còn tĩnh)
+- 🟨 Nối API thật thay mock data. `web/` (Client) đã nối **Identity + Jobs + Applications + Hồ sơ ứng
+  viên (core)**: đăng ký/OTP/đăng nhập/quên-đặt lại mật khẩu (`app/api/auth/*` proxy route → httpOnly
+  cookie), tìm/xem tin + ứng tuyển thật, dashboard/hồ sơ/CCHN thật (`GET/PUT /candidates/me`,
+  `POST /candidates/me/licenses`), xóa tài khoản. `SiteHeader` tự nhận diện đăng nhập qua cookie,
+  route `dashboard/profile/settings` redirect login nếu chưa đăng nhập. **Chưa nối**: `profile/cv`
+  (CV Builder — giữ mock, chờ backend), OAuth Google/Zalo, đổi mật khẩu (chưa có endpoint riêng).
+  `web-admin/` (Vận hành/Admin) và Credit/Payment UI **chưa bắt đầu nối** — chỉ mới danh mục (đọc) từ
+  trước.
 
 ## Giai đoạn 1 — MVP
 
@@ -87,7 +90,8 @@
 - ✅ Hàng đợi duyệt tổ chức (Vận hành) — `GET /ops/organizations`, `POST /ops/organizations/{id}/verify`
   (action `Verify`/`Reject`/`Suspend`). Rút xác thực (`Suspend`) **tự động** chuyển mọi tin `published`
   của tổ chức sang `suspended` trong cùng transaction (ERD mục 4.6) — không thao tác riêng từng tin
-- ⬜ Trang công khai cơ sở y tế
+- ✅ Trang công khai cơ sở y tế — `GET /organizations/{id}` (Public, mới thêm khi nối `web/`, theo đúng
+  API-DESIGN.md mục 4 đã thiết kế từ đầu nhưng chưa implement) + `web/organizations/[id]` nối API thật
 
 ### Tin tuyển dụng
 - ✅ Tạo/sửa tin (draft/rejected — `CanEdit` invariant), đóng tin sớm (`close`), gia hạn (`renew` — tạo

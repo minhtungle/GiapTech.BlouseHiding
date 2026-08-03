@@ -6,7 +6,9 @@
     "organizations": "Cơ sở y tế",
     "about": "Giới thiệu",
     "login": "Đăng nhập",
-    "register": "Đăng ký"
+    "register": "Đăng ký",
+    "dashboard": "Bảng điều khiển",
+    "logout": "Đăng xuất"
   },
   "footer": {
     "rights": "Bản quyền thuộc về BlouseHiding",

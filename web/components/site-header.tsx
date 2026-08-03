@@ -1,10 +1,13 @@
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { getCurrentUser } from "@/lib/session";
+import { SiteHeaderUserMenu } from "@/components/site-header-user-menu";
 
-export function SiteHeader() {
-  const t = useTranslations("common");
+export async function SiteHeader() {
+  const t = await getTranslations("common");
+  const currentUser = await getCurrentUser();
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-paper-raised/95 backdrop-blur">
@@ -27,12 +30,18 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/auth/login">{t("nav.login")}</Link>
-          </Button>
-          <Button size="sm" asChild>
-            <Link href="/auth/register">{t("nav.register")}</Link>
-          </Button>
+          {currentUser ? (
+            <SiteHeaderUserMenu email={currentUser.email} />
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/auth/login">{t("nav.login")}</Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link href="/auth/register">{t("nav.register")}</Link>
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </header>

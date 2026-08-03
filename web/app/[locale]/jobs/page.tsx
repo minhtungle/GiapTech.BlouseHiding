@@ -1,25 +1,28 @@
 import { getTranslations, getLocale } from "next-intl/server";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { getSpecialties, getLocations } from "@/lib/api";
-import { MOCK_SPECIALTIES, MOCK_LOCATIONS } from "@/lib/mock-data";
+import { getSpecialties, getLocations, getJobs, getEmploymentTypes } from "@/lib/api";
 import { JobsBrowser } from "./jobs-browser";
 
-export default async function JobsPage() {
+export default async function JobsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ specialty?: string; location?: string; employmentType?: string }>;
+}) {
   const t = await getTranslations("jobs");
   const locale = await getLocale();
+  const params = await searchParams;
 
-  const [apiSpecialties, apiLocations] = await Promise.all([
+  const [specialties, locations, employmentTypes, jobs] = await Promise.all([
     getSpecialties(locale),
     getLocations(locale),
+    getEmploymentTypes(locale),
+    getJobs(locale, {
+      specialty: params.specialty,
+      location: params.location,
+      employmentType: params.employmentType,
+    }),
   ]);
-
-  // Fallback về mock nếu backend chưa chạy — chỉ để dev/demo frontend độc lập, không che giấu lỗi
-  // thật (getSpecialties/getLocations tự log rỗng khi API lỗi, xem lib/api.ts).
-  const specialtyNames =
-    apiSpecialties.length > 0 ? apiSpecialties.map((s) => s.name) : MOCK_SPECIALTIES;
-  const locationNames =
-    apiLocations.length > 0 ? apiLocations.map((l) => l.name) : MOCK_LOCATIONS;
 
   return (
     <>
@@ -29,7 +32,12 @@ export default async function JobsPage() {
           <h1 className="mb-6 font-heading text-3xl font-semibold text-ink">
             {t("title")}
           </h1>
-          <JobsBrowser specialties={specialtyNames} locations={locationNames} />
+          <JobsBrowser
+            specialties={specialties}
+            locations={locations}
+            employmentTypes={employmentTypes}
+            jobs={jobs}
+          />
         </div>
       </main>
       <SiteFooter />

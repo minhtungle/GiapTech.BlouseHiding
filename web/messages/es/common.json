@@ -6,7 +6,9 @@
     "organizations": "Centros de salud",
     "about": "Acerca de",
     "login": "Iniciar sesión",
-    "register": "Registrarse"
+    "register": "Registrarse",
+    "dashboard": "Panel",
+    "logout": "Cerrar sesión"
   },
   "footer": {
     "rights": "Todos los derechos reservados a BlouseHiding",

@@ -16,13 +16,13 @@
   "expiresAt": "Fecha de vencimiento",
   "welcomeBack": "Bienvenido de nuevo",
   "stage": {
-    "moi": "Nuevo",
-    "dang_xem": "En revisión",
-    "phu_hop": "Preseleccionado",
-    "phong_van": "Entrevista",
-    "offer": "Oferta",
-    "trung_tuyen": "Contratado",
-    "tu_choi": "Rechazado"
+    "New": "Nuevo",
+    "Reviewing": "En revisión",
+    "Shortlisted": "Preseleccionado",
+    "Interview": "Entrevista",
+    "Offer": "Oferta",
+    "Hired": "Contratado",
+    "Rejected": "Rechazado"
   },
   "settingsTitle": "Configuración de la cuenta",
   "changePassword": "Cambiar contraseña",

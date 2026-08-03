@@ -17,5 +17,9 @@
   "benefits": "待遇",
   "aboutOrg": "医療機関について",
   "shareJob": "この求人を共有",
-  "clearFilters": "フィルターを解除"
+  "clearFilters": "フィルターを解除",
+  "applySuccess": "応募が完了しました！ダッシュボードで状況を確認できます。",
+  "applyError": "応募に失敗しました。もう一度お試しください。",
+  "applyNeedLogin": "応募するにはログインしてください",
+  "applying": "送信中..."
 }

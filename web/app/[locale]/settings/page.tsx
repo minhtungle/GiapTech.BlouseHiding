@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { AlertTriangle } from "lucide-react";
+import { redirect } from "@/i18n/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { AccountNav } from "@/components/account-nav";
@@ -8,9 +9,21 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { getCurrentUser } from "@/lib/session";
+import { DeleteAccountButton } from "./delete-account-button";
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const t = await getTranslations("profile");
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    redirect({ href: "/auth/login", locale });
+  }
 
   return (
     <>
@@ -64,7 +77,7 @@ export default async function SettingsPage() {
                 <p className="text-sm text-ink-muted">
                   {t("deleteAccountWarning")}
                 </p>
-                <Button variant="destructive">{t("deleteAccount")}</Button>
+                <DeleteAccountButton />
               </CardContent>
             </Card>
           </div>

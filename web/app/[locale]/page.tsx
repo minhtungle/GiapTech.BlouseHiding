@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { ShieldCheck, Stethoscope, MapPin, Search } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { SiteHeader } from "@/components/site-header";
@@ -7,11 +7,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MOCK_JOBS, MOCK_ORGANIZATIONS } from "@/lib/mock-data";
+import { getJobs } from "@/lib/api";
+import { MOCK_ORGANIZATIONS } from "@/lib/mock-data";
+
+function formatSalary(job: { salaryMin: number | null; salaryMax: number | null; salaryNegotiable: boolean }) {
+  if (job.salaryNegotiable || (!job.salaryMin && !job.salaryMax)) return "Thỏa thuận";
+  const format = (n: number) => `${(n / 1_000_000).toFixed(0)} triệu`;
+  if (job.salaryMin && job.salaryMax) return `${format(job.salaryMin)} - ${format(job.salaryMax)}`;
+  return format((job.salaryMin ?? job.salaryMax)!);
+}
 
 export default async function HomePage() {
   const t = await getTranslations("home");
   const tJobs = await getTranslations("jobs");
+  const locale = await getLocale();
+  const jobs = (await getJobs(locale)).slice(0, 6);
 
   return (
     <>
@@ -54,7 +64,7 @@ export default async function HomePage() {
             </h2>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {MOCK_JOBS.map((job) => (
+            {jobs.map((job) => (
               <Link key={job.id} href={`/jobs/${job.id}`}>
                 <Card className="h-full transition-shadow hover:shadow-md">
                   <CardHeader>
@@ -62,7 +72,7 @@ export default async function HomePage() {
                       <CardTitle className="text-base leading-snug">
                         {job.title}
                       </CardTitle>
-                      {job.requiresLicense && (
+                      {job.requiredLicense && (
                         <Badge
                           variant="outline"
                           className="shrink-0 gap-1 border-accent-jade/40 text-accent-jade"
@@ -79,15 +89,15 @@ export default async function HomePage() {
                   <CardContent className="flex flex-col gap-2 text-sm text-ink-muted">
                     <span className="inline-flex items-center gap-1.5">
                       <Stethoscope className="size-3.5" />
-                      {job.specialty}
+                      {job.specialtyName}
                     </span>
                     <span className="inline-flex items-center gap-1.5">
                       <MapPin className="size-3.5" />
-                      {job.location} · {job.employmentType}
+                      {job.locationName} · {job.employmentType}
                     </span>
                     <div className="mt-1 flex items-center justify-between">
                       <span className="font-medium text-ink">
-                        {job.salaryLabel}
+                        {formatSalary(job)}
                       </span>
                       <span className="text-accent-jade">
                         {tJobs("applyNow")} →

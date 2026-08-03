@@ -17,5 +17,9 @@
   "benefits": "Benefits",
   "aboutOrg": "About the facility",
   "shareJob": "Share this job",
-  "clearFilters": "Clear filters"
+  "clearFilters": "Clear filters",
+  "applySuccess": "Application submitted! You can track its status on your dashboard.",
+  "applyError": "Failed to submit application. Please try again.",
+  "applyNeedLogin": "Please log in to apply",
+  "applying": "Submitting..."
 }

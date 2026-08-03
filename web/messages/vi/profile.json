@@ -16,13 +16,13 @@
   "expiresAt": "Ngày hết hạn",
   "welcomeBack": "Chào mừng quay lại",
   "stage": {
-    "moi": "Mới",
-    "dang_xem": "Đang xem",
-    "phu_hop": "Phù hợp",
-    "phong_van": "Hẹn phỏng vấn",
-    "offer": "Offer",
-    "trung_tuyen": "Trúng tuyển",
-    "tu_choi": "Từ chối"
+    "New": "Mới",
+    "Reviewing": "Đang xem",
+    "Shortlisted": "Phù hợp",
+    "Interview": "Hẹn phỏng vấn",
+    "Offer": "Offer",
+    "Hired": "Trúng tuyển",
+    "Rejected": "Từ chối"
   },
   "settingsTitle": "Cài đặt tài khoản",
   "changePassword": "Đổi mật khẩu",
