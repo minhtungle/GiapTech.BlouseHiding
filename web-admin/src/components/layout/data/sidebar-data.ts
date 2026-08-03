@@ -22,6 +22,7 @@ import {
   Landmark,
   Flag,
   BookMarked,
+  UserSearch,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -63,6 +64,11 @@ export const sidebarData: SidebarData = {
           title: 'Ví Credit',
           url: '/credit',
           icon: Wallet,
+        },
+        {
+          title: 'Tìm ứng viên',
+          url: '/candidates',
+          icon: UserSearch,
         },
         {
           title: 'Thành viên',

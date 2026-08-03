@@ -327,10 +327,14 @@ lỗi, chưa cần code-split ở MVP); `npm run lint` sạch; `npx vitest run` 
 gốc (không đụng tới trong đợt này), tái lập độc lập không phụ thuộc thay đổi của đợt này, nghi do môi
 trường (Chromium mới cài lần đầu), không phải lỗi logic — không chặn việc chốt phần này.
 
+Bổ sung ngay sau đó — dựng mới trang tìm/mở hồ sơ ứng viên chủ động ở `web-admin/`
+(`web-admin/src/features/candidates/`, route `/candidates`, mục "Tìm ứng viên" trong sidebar Nhà
+tuyển dụng): filter theo chuyên khoa/địa điểm qua `catalogApi`, danh sách kết quả ẩn liên hệ tới khi
+mở (đúng ERD mục 7), nút "Mở hồ sơ" gọi `candidatesApi.unlock` thật (trừ Credit), báo lỗi rõ ràng khi
+ví không đủ Credit (400) thay vì lỗi chung. Verify: `npx tsc -b`/`npm run build`/`npm run lint` sạch;
+route tree tự sinh đúng (`routeTree.gen.ts` có `/candidates/`).
+
 Còn thiếu (chặn việc chốt giai đoạn):
-- Trang tìm kiếm/mở hồ sơ ứng viên chủ động ở `web-admin/` — backend `GET /candidates/search` +
-  `POST /candidates/{id}/unlock` đã có và đã nối vào `lib/api.ts` (`candidatesApi`), nhưng **chưa có
-  màn hình nào** dùng tới — cần dựng mới, không phải nối lại trang có sẵn.
 - `web-admin/src/features/ops-catalog/` — chỉ nối phần đọc (danh mục chuyên khoa/địa điểm/gói) từ
   trước, form thêm/sửa danh mục vẫn chưa gọi Command thật.
 - `web-admin/src/features/users/` — vẫn dùng `@faker-js/faker` với role không khớp domain thật
