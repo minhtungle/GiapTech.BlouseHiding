@@ -35,7 +35,7 @@ Nếu có mục không đạt, ghi rõ lý do + kế hoạch xử lý vào nhậ
 |---|---|---|
 | 0.1 — UI Shell | 🟨 Gần xong | Còn thiếu tin nhắn/thông báo thật, export PDF CV |
 | 0.2 — Backend & hạ tầng | 🟨 Gần xong | Danh mục (đọc+ghi) + CI/CD xong; Jobs/ATS/Credit chưa làm |
-| 1 — MVP | 🟨 Đang làm | Identity + tạo tổ chức + hồ sơ ứng viên (core) + Jobs (core, gói Free) xong; Payments/ATS/Credit chưa làm |
+| 1 — MVP | 🟨 Đang làm | Identity + tổ chức + hồ sơ ứng viên (core) + Jobs (core, gói Free) + Applications/ATS xong; Payments/Credit chưa làm |
 | 2 — Hoàn thiện | ⬜ Chưa bắt đầu | |
 | 3 — Mở rộng | ⬜ Chưa bắt đầu | |
 
@@ -185,6 +185,26 @@ src/Web` thật + curl toàn bộ luồng tạo tin (draft, guest 404)→submit 
 duyệt→published (guest xem được, search theo keyword thấy đúng)→renew (tin cũ `closed`, tin mới
 `draft` sao chép đúng nội dung)→`GET /organizations/{id}/jobs` thấy đủ mọi trạng thái.
 
+- Bounded context **Ứng tuyển & ATS**: `JobApplication`/`ApplicationNote`/`ApplicationStageHistory` —
+  entity `JobApplication` (không đặt tên `Application` để tránh xung đột với chính namespace project
+  `GiapTech.BlouseHiding.Application`). `TransitionStage()` ghi lịch sử trong cùng lời gọi Domain
+  method, Handler chỉ `Add` tường minh vào `DbSet` rồi save 1 lần — đúng CLAUDE.md rule bất di bất dịch
+  #3 (đổi stage phải ghi `application_stage_history` cùng transaction). `cv_snapshot` (jsonb) chụp từ
+  `CandidateProfile` hiện có (không cần CV Builder/bảng `cvs` — quyết định đã xác nhận với người dùng,
+  đổi nguồn khi CV Builder ra mắt không ảnh hưởng luồng nghiệp vụ). `score` tính 1 lần lúc ứng tuyển
+  theo match trường có cấu trúc (chuyên khoa/CCHN đã verified/địa điểm — không NLP/AI, đúng ERD mục
+  4.8), HR ghi đè thủ công qua `PATCH /applications/{id}/score`. Web: `POST/GET /jobs/{id}/applications`,
+  `GET /candidates/me/applications`, `GET/PATCH /applications/{id}/{stage,score}`,
+  `POST /applications/{id}/notes`, `GET /applications/{id}/history` — đúng API-DESIGN.md mục 8.
+
+Verify đã chạy: `dotnet test` 31/31 pass (3 unit + 28 functional — không có lỗi nào phải sửa lần
+này, 2 bug pattern phát hiện ở các vòng trước (Add tường minh vào DbSet, alias ValidationException)
+áp dụng đúng ngay từ đầu); migration `AddApplications` áp thành công; chạy `dotnet run --project
+src/Web` thật + curl toàn bộ luồng: candidate ứng tuyển vào tin published→hiện trong
+`GET /candidates/me/applications` (stage `New`)→employer xem `GET /jobs/{id}/applications` (ATS
+Kanban)→chuyển stage `New→Shortlisted` (ghi lịch sử đúng)→thêm ghi chú→chấm điểm ghi đè→xem lịch sử;
+ứng tuyển trùng bị chặn 400 đúng thiết kế.
+
 Còn thiếu (chặn việc chốt giai đoạn):
 - OAuth Google/Zalo — chưa làm, quyết định hoãn sang sau khi Identity cốt lõi ổn định (đã xác nhận với
   người dùng).
@@ -192,7 +212,7 @@ Còn thiếu (chặn việc chốt giai đoạn):
   chưa làm, mới có tạo tổ chức lần đầu.
 - **`/ops/organizations/{id}/verify`** — chưa làm, hiện tại chỉ đổi `verify_status` được qua UPDATE
   SQL thủ công lúc test, chặn việc test end-to-end đầy đủ luồng "tổ chức đăng ký → Vận hành duyệt →
-  đăng tin được" mà không cần thao tác DB tay.
+  đăng tin được" mà không cần thao tác DB tay. Đây là gap quan trọng nhất còn lại — nên ưu tiên sớm.
 - Hồ sơ ứng viên: học vấn/kinh nghiệm (`experiences`/`educations`), CME (`continuing_certificates`), CV
   Builder + export PDF — chưa làm, quyết định tách khỏi vòng "core" (profile+CCHN+chuyên khoa) đã xác
   nhận với người dùng. Upload document CCHN hiện giả định URL có sẵn, chưa nối
@@ -201,10 +221,12 @@ Còn thiếu (chặn việc chốt giai đoạn):
   `/ops/payments/*`) — chưa làm, quyết định tách bounded context riêng đã xác nhận với người dùng.
   Tìm kiếm hiện dùng LINQ/EF Core thay vì Postgres full-text (`pg_trgm`) như ERD mục 0 ghi — đủ dùng
   cho MVP, tối ưu sau.
-- Applications/ATS, Credit/Payment — chưa bắt đầu bounded context nào trong số này.
-- Chưa nối `web/`/`web-admin/` tới API Identity/Hồ sơ ứng viên/Jobs thật (màn hình đăng ký/đăng nhập/
-  hồ sơ/đăng tin vẫn dùng mock/form tĩnh) — ưu tiên tiếp theo sau khi có thêm bounded context để có gì
-  nối.
+- Applications: ứng tuyển bằng CV riêng (upload) chưa làm, chỉ hỗ trợ CV nền tảng (`CandidateProfile`).
+- Credit/Payment (bounded context riêng: `credit_wallets`, `profile_unlocks`, tìm ứng viên chủ động) —
+  chưa bắt đầu.
+- Chưa nối `web/`/`web-admin/` tới API Identity/Hồ sơ ứng viên/Jobs/Applications thật (màn hình đăng
+  ký/đăng nhập/hồ sơ/đăng tin/ATS vẫn dùng mock/form tĩnh) — ưu tiên tiếp theo sau khi có thêm bounded
+  context để có gì nối, hoặc bắt đầu nối song song với phần backend còn lại.
 
 ### Giai đoạn 2 — Hoàn thiện
 

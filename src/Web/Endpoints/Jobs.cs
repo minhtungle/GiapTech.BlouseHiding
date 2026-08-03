@@ -1,10 +1,13 @@
 using System.Security.Claims;
+using GiapTech.BlouseHiding.Application.Applications;
+using GiapTech.BlouseHiding.Application.Applications.Commands.SubmitApplication;
 using GiapTech.BlouseHiding.Application.Jobs;
 using GiapTech.BlouseHiding.Application.Jobs.Commands.CloseJob;
 using GiapTech.BlouseHiding.Application.Jobs.Commands.CreateJob;
 using GiapTech.BlouseHiding.Application.Jobs.Commands.RenewJob;
 using GiapTech.BlouseHiding.Application.Jobs.Commands.SubmitJob;
 using GiapTech.BlouseHiding.Application.Jobs.Commands.UpdateJob;
+using GiapTech.BlouseHiding.Application.Jobs.Queries.GetJobApplications;
 using GiapTech.BlouseHiding.Application.Jobs.Queries.GetJobById;
 using GiapTech.BlouseHiding.Application.Jobs.Queries.SearchJobs;
 using GiapTech.BlouseHiding.Domain.Enums;
@@ -23,6 +26,8 @@ public class Jobs : IEndpointGroup
         groupBuilder.MapPost(Submit, "{jobId:guid}/submit").RequireAuthorization();
         groupBuilder.MapPost(Close, "{jobId:guid}/close").RequireAuthorization();
         groupBuilder.MapPost(Renew, "{jobId:guid}/renew").RequireAuthorization();
+        groupBuilder.MapPost(Apply, "{jobId:guid}/applications").RequireAuthorization();
+        groupBuilder.MapGet(GetApplications, "{jobId:guid}/applications").RequireAuthorization();
     }
 
     public static async Task<List<JobDto>> Search(
@@ -110,6 +115,18 @@ public class Jobs : IEndpointGroup
         return await sender.Send(new RenewJobCommand { UserId = CurrentUserId(principal), JobId = jobId }, cancellationToken);
     }
 
+    public static async Task<Guid> Apply(Guid jobId, ApplyRequest request, ClaimsPrincipal principal, ISender sender, CancellationToken cancellationToken)
+    {
+        var command = new SubmitApplicationCommand { UserId = CurrentUserId(principal), JobId = jobId, CoverLetter = request.CoverLetter };
+        return await sender.Send(command, cancellationToken);
+    }
+
+    public static async Task<List<ApplicationDto>> GetApplications(Guid jobId, ClaimsPrincipal principal, ISender sender, CancellationToken cancellationToken)
+    {
+        var query = new GetJobApplicationsQuery { JobId = jobId, UserId = CurrentUserId(principal) };
+        return await sender.Send(query, cancellationToken);
+    }
+
     private static Guid CurrentUserId(ClaimsPrincipal principal) =>
         Guid.Parse(principal.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
@@ -152,3 +169,5 @@ public record UpdateJobRequest(
     string? Benefits);
 
 public record SubmitJobRequest(Guid PackageId);
+
+public record ApplyRequest(string? CoverLetter);

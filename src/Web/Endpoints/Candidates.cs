@@ -1,4 +1,6 @@
 using System.Security.Claims;
+using GiapTech.BlouseHiding.Application.Applications;
+using GiapTech.BlouseHiding.Application.Applications.Queries.GetMyApplications;
 using GiapTech.BlouseHiding.Application.Candidates;
 using GiapTech.BlouseHiding.Application.Candidates.Commands.AddLicense;
 using GiapTech.BlouseHiding.Application.Candidates.Commands.AddProfileSpecialty;
@@ -20,6 +22,13 @@ public class Candidates : IEndpointGroup
         groupBuilder.MapPut(UpdateLicense, "me/licenses/{licenseId:guid}").RequireAuthorization();
         groupBuilder.MapDelete(DeleteLicense, "me/licenses/{licenseId:guid}").RequireAuthorization();
         groupBuilder.MapPost(AddSpecialty, "me/specialties").RequireAuthorization();
+        groupBuilder.MapGet(GetMyApplications, "me/applications").RequireAuthorization();
+    }
+
+    public static async Task<List<ApplicationDto>> GetMyApplications(ClaimsPrincipal principal, ISender sender, CancellationToken cancellationToken)
+    {
+        var userId = Guid.Parse(principal.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        return await sender.Send(new GetMyApplicationsQuery { UserId = userId }, cancellationToken);
     }
 
     public static async Task<CandidateProfileDto> GetMyProfile(ClaimsPrincipal principal, ISender sender, CancellationToken cancellationToken)

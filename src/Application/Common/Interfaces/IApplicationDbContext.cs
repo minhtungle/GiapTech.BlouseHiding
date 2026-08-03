@@ -32,5 +32,11 @@ public interface IApplicationDbContext
 
     DbSet<Job> Jobs { get; }
 
+    DbSet<JobApplication> Applications { get; }
+
+    DbSet<ApplicationNote> ApplicationNotes { get; }
+
+    DbSet<ApplicationStageHistory> ApplicationStageHistories { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

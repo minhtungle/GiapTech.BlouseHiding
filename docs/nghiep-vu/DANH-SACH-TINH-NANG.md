@@ -104,10 +104,17 @@
   ở ERD mục 0 — đủ dùng cho lượng dữ liệu MVP, tối ưu sau khi có traffic thật
 
 ### Ứng tuyển & ATS
-- ⬜ Ứng tuyển bằng CV nền tảng/upload
-- ⬜ Chụp `cv_snapshot` + tính `score` 1 lần lúc ứng tuyển (không đổi khi hồ sơ gốc thay đổi sau này)
-- ⬜ ATS Kanban (6 trạng thái pipeline) — vẫn thao tác được sau khi tin hết hạn/đóng/suspended
-- ⬜ Ghi chú nội bộ + match-score theo trường có cấu trúc (chuyên khoa/kinh nghiệm/địa điểm — không NLP/AI, xem ERD mục 4 điểm 8)
+- 🟨 Ứng tuyển — `POST /jobs/{id}/applications` (chỉ hỗ trợ CV nền tảng qua `CandidateProfile` hiện có;
+  upload CV riêng/CV Builder chưa làm, xem mục "Hồ sơ ứng viên"). Chặn ứng tuyển trùng
+  (`UNIQUE(job_id, candidate_id)`) và tin chưa `published`
+- ✅ Chụp `cv_snapshot` (jsonb từ `CandidateProfile`+`Licenses`+`ProfileSpecialties`) + tính `score` 1
+  lần lúc ứng tuyển — không đổi khi hồ sơ gốc thay đổi sau này
+- ✅ ATS Kanban (7 trạng thái pipeline `new→reviewing→shortlisted→interview→offer→hired`, `rejected`
+  tách nhánh) — `GET /jobs/{id}/applications`, khả dụng bất kể `jobs.status` (đúng ERD mục 4.9)
+- ✅ Chuyển trạng thái ghi `application_stage_history` cùng transaction (`PATCH /applications/{id}/stage`,
+  tham số `silent`), ghi chú nội bộ (`POST /applications/{id}/notes`), chấm điểm ghi đè thủ công
+  (`PATCH /applications/{id}/score`) — match-score theo trường có cấu trúc (chuyên khoa/CCHN đã duyệt/
+  địa điểm — không NLP/AI, xem ERD mục 4 điểm 8)
 - ⬜ Hệ thống Credit + tìm kiếm ứng viên chủ động + Profile Unlock
 - ⬜ Hoàn Credit thủ công khi có tranh chấp (`/ops/organizations/{id}/credit-refund`)
 

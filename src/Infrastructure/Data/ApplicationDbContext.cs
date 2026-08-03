@@ -42,6 +42,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     public DbSet<Job> Jobs => Set<Job>();
 
+    public DbSet<JobApplication> Applications => Set<JobApplication>();
+
+    public DbSet<ApplicationNote> ApplicationNotes => Set<ApplicationNote>();
+
+    public DbSet<ApplicationStageHistory> ApplicationStageHistories => Set<ApplicationStageHistory>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
