@@ -1,6 +1,8 @@
 import { Link } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
-import { MOCK_ADMIN_JOBS, JOB_STATUS_LABEL } from '@/lib/mock-data'
+import { jobsApi } from '@/lib/api'
+import { useMyOrganization } from '@/hooks/use-my-organization'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,15 +20,34 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 
+const STATUS_LABEL: Record<string, string> = {
+  Draft: 'Nháp',
+  PendingPayment: 'Chờ thanh toán',
+  Pending: 'Chờ duyệt',
+  Published: 'Đang tuyển',
+  Rejected: 'Bị từ chối',
+  Expired: 'Hết hạn',
+  Closed: 'Đã đóng',
+  Suspended: 'Bị ẩn',
+}
+
 const STATUS_BADGE_CLASS: Record<string, string> = {
-  published: 'bg-accent-jade text-white',
-  pending_payment: 'bg-amber-pending text-white',
-  pending: 'bg-amber-pending text-white',
-  rejected: 'bg-accent-seal text-white',
-  suspended: 'bg-accent-seal text-white',
+  Published: 'bg-accent-jade text-white',
+  PendingPayment: 'bg-amber-pending text-white',
+  Pending: 'bg-amber-pending text-white',
+  Rejected: 'bg-accent-seal text-white',
+  Suspended: 'bg-accent-seal text-white',
 }
 
 export function Jobs() {
+  const { organization } = useMyOrganization()
+
+  const { data: jobs } = useQuery({
+    queryKey: ['jobs', 'organization', organization?.id],
+    queryFn: () => jobsApi.getOrganizationJobs(organization!.id),
+    enabled: !!organization,
+  })
+
   return (
     <>
       <Header>
@@ -61,17 +82,18 @@ export function Jobs() {
             <TableHeader>
               <TableRow>
                 <TableHead>Tin tuyển dụng</TableHead>
-                <TableHead>Gói</TableHead>
+                <TableHead>Chuyên khoa · Địa điểm</TableHead>
                 <TableHead>Trạng thái</TableHead>
-                <TableHead className='text-right'>Ứng viên</TableHead>
-                <TableHead>Ngày đăng</TableHead>
+                <TableHead>Ứng viên</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {MOCK_ADMIN_JOBS.map((job) => (
+              {jobs?.map((job) => (
                 <TableRow key={job.id}>
                   <TableCell className='font-medium'>{job.title}</TableCell>
-                  <TableCell>{job.packageName}</TableCell>
+                  <TableCell className='text-muted-foreground'>
+                    {job.specialtyName} · {job.locationName}
+                  </TableCell>
                   <TableCell>
                     <Badge
                       className={STATUS_BADGE_CLASS[job.status] ?? ''}
@@ -79,23 +101,17 @@ export function Jobs() {
                         STATUS_BADGE_CLASS[job.status] ? 'default' : 'outline'
                       }
                     >
-                      {JOB_STATUS_LABEL[job.status]}
+                      {STATUS_LABEL[job.status] ?? job.status}
                     </Badge>
                   </TableCell>
-                  <TableCell className='text-right'>
-                    {job.applicantsCount > 0 ? (
-                      <Link
-                        to='/applications'
-                        className='text-accent-jade hover:underline'
-                      >
-                        {job.applicantsCount}
-                      </Link>
-                    ) : (
-                      '—'
-                    )}
-                  </TableCell>
-                  <TableCell className='text-muted-foreground'>
-                    {job.publishedAt ?? '—'}
+                  <TableCell>
+                    <Link
+                      to='/applications/$jobId'
+                      params={{ jobId: job.id }}
+                      className='text-accent-jade hover:underline'
+                    >
+                      Xem ATS →
+                    </Link>
                   </TableCell>
                 </TableRow>
               ))}

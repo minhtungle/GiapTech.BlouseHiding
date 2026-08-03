@@ -1,14 +1,14 @@
 import { useDroppable } from '@dnd-kit/core'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import { APPLICATION_STAGE_LABEL, type ApplicationStage } from '@/lib/mock-data'
+import { APPLICATION_STAGE_LABEL, type ApplicationStageValue } from './constants'
 
 export function KanbanColumn({
   stage,
   count,
   children,
 }: {
-  stage: ApplicationStage
+  stage: ApplicationStageValue
   count: number
   children: React.ReactNode
 }) {

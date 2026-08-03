@@ -54,8 +54,13 @@
   `POST /candidates/me/licenses`), xóa tài khoản. `SiteHeader` tự nhận diện đăng nhập qua cookie,
   route `dashboard/profile/settings` redirect login nếu chưa đăng nhập. **Chưa nối**: `profile/cv`
   (CV Builder — giữ mock, chờ backend), OAuth Google/Zalo, đổi mật khẩu (chưa có endpoint riêng).
-  `web-admin/` (Vận hành/Admin) và Credit/Payment UI **chưa bắt đầu nối** — chỉ mới danh mục (đọc) từ
-  trước.
+  `web-admin/` (Vận hành/Admin) đã nối **đăng nhập + route protection (Zustand + cookie thường +
+  axios interceptor tự refresh), đăng tin/danh sách tin, ATS Kanban theo tin (kéo-thả đổi giai đoạn
+  thật), dashboard NTD, ví Credit (số dư + lịch sử), hàng đợi duyệt Vận hành (CCHN/tổ chức/tin, có
+  dialog nhập lý do khi từ chối)**. **Chưa nối**: trang tìm/mở hồ sơ ứng viên chủ động (chưa có màn
+  hình, backend đã sẵn), form thêm/sửa danh mục ở `/ops/catalog` (chỉ đọc), `/ops/payments`/
+  `/ops/reports` (chưa có bounded context), trang quản lý người dùng (`features/users/` vẫn dùng
+  faker + role giả).
 
 ## Giai đoạn 1 — MVP
 

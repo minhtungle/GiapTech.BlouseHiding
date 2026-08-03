@@ -1,5 +1,7 @@
+import { useQuery } from '@tanstack/react-query'
 import { Wallet } from 'lucide-react'
-import { MOCK_CREDIT_WALLET } from '@/lib/mock-data'
+import { organizationsApi } from '@/lib/api'
+import { useMyOrganization } from '@/hooks/use-my-organization'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -18,13 +20,27 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ThemeSwitch } from '@/components/theme-switch'
 
 const REASON_LABEL: Record<string, string> = {
-  purchase: 'Nạp Credit',
-  unlock_profile: 'Mở hồ sơ ứng viên',
-  refund: 'Hoàn Credit (tranh chấp)',
-  bonus: 'Thưởng',
+  Purchase: 'Nạp Credit',
+  UnlockProfile: 'Mở hồ sơ ứng viên',
+  Refund: 'Hoàn Credit (tranh chấp)',
+  Bonus: 'Thưởng',
 }
 
 export function Credit() {
+  const { organization } = useMyOrganization()
+
+  const { data: wallet } = useQuery({
+    queryKey: ['credit-wallet', organization?.id],
+    queryFn: () => organizationsApi.getCreditWallet(organization!.id),
+    enabled: !!organization,
+  })
+
+  const { data: transactions } = useQuery({
+    queryKey: ['credit-transactions', organization?.id],
+    queryFn: () => organizationsApi.getCreditTransactions(organization!.id),
+    enabled: !!organization,
+  })
+
   return (
     <>
       <Header>
@@ -50,15 +66,20 @@ export function Credit() {
             </CardHeader>
             <CardContent>
               <div className='text-3xl font-semibold'>
-                {MOCK_CREDIT_WALLET.balance} Credit
+                {wallet?.balance ?? 0} Credit
               </div>
               <p className='mt-1 text-xs text-muted-foreground'>
                 1 Credit = 1 lượt mở hồ sơ ứng viên
               </p>
             </CardContent>
           </Card>
-          <div className='flex items-center'>
-            <Button size='lg'>Nạp thêm Credit</Button>
+          <div className='flex flex-col items-center justify-center gap-1'>
+            <Button size='lg' disabled title='Đang chờ nối cổng thanh toán'>
+              Nạp thêm Credit
+            </Button>
+            <p className='text-center text-xs text-muted-foreground'>
+              Liên hệ Vận hành để nạp Credit trong lúc chờ hoàn thiện
+            </p>
           </div>
         </div>
 
@@ -76,9 +97,16 @@ export function Credit() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {MOCK_CREDIT_WALLET.transactions.map((tx) => (
+                {transactions?.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={3} className='text-center text-muted-foreground'>
+                      Chưa có giao dịch nào.
+                    </TableCell>
+                  </TableRow>
+                )}
+                {transactions?.map((tx) => (
                   <TableRow key={tx.id}>
-                    <TableCell>{REASON_LABEL[tx.reason]}</TableCell>
+                    <TableCell>{REASON_LABEL[tx.reason] ?? tx.reason}</TableCell>
                     <TableCell className='text-right'>
                       <Badge
                         variant='outline'
@@ -93,7 +121,7 @@ export function Credit() {
                       </Badge>
                     </TableCell>
                     <TableCell className='text-muted-foreground'>
-                      {tx.createdAt}
+                      {new Date(tx.createdAt).toLocaleDateString('vi-VN')}
                     </TableCell>
                   </TableRow>
                 ))}

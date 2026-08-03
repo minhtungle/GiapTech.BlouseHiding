@@ -299,6 +299,45 @@ Còn thiếu (chặn việc chốt giai đoạn):
 - Tin nhắn/thông báo, tìm kiếm ứng viên chủ động ở `web-admin/` (Credit unlock UI phía NTD) — backend
   đã có (`GET /candidates/search`, `POST /candidates/{id}/unlock`), chưa nối frontend nào.
 
+- **Nối `web-admin/` (Admin NTD + Vận hành) tới API thật** — thay toàn bộ mock (`MOCK_*` từ
+  `lib/mock-data.ts`) bằng gọi API thật qua `lib/api.ts` (viết lại hoàn toàn, `fetch` → axios instance
+  `lib/http.ts`). Kiến trúc auth khác `web/`: SPA thuần (không SSR) nên dùng cookie thường (không
+  httpOnly, tái dùng `lib/cookies.ts` đã có sẵn cho theme/sidebar) + Zustand store
+  (`stores/auth-store.ts`, đổi hẳn shape `AuthUser`/token theo response `GET /users/me` thật) + axios
+  interceptor tự refresh khi 401 (gộp request đồng thời qua 1 `refreshPromise`, tránh gọi refresh
+  trùng lặp). `routes/_authenticated/route.tsx` thêm `beforeLoad` redirect `/sign-in` nếu chưa có
+  access token.
+  Màn hình đã nối: đăng nhập thật (chặn role `candidate` không cho vào admin qua `ALLOWED_ROLES`) +
+  route protection; đăng tin mới (`jobs/new.tsx`, dropdown chuyên khoa/địa điểm/gói dùng `id` thật thay
+  chuỗi tên) + danh sách tin theo tổ chức; ATS Kanban theo từng tin (đổi route
+  `/applications` → `/applications/$jobId`, kéo-thả gọi `applicationsApi.transitionStage` thật, có
+  history); dashboard (tin đang tuyển/số dư Credit/chờ thanh toán từ API thật); ví Credit (số dư +
+  lịch sử giao dịch thật, nút "Nạp thêm Credit" chủ động để `disabled` + ghi rõ "Đang chờ nối cổng
+  thanh toán" — không giả vờ hoạt động khi Payments chưa có); hàng đợi duyệt Vận hành
+  (`ops-verification/index.tsx`, 3 tab CCHN/Tổ chức/Tin tuyển dụng, nút Duyệt gọi thẳng, nút Từ chối mở
+  dialog nhập lý do bắt buộc trước khi gọi `verifyLicense`/`verifyOrganization`/`moderateJob`).
+  Thêm hook `hooks/use-my-organization.ts` (`organizationsApi.getMine()`) để mọi trang NTD tự biết tổ
+  chức của user đang đăng nhập — MVP giả định 1 NTD chỉ thuộc 1 tổ chức (chưa có invite thành viên).
+  `/ops/payments`, `/ops/reports` **cố ý giữ mock** — chưa có bounded context Payments/Report tương ứng
+  ở backend, khác với các trang trên đã có API thật để nối.
+
+Verify đã chạy: `npx tsc -b` sạch; `npm run build` sạch (cảnh báo kích thước chunk >500kB không phải
+lỗi, chưa cần code-split ở MVP); `npm run lint` sạch; `npx vitest run` 128/129 pass — 1 fail
+(`search-provider.test.tsx`, timeout click trong Playwright browser mode) là test cũ thuộc scaffold
+gốc (không đụng tới trong đợt này), tái lập độc lập không phụ thuộc thay đổi của đợt này, nghi do môi
+trường (Chromium mới cài lần đầu), không phải lỗi logic — không chặn việc chốt phần này.
+
+Còn thiếu (chặn việc chốt giai đoạn):
+- Trang tìm kiếm/mở hồ sơ ứng viên chủ động ở `web-admin/` — backend `GET /candidates/search` +
+  `POST /candidates/{id}/unlock` đã có và đã nối vào `lib/api.ts` (`candidatesApi`), nhưng **chưa có
+  màn hình nào** dùng tới — cần dựng mới, không phải nối lại trang có sẵn.
+- `web-admin/src/features/ops-catalog/` — chỉ nối phần đọc (danh mục chuyên khoa/địa điểm/gói) từ
+  trước, form thêm/sửa danh mục vẫn chưa gọi Command thật.
+- `web-admin/src/features/users/` — vẫn dùng `@faker-js/faker` với role không khớp domain thật
+  (superadmin/admin/cashier/manager thay vì employer/admin/moderator/candidate) — cần viết lại.
+- OAuth, Payments, học vấn/kinh nghiệm/CME/CV Builder, đổi mật khẩu khi đã đăng nhập, hoàn Credit thủ
+  công khi tranh chấp — vẫn như log trước, chưa có gì thay đổi ở đợt này.
+
 ### Giai đoạn 2 — Hoàn thiện
 
 *(Chưa bắt đầu)*

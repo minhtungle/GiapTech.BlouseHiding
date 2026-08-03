@@ -1,12 +1,10 @@
-import { Link } from '@tanstack/react-router'
+import { useState } from 'react'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { ChevronLeft } from 'lucide-react'
-import { catalogApi } from '@/lib/api'
-import {
-  MOCK_SPECIALTIES,
-  MOCK_LOCATIONS,
-  MOCK_JOB_PACKAGES,
-} from '@/lib/mock-data'
+import { ChevronLeft, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+import { catalogApi, jobsApi } from '@/lib/api'
+import { useMyOrganization } from '@/hooks/use-my-organization'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -26,34 +24,85 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ThemeSwitch } from '@/components/theme-switch'
 
 export function NewJob() {
-  const { data: apiSpecialties } = useQuery({
+  const navigate = useNavigate()
+  const { organization } = useMyOrganization()
+
+  const { data: specialties } = useQuery({
     queryKey: ['catalog', 'specialties'],
     queryFn: catalogApi.getSpecialties,
   })
-  const { data: apiLocations } = useQuery({
+  const { data: locations } = useQuery({
     queryKey: ['catalog', 'locations'],
     queryFn: catalogApi.getLocations,
   })
-  const { data: apiJobPackages } = useQuery({
+  const { data: jobPackages } = useQuery({
     queryKey: ['catalog', 'job-packages'],
     queryFn: catalogApi.getJobPackages,
   })
+  const { data: employmentTypes } = useQuery({
+    queryKey: ['catalog', 'employment-types'],
+    queryFn: catalogApi.getEmploymentTypes,
+  })
 
-  const specialties = apiSpecialties?.length
-    ? apiSpecialties.map((s) => s.name)
-    : MOCK_SPECIALTIES
-  const locations = apiLocations?.length
-    ? apiLocations.map((l) => l.name)
-    : MOCK_LOCATIONS
-  const jobPackages = apiJobPackages?.length
-    ? apiJobPackages.map((pkg) => ({
-        id: pkg.id,
-        name: pkg.tier,
-        priceLabel: pkg.price === 0 ? '0đ' : `${pkg.price.toLocaleString('vi-VN')}đ`,
-        durationDays: pkg.durationDays,
-        note: pkg.name,
-      }))
-    : MOCK_JOB_PACKAGES
+  const [title, setTitle] = useState('')
+  const [specialtyId, setSpecialtyId] = useState('')
+  const [locationId, setLocationId] = useState('')
+  const [employmentType, setEmploymentType] = useState('')
+  const [salaryMin, setSalaryMin] = useState('')
+  const [salaryMax, setSalaryMax] = useState('')
+  const [description, setDescription] = useState('')
+  const [requirements, setRequirements] = useState('')
+  const [benefits, setBenefits] = useState('')
+  const [packageId, setPackageId] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const freePackage = jobPackages?.find((p) => p.tier === 'Free')
+
+  async function handleSubmit() {
+    if (!organization) {
+      toast.error('Không tìm thấy tổ chức của bạn.')
+      return
+    }
+    if (!title || !specialtyId || !locationId || !employmentType || !description) {
+      toast.error('Vui lòng điền đủ thông tin bắt buộc.')
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      const jobId = await jobsApi.create({
+        organizationId: organization.id,
+        title,
+        specialtyId,
+        employmentType,
+        salaryMin: salaryMin ? Number(salaryMin) : null,
+        salaryMax: salaryMax ? Number(salaryMax) : null,
+        salaryNegotiable: !salaryMin && !salaryMax,
+        locationId,
+        addressDetail: null,
+        requiredLicense: true,
+        minExperienceYears: 0,
+        description,
+        requirements: requirements || null,
+        benefits: benefits || null,
+      })
+
+      // MVP chỉ hỗ trợ gói Free (submit thẳng pending, không qua thanh toán) — gói trả phí là
+      // bounded context Payments riêng, chưa làm (xem docs/nghiep-vu/TIEN-DO-DU-AN.md).
+      const selectedPackageId = packageId || freePackage?.id
+      if (selectedPackageId) {
+        await jobsApi.submit(jobId, selectedPackageId)
+      }
+
+      toast.success('Đăng tin thành công, đang chờ duyệt nội dung.')
+      navigate({ to: '/jobs' })
+    } catch {
+      toast.error('Đăng tin không thành công.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <>
@@ -85,20 +134,25 @@ export function NewJob() {
             <CardContent className='space-y-4'>
               <div className='space-y-1.5'>
                 <Label htmlFor='title'>Vị trí tuyển dụng</Label>
-                <Input id='title' placeholder='VD: Điều dưỡng ICU — Ca đêm' />
+                <Input
+                  id='title'
+                  placeholder='VD: Điều dưỡng ICU — Ca đêm'
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
               </div>
 
               <div className='grid grid-cols-2 gap-4'>
                 <div className='space-y-1.5'>
                   <Label htmlFor='specialty'>Chuyên khoa</Label>
-                  <Select>
+                  <Select value={specialtyId} onValueChange={setSpecialtyId}>
                     <SelectTrigger id='specialty' className='w-full'>
                       <SelectValue placeholder='Chọn chuyên khoa' />
                     </SelectTrigger>
                     <SelectContent>
-                      {specialties.map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {s}
+                      {specialties?.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -106,14 +160,14 @@ export function NewJob() {
                 </div>
                 <div className='space-y-1.5'>
                   <Label htmlFor='location'>Địa điểm</Label>
-                  <Select>
+                  <Select value={locationId} onValueChange={setLocationId}>
                     <SelectTrigger id='location' className='w-full'>
                       <SelectValue placeholder='Chọn địa điểm' />
                     </SelectTrigger>
                     <SelectContent>
-                      {locations.map((l) => (
-                        <SelectItem key={l} value={l}>
-                          {l}
+                      {locations?.map((l) => (
+                        <SelectItem key={l.id} value={l.id}>
+                          {l.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -122,20 +176,40 @@ export function NewJob() {
               </div>
 
               <div className='grid grid-cols-2 gap-4'>
-                <div className='space-y-1.5'>
-                  <Label htmlFor='salary'>Mức lương</Label>
-                  <Input id='salary' placeholder='VD: 18 - 25 triệu' />
+                <div className='grid grid-cols-2 gap-2'>
+                  <div className='space-y-1.5'>
+                    <Label htmlFor='salaryMin'>Lương tối thiểu</Label>
+                    <Input
+                      id='salaryMin'
+                      type='number'
+                      placeholder='15000000'
+                      value={salaryMin}
+                      onChange={(e) => setSalaryMin(e.target.value)}
+                    />
+                  </div>
+                  <div className='space-y-1.5'>
+                    <Label htmlFor='salaryMax'>Lương tối đa</Label>
+                    <Input
+                      id='salaryMax'
+                      type='number'
+                      placeholder='25000000'
+                      value={salaryMax}
+                      onChange={(e) => setSalaryMax(e.target.value)}
+                    />
+                  </div>
                 </div>
                 <div className='space-y-1.5'>
                   <Label htmlFor='employmentType'>Loại hình</Label>
-                  <Select>
+                  <Select value={employmentType} onValueChange={setEmploymentType}>
                     <SelectTrigger id='employmentType' className='w-full'>
                       <SelectValue placeholder='Chọn loại hình' />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value='full-time'>Toàn thời gian</SelectItem>
-                      <SelectItem value='locum'>Bán thời gian (Locum)</SelectItem>
-                      <SelectItem value='shift'>Theo ca</SelectItem>
+                      {employmentTypes?.map((e) => (
+                        <SelectItem key={e} value={e}>
+                          {e}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -143,15 +217,30 @@ export function NewJob() {
 
               <div className='space-y-1.5'>
                 <Label htmlFor='description'>Mô tả công việc</Label>
-                <Textarea id='description' rows={4} />
+                <Textarea
+                  id='description'
+                  rows={4}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
               </div>
               <div className='space-y-1.5'>
                 <Label htmlFor='requirements'>Yêu cầu ứng viên</Label>
-                <Textarea id='requirements' rows={3} />
+                <Textarea
+                  id='requirements'
+                  rows={3}
+                  value={requirements}
+                  onChange={(e) => setRequirements(e.target.value)}
+                />
               </div>
               <div className='space-y-1.5'>
                 <Label htmlFor='benefits'>Quyền lợi</Label>
-                <Textarea id='benefits' rows={3} />
+                <Textarea
+                  id='benefits'
+                  rows={3}
+                  value={benefits}
+                  onChange={(e) => setBenefits(e.target.value)}
+                />
               </div>
             </CardContent>
           </Card>
@@ -161,7 +250,7 @@ export function NewJob() {
               <CardTitle className='text-base'>Chọn gói đăng tin</CardTitle>
             </CardHeader>
             <CardContent className='space-y-3'>
-              {jobPackages.map((pkg) => (
+              {jobPackages?.map((pkg) => (
                 <label
                   key={pkg.id}
                   className='flex cursor-pointer items-center justify-between rounded-md border p-3 text-sm has-[input:checked]:border-accent-jade has-[input:checked]:bg-accent-jade/5'
@@ -172,21 +261,27 @@ export function NewJob() {
                       name='package'
                       value={pkg.id}
                       className='sr-only'
-                      defaultChecked={pkg.name === 'Pro'}
+                      checked={packageId ? packageId === pkg.id : pkg.tier === 'Free'}
+                      onChange={() => setPackageId(pkg.id)}
                     />
-                    <span className='font-medium'>{pkg.name}</span>
+                    <span className='font-medium'>{pkg.tier}</span>
                     <span className='block text-xs text-muted-foreground'>
-                      {pkg.durationDays} ngày · {pkg.note}
+                      {pkg.durationDays} ngày · {pkg.name}
                     </span>
                   </span>
-                  <span className='font-medium'>{pkg.priceLabel}</span>
+                  <span className='font-medium'>
+                    {pkg.price === 0 ? '0đ' : `${pkg.price.toLocaleString('vi-VN')}đ`}
+                  </span>
                 </label>
               ))}
 
-              <Button className='w-full'>Lưu nháp & chọn thanh toán</Button>
+              <Button className='w-full' disabled={isSubmitting} onClick={handleSubmit}>
+                {isSubmitting && <Loader2 className='animate-spin' />}
+                Lưu & nộp duyệt
+              </Button>
               <p className='text-center text-xs text-muted-foreground'>
-                Gói trả phí chuyển sang trạng thái &quot;Chờ thanh toán&quot; —
-                chuyển khoản thủ công theo mã tham chiếu.
+                Chỉ gói Free hỗ trợ ở MVP — vào hàng đợi duyệt nội dung ngay. Gói trả phí (chuyển
+                khoản thủ công) chưa hỗ trợ.
               </p>
             </CardContent>
           </Card>

@@ -3,23 +3,28 @@ import { render, type RenderResult } from 'vitest-browser-react'
 import { type Locator, userEvent } from 'vitest/browser'
 import { UserAuthForm } from './user-auth-form'
 
-const FORM_MESSAGES = {
-  emailEmpty: 'Please enter your email.',
-  passwordEmpty: 'Please enter your password.',
-  passwordShort: 'Password must be at least 7 characters long.',
-} as const
-
 const navigate = vi.fn()
 const setUserMock = vi.fn()
-const setAccessTokenMock = vi.fn()
+const setTokensMock = vi.fn()
+const resetMock = vi.fn()
+const loginMock = vi.fn()
+const meMock = vi.fn()
 
 vi.mock('@/stores/auth-store', () => ({
   useAuthStore: () => ({
     auth: {
       setUser: setUserMock,
-      setAccessToken: setAccessTokenMock,
+      setTokens: setTokensMock,
+      reset: resetMock,
     },
   }),
+}))
+
+vi.mock('@/lib/api', () => ({
+  authApi: {
+    login: (...args: unknown[]) => loginMock(...args),
+    me: (...args: unknown[]) => meMock(...args),
+  },
 }))
 
 vi.mock('@tanstack/react-router', async (importOriginal) => {
@@ -27,27 +32,8 @@ vi.mock('@tanstack/react-router', async (importOriginal) => {
   return {
     ...actual,
     useNavigate: () => navigate,
-    Link: ({
-      children,
-      to,
-      className,
-      ...rest
-    }: {
-      children?: React.ReactNode
-      to: string
-      className?: string
-    }) => (
-      <a href={to} className={className} {...rest}>
-        {children}
-      </a>
-    ),
   }
 })
-
-vi.mock('@/lib/utils', async (orig) => ({
-  ...(await orig()),
-  sleep: vi.fn(() => Promise.resolve()),
-}))
 
 describe('UserAuthForm', () => {
   describe('Rendering without redirectTo', () => {
@@ -55,32 +41,35 @@ describe('UserAuthForm', () => {
     let emailInput: Locator
     let passwordInput: Locator
     let signInButton: Locator
-    let forgotPasswordLink: Locator
 
     beforeEach(async () => {
       vi.clearAllMocks()
+      loginMock.mockResolvedValue({ accessToken: 'access', refreshToken: 'refresh' })
+      meMock.mockResolvedValue({
+        id: 'user-1',
+        email: 'a@b.com',
+        role: 'employer',
+        status: 'Active',
+        emailVerified: true,
+      })
+
       screen = await render(<UserAuthForm />)
       emailInput = screen.getByRole('textbox', { name: /^Email$/i })
-      passwordInput = screen.getByLabelText(/^Password$/i)
-      signInButton = screen.getByRole('button', { name: /^Sign in$/i })
-      forgotPasswordLink = screen.getByText(/^Forgot password\?$/i)
+      passwordInput = screen.getByLabelText(/^Mật khẩu$/i)
+      signInButton = screen.getByRole('button', { name: /^Đăng nhập$/i })
     })
 
-    it('renders fields, submit button, and forgot password link', async () => {
+    it('renders fields and submit button', async () => {
       await expect.element(emailInput).toBeInTheDocument()
       await expect.element(passwordInput).toBeInTheDocument()
       await expect.element(signInButton).toBeInTheDocument()
-      await expect.element(forgotPasswordLink).toBeInTheDocument()
     })
 
-    it('shows validation messages when submitting empty form', async () => {
+    it('shows validation message when submitting empty form', async () => {
       await userEvent.click(signInButton)
 
       await expect
-        .element(screen.getByText(FORM_MESSAGES.emailEmpty))
-        .toBeInTheDocument()
-      await expect
-        .element(screen.getByText(FORM_MESSAGES.passwordEmpty))
+        .element(screen.getByText('Vui lòng nhập email.'))
         .toBeInTheDocument()
     })
 
@@ -90,17 +79,11 @@ describe('UserAuthForm', () => {
 
       await userEvent.click(signInButton)
 
-      await vi.waitFor(() => expect(setUserMock).toHaveBeenCalledOnce())
+      await vi.waitFor(() => expect(setTokensMock).toHaveBeenCalledOnce())
+      expect(setTokensMock).toHaveBeenCalledWith('access', 'refresh')
       expect(setUserMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          email: 'a@b.com',
-          accountNo: expect.any(String),
-          role: expect.any(Array),
-          exp: expect.any(Number),
-        })
+        expect.objectContaining({ email: 'a@b.com', role: 'employer' })
       )
-      expect(setAccessTokenMock).toHaveBeenCalledOnce()
-      expect(setAccessTokenMock).toHaveBeenCalledWith('mock-access-token')
 
       await vi.waitFor(() =>
         expect(navigate).toHaveBeenCalledWith({ to: '/', replace: true })
@@ -110,18 +93,25 @@ describe('UserAuthForm', () => {
 
   it('navigates to redirectTo when provided', async () => {
     vi.clearAllMocks()
+    loginMock.mockResolvedValue({ accessToken: 'access', refreshToken: 'refresh' })
+    meMock.mockResolvedValue({
+      id: 'user-1',
+      email: 'a@b.com',
+      role: 'employer',
+      status: 'Active',
+      emailVerified: true,
+    })
 
     const { getByRole, getByLabelText } = await render(
       <UserAuthForm redirectTo='/settings' />
     )
 
     await userEvent.fill(getByRole('textbox', { name: /Email/i }), 'a@b.com')
-    await userEvent.fill(getByLabelText('Password'), '1234567')
+    await userEvent.fill(getByLabelText('Mật khẩu'), '1234567')
 
-    await userEvent.click(getByRole('button', { name: /Sign in/i }))
+    await userEvent.click(getByRole('button', { name: /Đăng nhập/i }))
 
-    await vi.waitFor(() => expect(setUserMock).toHaveBeenCalledOnce())
-    expect(setAccessTokenMock).toHaveBeenCalledOnce()
+    await vi.waitFor(() => expect(setTokensMock).toHaveBeenCalledOnce())
 
     await vi.waitFor(() =>
       expect(navigate).toHaveBeenCalledWith({

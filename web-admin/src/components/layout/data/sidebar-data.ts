@@ -56,7 +56,7 @@ export const sidebarData: SidebarData = {
         },
         {
           title: 'ATS — Ứng viên',
-          url: '/applications',
+          url: '/jobs',
           icon: ClipboardCheck,
         },
         {

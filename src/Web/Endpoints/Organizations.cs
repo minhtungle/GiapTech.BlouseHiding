@@ -2,6 +2,7 @@ using System.Security.Claims;
 using GiapTech.BlouseHiding.Application.Employers.Commands.CreateOrganization;
 using GiapTech.BlouseHiding.Application.Employers.Queries.GetCreditTransactions;
 using GiapTech.BlouseHiding.Application.Employers.Queries.GetCreditWallet;
+using GiapTech.BlouseHiding.Application.Employers.Queries.GetMyOrganizations;
 using GiapTech.BlouseHiding.Application.Employers.Queries.GetOrganizationById;
 using GiapTech.BlouseHiding.Application.Jobs;
 using GiapTech.BlouseHiding.Application.Jobs.Queries.GetOrganizationJobs;
@@ -9,15 +10,24 @@ using GiapTech.BlouseHiding.Application.Jobs.Queries.GetOrganizationJobs;
 namespace GiapTech.BlouseHiding.Web.Endpoints;
 
 // Xem docs/backend/API-DESIGN.md mục 4, 5 (GET .../jobs), 7 (credit-wallet/credit-transactions).
+// "mine" không nằm trong thiết kế gốc — bổ sung khi nối web-admin/ (employer cần biết tổ chức của
+// chính mình để dùng cho mọi thao tác khác, xem docs/nghiep-vu/TIEN-DO-DU-AN.md).
 public class Organizations : IEndpointGroup
 {
     public static void Map(RouteGroupBuilder groupBuilder)
     {
         groupBuilder.MapPost(CreateOrganization, "").RequireAuthorization();
+        groupBuilder.MapGet(GetMyOrganizations, "mine").RequireAuthorization();
         groupBuilder.MapGet(GetOrganizationById, "{organizationId:guid}");
         groupBuilder.MapGet(GetJobs, "{organizationId:guid}/jobs").RequireAuthorization();
         groupBuilder.MapGet(GetCreditWallet, "{organizationId:guid}/credit-wallet").RequireAuthorization();
         groupBuilder.MapGet(GetCreditTransactions, "{organizationId:guid}/credit-transactions").RequireAuthorization();
+    }
+
+    public static async Task<List<MyOrganizationDto>> GetMyOrganizations(ClaimsPrincipal principal, ISender sender, CancellationToken cancellationToken)
+    {
+        var userId = Guid.Parse(principal.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        return await sender.Send(new GetMyOrganizationsQuery { UserId = userId }, cancellationToken);
     }
 
     public static async Task<OrganizationDto> GetOrganizationById(Guid organizationId, ISender sender, CancellationToken cancellationToken)
