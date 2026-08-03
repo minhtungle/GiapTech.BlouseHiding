@@ -2,6 +2,8 @@
 
 > Danh sách biến môi trường cần thiết theo từng thành phần. Không commit giá trị thật vào repo — chỉ
 > commit file `.env.example` với giá trị mẫu/rỗng. Xem quy tắc bảo mật ở [`../../SECURITY.md`](../../SECURITY.md).
+> Cổng cụ thể + tài khoản mặc định khi chạy dev cục bộ (không phải tên biến) xem
+> [`MOI-TRUONG-DEV-CUC-BO.md`](./MOI-TRUONG-DEV-CUC-BO.md).
 
 ---
 

@@ -41,6 +41,7 @@ build/test/dev thật đã xác minh chạy được.
 | Hạ tầng triển khai (self-host VPS) | [`docs/ha-tang/HA-TANG-TRIEN-KHAI.md`](docs/ha-tang/HA-TANG-TRIEN-KHAI.md) |
 | Quy trình vận hành (backup/restore/sự cố/deploy) | [`docs/ha-tang/VAN-HANH-RUNBOOK.md`](docs/ha-tang/VAN-HANH-RUNBOOK.md) |
 | Biến môi trường | [`docs/ha-tang/BIEN-MOI-TRUONG.md`](docs/ha-tang/BIEN-MOI-TRUONG.md) |
+| Cổng & tài khoản đăng nhập khi test dev cục bộ | [`docs/ha-tang/MOI-TRUONG-DEV-CUC-BO.md`](docs/ha-tang/MOI-TRUONG-DEV-CUC-BO.md) |
 | Hướng dẫn sử dụng cho từng vai trò | [`docs/huong-dan-su-dung/`](docs/huong-dan-su-dung/) |
 | Quy trình đóng góp code (git flow, commit, PR) | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
 | Chính sách bảo mật | [`SECURITY.md`](SECURITY.md) |
