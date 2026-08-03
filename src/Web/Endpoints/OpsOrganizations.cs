@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using GiapTech.BlouseHiding.Application.Ops.Commands.CreditBonus;
 using GiapTech.BlouseHiding.Application.Ops.Commands.VerifyOrganization;
 using GiapTech.BlouseHiding.Application.Ops.Queries.GetPendingOrganizations;
 using GiapTech.BlouseHiding.Domain.Enums;
@@ -14,6 +15,7 @@ public class OpsOrganizations : IEndpointGroup
     {
         groupBuilder.MapGet(GetPendingOrganizations, "").RequireAuthorization();
         groupBuilder.MapPost(VerifyOrganization, "{organizationId:guid}/verify").RequireAuthorization();
+        groupBuilder.MapPost(CreditBonus, "{organizationId:guid}/credit-bonus").RequireAuthorization();
     }
 
     public static async Task<List<PendingOrganizationDto>> GetPendingOrganizations(ISender sender, CancellationToken cancellationToken)
@@ -33,6 +35,20 @@ public class OpsOrganizations : IEndpointGroup
 
         await sender.Send(command, cancellationToken);
     }
+
+    public static async Task CreditBonus(Guid organizationId, CreditBonusRequest request, ClaimsPrincipal principal, ISender sender, CancellationToken cancellationToken)
+    {
+        var command = new CreditBonusCommand
+        {
+            OrganizationId = organizationId,
+            CreatedBy = Guid.Parse(principal.FindFirstValue(ClaimTypes.NameIdentifier)!),
+            Amount = request.Amount,
+        };
+
+        await sender.Send(command, cancellationToken);
+    }
 }
 
 public record VerifyOrganizationRequest(OrganizationVerifyAction Action, string? RejectReason);
+
+public record CreditBonusRequest(int Amount);

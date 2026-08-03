@@ -48,9 +48,31 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     public DbSet<ApplicationStageHistory> ApplicationStageHistories => Set<ApplicationStageHistory>();
 
+    public DbSet<CreditWallet> CreditWallets => Set<CreditWallet>();
+
+    public DbSet<CreditTransaction> CreditTransactions => Set<CreditTransaction>();
+
+    public DbSet<ProfileUnlock> ProfileUnlocks => Set<ProfileUnlock>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+    }
+
+    public async Task<TResult> ExecuteInTransactionAsync<TResult>(Func<Task<TResult>> operation, CancellationToken cancellationToken)
+    {
+        var strategy = Database.CreateExecutionStrategy();
+
+        return await strategy.ExecuteAsync(async () =>
+        {
+            await using var transaction = await Database.BeginTransactionAsync(cancellationToken);
+
+            var result = await operation();
+
+            await transaction.CommitAsync(cancellationToken);
+
+            return result;
+        });
     }
 }

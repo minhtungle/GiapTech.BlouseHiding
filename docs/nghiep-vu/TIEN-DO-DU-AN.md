@@ -35,7 +35,7 @@ Nếu có mục không đạt, ghi rõ lý do + kế hoạch xử lý vào nhậ
 |---|---|---|
 | 0.1 — UI Shell | 🟨 Gần xong | Còn thiếu tin nhắn/thông báo thật, export PDF CV |
 | 0.2 — Backend & hạ tầng | 🟨 Gần xong | Danh mục (đọc+ghi) + CI/CD xong; Jobs/ATS/Credit chưa làm |
-| 1 — MVP | 🟨 Đang làm | Identity + tổ chức (+ duyệt) + hồ sơ ứng viên (core) + Jobs (core, gói Free) + Applications/ATS xong; Payments/Credit chưa làm |
+| 1 — MVP | 🟨 Đang làm | Identity + tổ chức (+duyệt) + hồ sơ ứng viên (core) + Jobs (core) + Applications/ATS + Credit/Unlock xong; Payments thật + nối frontend chưa làm |
 | 2 — Hoàn thiện | ⬜ Chưa bắt đầu | |
 | 3 — Mở rộng | ⬜ Chưa bắt đầu | |
 
@@ -222,6 +222,30 @@ submit→duyệt→published (curl xác nhận)→`POST .../verify` (Suspend) 20
 (không còn published)→`SELECT "Status" FROM "Jobs"` xác nhận giá trị enum `Suspended` (7) trong Postgres
 thật.
 
+- Bounded context **Credit & Profile Unlock**: `CreditWallet` (tự tạo 1-1 lúc `POST /organizations`,
+  `CHECK (balance >= 0)`)/`CreditTransaction`/`ProfileUnlock`. Trừ Credit dùng `ExecuteUpdateAsync` với
+  điều kiện `WHERE Balance >= cost` — atomic ngay tại Postgres, tránh race condition khi 2 request trừ
+  đồng thời **mà không cần row lock/transaction thủ công đọc-sửa-ghi qua ChangeTracker** (đơn giản hơn
+  cách "SELECT FOR UPDATE" truyền thống, vẫn đúng CLAUDE.md mục 4 quy tắc bất di bất dịch #2). Bọc
+  toàn bộ (trừ tiền + tạo `ProfileUnlock` + ghi `CreditTransaction`) trong 1 DB transaction thật qua
+  `IApplicationDbContext.ExecuteInTransactionAsync` (thêm mới vào interface, che giấu chi tiết
+  EF Core/Npgsql khỏi Application layer) — đảm bảo không có khoảng hở giữa lúc trừ tiền thành công và
+  lúc ghi nhận bản ghi tương ứng nếu có lỗi giữa chừng. `ProfileUnlock` idempotent qua
+  `UNIQUE(org_id, candidate_id)` — mở lại không trừ thêm. Nạp Credit **chưa nối payments thật** — thay
+  bằng `POST /ops/organizations/{id}/credit-bonus` (Vận hành cộng thủ công) để test unlock end-to-end,
+  quyết định tạm thời đã xác nhận với người dùng.
+  Web: `GET /organizations/{id}/{credit-wallet,credit-transactions}`, `GET /candidates/search` (ẩn
+  liên hệ tới khi unlock), `POST /candidates/{id}/unlock`, `POST /ops/organizations/{id}/credit-bonus`
+  — đúng API-DESIGN.md mục 7 (trừ phần payments thật).
+
+Verify đã chạy: `dotnet test` 41/41 pass (3 unit + 38 functional — không có lỗi phải sửa lần này,
+có test riêng cho: ví tự tạo balance 0, cộng bonus + ghi transaction, unlock trừ đúng số + hiện contact,
+unlock 2 lần idempotent không trừ thêm, unlock không đủ tiền bị chặn 400, và trừ liên tiếp 2 candidate
+khác nhau khi ví chỉ đủ cho 1 lần — xác nhận `ExecuteUpdateAsync` có điều kiện chặn đúng, ví không bị
+âm); migration `AddCredit` áp thành công. Verify curl end-to-end thật: tạo tổ chức (ví balance=0 tự
+động)→Vận hành cộng bonus 100→`GET /candidates/search` (contact ẩn)→`POST .../unlock` (trừ 15, còn
+85, contact hiện đúng email)→unlock lại cùng candidate (idempotent, vẫn 85, không trừ thêm).
+
 Còn thiếu (chặn việc chốt giai đoạn):
 - OAuth Google/Zalo — chưa làm, quyết định hoãn sang sau khi Identity cốt lõi ổn định (đã xác nhận với
   người dùng).
@@ -231,16 +255,18 @@ Còn thiếu (chặn việc chốt giai đoạn):
   Builder + export PDF — chưa làm, quyết định tách khỏi vòng "core" (profile+CCHN+chuyên khoa) đã xác
   nhận với người dùng. Upload document CCHN hiện giả định URL có sẵn, chưa nối
   `POST /uploads/presigned-url`/MinIO thật.
-- Jobs: gói trả phí (Eco/Pro/Max) + Payments (`payments`/`job_purchases`/`pending_payment`/
-  `/ops/payments/*`) — chưa làm, quyết định tách bounded context riêng đã xác nhận với người dùng.
-  Tìm kiếm hiện dùng LINQ/EF Core thay vì Postgres full-text (`pg_trgm`) như ERD mục 0 ghi — đủ dùng
-  cho MVP, tối ưu sau.
+- Payments thật (`payments`/`job_purchases`/`pending_payment`/`/ops/payments/*`, nạp Credit qua
+  `manual_transfer`) — chưa làm, bounded context riêng đã xác nhận tách khỏi Jobs và Credit. Đang dùng
+  giải pháp tạm (Free tier cho Jobs, credit-bonus thủ công cho Credit) — cả 2 sẽ cần nối lại khi
+  Payments hoàn thiện. Gói trả phí Eco/Pro/Max của Jobs cũng phụ thuộc bounded context này.
+  Tìm kiếm Jobs hiện dùng LINQ/EF Core thay vì Postgres full-text (`pg_trgm`) như ERD mục 0 ghi — đủ
+  dùng cho MVP, tối ưu sau.
 - Applications: ứng tuyển bằng CV riêng (upload) chưa làm, chỉ hỗ trợ CV nền tảng (`CandidateProfile`).
-- Credit/Payment (bounded context riêng: `credit_wallets`, `profile_unlocks`, tìm ứng viên chủ động) —
-  chưa bắt đầu.
-- Chưa nối `web/`/`web-admin/` tới API Identity/Hồ sơ ứng viên/Jobs/Applications thật (màn hình đăng
-  ký/đăng nhập/hồ sơ/đăng tin/ATS vẫn dùng mock/form tĩnh) — ưu tiên tiếp theo sau khi có thêm bounded
-  context để có gì nối, hoặc bắt đầu nối song song với phần backend còn lại.
+- Hoàn Credit thủ công khi tranh chấp (`/ops/organizations/{id}/credit-refund`) — chưa làm, khác
+  `credit-bonus` đã có (dùng khi tranh chấp cụ thể, ghi rõ lý do, không phải nạp thường).
+- Chưa nối `web/`/`web-admin/` tới bất kỳ API thật nào đã xây (Identity/Hồ sơ ứng viên/Jobs/
+  Applications/Credit — màn hình vẫn dùng mock/form tĩnh) — đây là gap lớn nhất còn lại của toàn Giai
+  đoạn 1, nên cân nhắc ưu tiên tiếp theo thay vì tiếp tục mở rộng backend.
 
 ### Giai đoạn 2 — Hoàn thiện
 

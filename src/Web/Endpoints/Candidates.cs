@@ -8,10 +8,12 @@ using GiapTech.BlouseHiding.Application.Candidates.Commands.DeleteLicense;
 using GiapTech.BlouseHiding.Application.Candidates.Commands.UpdateLicense;
 using GiapTech.BlouseHiding.Application.Candidates.Commands.UpdateMyProfile;
 using GiapTech.BlouseHiding.Application.Candidates.Queries.GetMyProfile;
+using GiapTech.BlouseHiding.Application.Employers.Commands.UnlockProfile;
+using GiapTech.BlouseHiding.Application.Employers.Queries.SearchCandidates;
 
 namespace GiapTech.BlouseHiding.Web.Endpoints;
 
-// Xem docs/backend/API-DESIGN.md mục 3.
+// Xem docs/backend/API-DESIGN.md mục 3, 7 (search/unlock).
 public class Candidates : IEndpointGroup
 {
     public static void Map(RouteGroupBuilder groupBuilder)
@@ -23,6 +25,34 @@ public class Candidates : IEndpointGroup
         groupBuilder.MapDelete(DeleteLicense, "me/licenses/{licenseId:guid}").RequireAuthorization();
         groupBuilder.MapPost(AddSpecialty, "me/specialties").RequireAuthorization();
         groupBuilder.MapGet(GetMyApplications, "me/applications").RequireAuthorization();
+        groupBuilder.MapGet(SearchCandidates, "search").RequireAuthorization();
+        groupBuilder.MapPost(UnlockCandidate, "{candidateId:guid}/unlock").RequireAuthorization();
+    }
+
+    public static async Task<List<CandidateSearchResultDto>> SearchCandidates(
+        Guid organizationId, Guid? specialty, Guid? location, ClaimsPrincipal principal, ISender sender, CancellationToken cancellationToken)
+    {
+        var query = new SearchCandidatesQuery
+        {
+            OrganizationId = organizationId,
+            UserId = CurrentUserId(principal),
+            SpecialtyId = specialty,
+            LocationId = location,
+        };
+
+        return await sender.Send(query, cancellationToken);
+    }
+
+    public static async Task<Guid> UnlockCandidate(Guid candidateId, UnlockCandidateRequest request, ClaimsPrincipal principal, ISender sender, CancellationToken cancellationToken)
+    {
+        var command = new UnlockProfileCommand
+        {
+            UserId = CurrentUserId(principal),
+            OrganizationId = request.OrganizationId,
+            CandidateId = candidateId,
+        };
+
+        return await sender.Send(command, cancellationToken);
     }
 
     public static async Task<List<ApplicationDto>> GetMyApplications(ClaimsPrincipal principal, ISender sender, CancellationToken cancellationToken)
@@ -123,3 +153,5 @@ public record AddLicenseRequest(
     string DocumentUrl);
 
 public record AddProfileSpecialtyRequest(Guid SpecialtyId, Domain.Enums.SpecialtyLevel Level);
+
+public record UnlockCandidateRequest(Guid OrganizationId);

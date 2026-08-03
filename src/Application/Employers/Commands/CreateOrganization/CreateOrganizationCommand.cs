@@ -46,6 +46,11 @@ public class CreateOrganizationCommandHandler : ICommandHandler<CreateOrganizati
         organization.AddOwner(command.OwnerUserId);
 
         _context.Organizations.Add(organization);
+
+        // credit_wallets 1-1 với organizations (ERD mục 2.7) — tạo luôn lúc đăng ký tổ chức, không
+        // để tổ chức tồn tại mà thiếu ví (tránh null-check rải rác ở mọi nơi dùng ví sau này).
+        _context.CreditWallets.Add(new Domain.Entities.CreditWallet { OrganizationId = organization.Id, Balance = 0 });
+
         await _context.SaveChangesAsync(cancellationToken);
 
         return organization.Id;

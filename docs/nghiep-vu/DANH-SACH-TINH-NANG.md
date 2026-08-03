@@ -116,8 +116,17 @@
   tham số `silent`), ghi chú nội bộ (`POST /applications/{id}/notes`), chấm điểm ghi đè thủ công
   (`PATCH /applications/{id}/score`) — match-score theo trường có cấu trúc (chuyên khoa/CCHN đã duyệt/
   địa điểm — không NLP/AI, xem ERD mục 4 điểm 8)
-- ⬜ Hệ thống Credit + tìm kiếm ứng viên chủ động + Profile Unlock
-- ⬜ Hoàn Credit thủ công khi có tranh chấp (`/ops/organizations/{id}/credit-refund`)
+- ✅ Ví Credit (`credit_wallets` tự tạo lúc `POST /organizations`, `balance CHECK >= 0`) + tìm kiếm ứng
+  viên chủ động (`GET /candidates/search` — ẩn liên hệ) + Profile Unlock (`POST /candidates/{id}/unlock`
+  — trừ Credit qua `ExecuteUpdateAsync` có điều kiện `WHERE Balance >= cost`, atomic tại DB, tránh
+  race condition không cần row lock thủ công; idempotent theo `UNIQUE(org_id, candidate_id)`, mở lại
+  không mất thêm Credit)
+- 🟨 Nạp Credit — **chưa nối `POST /payments/credit-topup` thật** (phụ thuộc bounded context Payments
+  chưa làm). Thay bằng `POST /ops/organizations/{id}/credit-bonus` (Vận hành cộng thủ công,
+  `reason=bonus`) để test unlock end-to-end — quyết định tạm thời đã xác nhận với người dùng, sẽ đổi
+  khi Payments hoàn thiện
+- ⬜ Hoàn Credit thủ công khi có tranh chấp (`/ops/organizations/{id}/credit-refund`) — chưa làm, khác
+  `credit-bonus` (dùng khi tranh chấp/lỗi hệ thống, không phải nạp thường)
 
 ### Thông báo
 - ⬜ Thông báo trong ứng dụng

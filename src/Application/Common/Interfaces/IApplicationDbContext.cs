@@ -38,5 +38,16 @@ public interface IApplicationDbContext
 
     DbSet<ApplicationStageHistory> ApplicationStageHistories { get; }
 
+    DbSet<CreditWallet> CreditWallets { get; }
+
+    DbSet<CreditTransaction> CreditTransactions { get; }
+
+    DbSet<ProfileUnlock> ProfileUnlocks { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+
+    // Bọc toàn bộ thao tác trong 1 DB transaction — dùng cho luồng phải atomic xuyên nhiều
+    // SaveChangesAsync/ExecuteUpdateAsync (vd trừ Credit + tạo ProfileUnlock, CLAUDE.md mục 4 quy tắc
+    // bất di bất dịch #2). Che giấu chi tiết EF Core/Npgsql khỏi Application layer.
+    Task<TResult> ExecuteInTransactionAsync<TResult>(Func<Task<TResult>> operation, CancellationToken cancellationToken);
 }
