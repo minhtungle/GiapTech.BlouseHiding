@@ -29,6 +29,10 @@ public class WebApiFactory(string connectionString) : WebApplicationFactory<Prog
             services
                 .RemoveAll<IOtpSender>()
                 .AddTransient<IOtpSender, CapturingOtpSender>();
+
+            services
+                .RemoveAll<IInvitationSender>()
+                .AddTransient<IInvitationSender, CapturingInvitationSender>();
         });
     }
 }

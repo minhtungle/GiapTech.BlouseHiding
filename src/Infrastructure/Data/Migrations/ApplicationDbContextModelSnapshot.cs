@@ -46,7 +46,7 @@ namespace GiapTech.BlouseHiding.Infrastructure.Data.Migrations
 
                     b.HasIndex("ApplicationId");
 
-                    b.ToTable("ApplicationNotes");
+                    b.ToTable("ApplicationNotes", (string)null);
                 });
 
             modelBuilder.Entity("GiapTech.BlouseHiding.Domain.Entities.ApplicationStageHistory", b =>
@@ -77,7 +77,7 @@ namespace GiapTech.BlouseHiding.Infrastructure.Data.Migrations
 
                     b.HasIndex("ApplicationId");
 
-                    b.ToTable("ApplicationStageHistories");
+                    b.ToTable("ApplicationStageHistories", (string)null);
                 });
 
             modelBuilder.Entity("GiapTech.BlouseHiding.Domain.Entities.CandidateProfile", b =>
@@ -136,7 +136,7 @@ namespace GiapTech.BlouseHiding.Infrastructure.Data.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("CandidateProfiles");
+                    b.ToTable("CandidateProfiles", (string)null);
                 });
 
             modelBuilder.Entity("GiapTech.BlouseHiding.Domain.Entities.CreditTransaction", b =>
@@ -167,7 +167,7 @@ namespace GiapTech.BlouseHiding.Infrastructure.Data.Migrations
 
                     b.HasIndex("WalletId");
 
-                    b.ToTable("CreditTransactions");
+                    b.ToTable("CreditTransactions", (string)null);
                 });
 
             modelBuilder.Entity("GiapTech.BlouseHiding.Domain.Entities.CreditWallet", b =>
@@ -187,7 +187,7 @@ namespace GiapTech.BlouseHiding.Infrastructure.Data.Migrations
                     b.HasIndex("OrganizationId")
                         .IsUnique();
 
-                    b.ToTable("CreditWallets", t =>
+                    b.ToTable("CreditWallets", null, t =>
                         {
                             t.HasCheckConstraint("CK_CreditWallets_Balance", "\"Balance\" >= 0");
                         });
@@ -219,7 +219,7 @@ namespace GiapTech.BlouseHiding.Infrastructure.Data.Migrations
                     b.HasIndex("OrganizationId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("EmployerMembers");
+                    b.ToTable("EmployerMembers", (string)null);
                 });
 
             modelBuilder.Entity("GiapTech.BlouseHiding.Domain.Entities.Job", b =>
@@ -310,7 +310,7 @@ namespace GiapTech.BlouseHiding.Infrastructure.Data.Migrations
 
                     b.HasIndex("Status", "SpecialtyId", "LocationId");
 
-                    b.ToTable("Jobs");
+                    b.ToTable("Jobs", (string)null);
                 });
 
             modelBuilder.Entity("GiapTech.BlouseHiding.Domain.Entities.JobApplication", b =>
@@ -397,7 +397,7 @@ namespace GiapTech.BlouseHiding.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("JobPackages");
+                    b.ToTable("JobPackages", (string)null);
                 });
 
             modelBuilder.Entity("GiapTech.BlouseHiding.Domain.Entities.JobPackageTranslation", b =>
@@ -424,7 +424,7 @@ namespace GiapTech.BlouseHiding.Infrastructure.Data.Migrations
                     b.HasIndex("JobPackageId", "Locale")
                         .IsUnique();
 
-                    b.ToTable("JobPackageTranslations");
+                    b.ToTable("JobPackageTranslations", (string)null);
                 });
 
             modelBuilder.Entity("GiapTech.BlouseHiding.Domain.Entities.License", b =>
@@ -489,7 +489,7 @@ namespace GiapTech.BlouseHiding.Infrastructure.Data.Migrations
 
                     b.HasIndex("VerifyStatus");
 
-                    b.ToTable("Licenses");
+                    b.ToTable("Licenses", (string)null);
                 });
 
             modelBuilder.Entity("GiapTech.BlouseHiding.Domain.Entities.Location", b =>
@@ -522,7 +522,7 @@ namespace GiapTech.BlouseHiding.Infrastructure.Data.Migrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("Locations");
+                    b.ToTable("Locations", (string)null);
                 });
 
             modelBuilder.Entity("GiapTech.BlouseHiding.Domain.Entities.LocationTranslation", b =>
@@ -549,7 +549,7 @@ namespace GiapTech.BlouseHiding.Infrastructure.Data.Migrations
                     b.HasIndex("LocationId", "Locale")
                         .IsUnique();
 
-                    b.ToTable("LocationTranslations");
+                    b.ToTable("LocationTranslations", (string)null);
                 });
 
             modelBuilder.Entity("GiapTech.BlouseHiding.Domain.Entities.Organization", b =>
@@ -611,7 +611,7 @@ namespace GiapTech.BlouseHiding.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Organizations");
+                    b.ToTable("Organizations", (string)null);
                 });
 
             modelBuilder.Entity("GiapTech.BlouseHiding.Domain.Entities.OrganizationInvitation", b =>
@@ -651,7 +651,7 @@ namespace GiapTech.BlouseHiding.Infrastructure.Data.Migrations
 
                     b.HasIndex("Email", "AcceptedAt");
 
-                    b.ToTable("OrganizationInvitations");
+                    b.ToTable("OrganizationInvitations", (string)null);
                 });
 
             modelBuilder.Entity("GiapTech.BlouseHiding.Domain.Entities.OtpCode", b =>
@@ -681,7 +681,7 @@ namespace GiapTech.BlouseHiding.Infrastructure.Data.Migrations
 
                     b.HasIndex("UserId", "Purpose");
 
-                    b.ToTable("OtpCodes");
+                    b.ToTable("OtpCodes", (string)null);
                 });
 
             modelBuilder.Entity("GiapTech.BlouseHiding.Domain.Entities.ProfileSpecialty", b =>
@@ -706,7 +706,7 @@ namespace GiapTech.BlouseHiding.Infrastructure.Data.Migrations
                     b.HasIndex("ProfileId", "SpecialtyId")
                         .IsUnique();
 
-                    b.ToTable("ProfileSpecialties");
+                    b.ToTable("ProfileSpecialties", (string)null);
                 });
 
             modelBuilder.Entity("GiapTech.BlouseHiding.Domain.Entities.ProfileUnlock", b =>
@@ -735,7 +735,7 @@ namespace GiapTech.BlouseHiding.Infrastructure.Data.Migrations
                     b.HasIndex("OrganizationId", "CandidateId")
                         .IsUnique();
 
-                    b.ToTable("ProfileUnlocks");
+                    b.ToTable("ProfileUnlocks", (string)null);
                 });
 
             modelBuilder.Entity("GiapTech.BlouseHiding.Domain.Entities.RefreshToken", b =>
@@ -762,7 +762,7 @@ namespace GiapTech.BlouseHiding.Infrastructure.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens");
+                    b.ToTable("RefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("GiapTech.BlouseHiding.Domain.Entities.Specialty", b =>
@@ -803,7 +803,7 @@ namespace GiapTech.BlouseHiding.Infrastructure.Data.Migrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("Specialties");
+                    b.ToTable("Specialties", (string)null);
                 });
 
             modelBuilder.Entity("GiapTech.BlouseHiding.Domain.Entities.SpecialtyTranslation", b =>
@@ -830,7 +830,7 @@ namespace GiapTech.BlouseHiding.Infrastructure.Data.Migrations
                     b.HasIndex("SpecialtyId", "Locale")
                         .IsUnique();
 
-                    b.ToTable("SpecialtyTranslations");
+                    b.ToTable("SpecialtyTranslations", (string)null);
                 });
 
             modelBuilder.Entity("GiapTech.BlouseHiding.Infrastructure.Identity.ApplicationUser", b =>

@@ -110,11 +110,10 @@
 | GET | `/organizations/{id}` | Public | Trang công khai của cơ sở y tế |
 | PUT | `/organizations/{id}` | Employer (owner/hr_manager) | Cập nhật thông tin |
 | POST | `/organizations/{id}/documents` | Employer (owner) | Upload giấy phép hoạt động |
-| GET | `/organizations/{id}/members` | Employer (thành viên) | Danh sách HR trong tổ chức |
-| POST | `/organizations/{id}/members/invite` | Employer (owner/hr_manager) | Tạo `organization_invitations` (role `hr_manager`/`hr_member`), gửi email chứa link token — hoạt động **kể cả khi email chưa có tài khoản** |
-| GET | `/organizations/invitations/{token}` | Public | Xem thông tin lời mời trước khi chấp nhận (tên tổ chức, vai trò) |
-| POST | `/organizations/invitations/{token}/accept` | Owner (đã đăng nhập bằng email khớp lời mời) | Chấp nhận → tạo `employer_members` thật, set `accepted_at` |
-| DELETE | `/organizations/{id}/members/{memberId}` | Employer (owner) | Xóa thành viên |
+| GET | `/organizations/{id}/members` | Employer (thành viên) | Danh sách thành viên + lời mời đang chờ (`PendingInvitations`) trong tổ chức |
+| POST | `/organizations/{id}/members/invite` | Employer (thành viên) | Tạo `organization_invitations` (role `hr_manager`/`hr_member`, không mời thêm `owner`), gửi email chứa link token — hoạt động **kể cả khi email chưa có tài khoản** (driver hiện là giả lập nội bộ log token, giống OTP — xem `docs/nghiep-vu/TIEN-DO-DU-AN.md`) |
+| POST | `/invitations/{token}/accept` | Đã đăng nhập, email khớp lời mời | Chấp nhận → tạo `employer_members` thật, set `accepted_at`. **Chưa làm** endpoint xem trước lời mời trước khi đăng nhập (`GET .../invitations/{token}`) — MVP yêu cầu đăng nhập/đăng ký trước rồi mới biết được lời mời hợp lệ hay không |
+| DELETE | `/organizations/{id}/members/{memberId}` | Employer (thành viên, không tự xoá owner) | Xóa thành viên |
 | GET | `/organizations/{id}/reviews` | Public | Đánh giá đã duyệt (Giai đoạn 2) |
 | POST | `/organizations/{id}/reviews` | Candidate | Gửi đánh giá (vào hàng đợi kiểm duyệt) |
 

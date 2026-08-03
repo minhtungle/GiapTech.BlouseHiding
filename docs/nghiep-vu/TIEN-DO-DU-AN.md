@@ -345,9 +345,37 @@ Job/Application/Credit/License/Org cũ không còn nơi nào import — chỉ gi
 `MOCK_REPORT_QUEUE` vì 2 trang đó vẫn cố ý dùng mock). Verify: `tsc -b`/`build`/`lint` sạch,
 `vitest run` 128/129 (1 fail flaky không liên quan, đã ghi ở log trước).
 
+Bổ sung tiếp — **bounded context mời thành viên tổ chức** (`organization_invitations` +
+`employer_members`, đã thiết kế sẵn ở ERD mục 2.3/API-DESIGN.md mục 4 từ trước nhưng chưa implement —
+đây là lý do `web-admin/src/features/users/` vẫn phải dùng faker, không có API thật để nối). Quyết
+định làm ngay để dứt điểm gap này thay vì hoãn tiếp, theo lựa chọn của người dùng khi được hỏi.
+Domain: `Organization.InviteMember()`/`AcceptInvitation()` (không mời thêm `owner` qua lời mời — chỉ
+`hr_manager`/`hr_member`, đúng ERD). Token lời mời: `InvitationTokenGenerator` (32 byte random, hash
+SHA-256 lưu DB — cùng cách OTP dùng, khác chỉ ở độ dài vì đây là token URL không phải mã 6 số cho
+người gõ tay). Gửi lời mời qua `IInvitationSender`/`LoggingInvitationSender` — **driver giả lập nội
+bộ** (log token thay vì gửi email thật), cùng quyết định đã chốt với OTP, chưa chốt nhà cung cấp SMTP.
+Command: `InviteMemberCommand` (chặn mời lại email đã là thành viên hoặc đang có lời mời chờ),
+`AcceptInvitationCommand` (kiểm tra token còn hạn + chưa dùng + **email đăng nhập phải khớp email được
+mời**, không cho accept bằng tài khoản khác), `RemoveMemberCommand` (chặn xoá owner). Query:
+`GetOrganizationMembersQuery` (trả cả danh sách thành viên đã tham gia và lời mời đang chờ trong 1
+lần gọi, để FE hiển thị cả 2 trong 1 bảng). Endpoint mới: `GET/POST /organizations/{id}/members`,
+`POST /organizations/{id}/members/invite`, `DELETE /organizations/{id}/members/{memberId}`,
+`POST /invitations/{token}/accept` (route riêng, không lồng dưới `/organizations` — khác thiết kế gốc
+ở API-DESIGN.md một chút, đã cập nhật doc khớp thực tế). Chưa làm endpoint xem trước lời mời trước khi
+đăng nhập (`GET .../invitations/{token}`) — MVP yêu cầu đăng nhập/đăng ký trước, chấp nhận UX kém hơn
+một chút để đơn giản hoá.
+Verify: thêm `CapturingInvitationSender` (test-only, cùng pattern `CapturingOtpSender` đã có) để test
+capture token thật thay vì chỉ đọc log; `dotnet test` 46/46 pass (3 unit + 43 functional, gồm 4 test
+mới cho invite/accept/forbidden/remove). Test mới cover: invite→accept tạo đúng member + xoá lời mời
+khỏi hàng chờ; accept sai email bị chặn 400; mời khi không phải thành viên bị chặn 403; xoá thành viên
+thường được nhưng xoá owner bị chặn 400. Migration EF Core cho thay đổi navigation property
+(`Organization.Invitations`) sinh ra rỗng (không đổi shape DB) — đã xoá, không giữ migration rác.
+
 Còn thiếu (chặn việc chốt giai đoạn):
-- `web-admin/src/features/users/` — vẫn dùng `@faker-js/faker` với role không khớp domain thật
-  (superadmin/admin/cashier/manager thay vì employer/admin/moderator/candidate) — cần viết lại.
+- `web-admin/src/features/users/` — đã có API thật (`GET/POST/DELETE .../members`,
+  `POST /invitations/{token}/accept`) nhưng frontend **chưa nối** — vẫn dùng `@faker-js/faker` với role
+  không khớp domain thật (superadmin/admin/cashier/manager thay vì employer/admin/moderator/candidate)
+  — việc tiếp theo ngay sau log này.
 - OAuth, Payments, học vấn/kinh nghiệm/CME/CV Builder, đổi mật khẩu khi đã đăng nhập, hoàn Credit thủ
   công khi tranh chấp — vẫn như log trước, chưa có gì thay đổi ở đợt này.
 

@@ -28,6 +28,8 @@ public class Organization : BaseAuditableEntity
 
     public List<EmployerMember> Members { get; private set; } = [];
 
+    public List<OrganizationInvitation> Invitations { get; private set; } = [];
+
     public EmployerMember AddOwner(Guid userId)
     {
         var owner = new EmployerMember
@@ -41,6 +43,42 @@ public class Organization : BaseAuditableEntity
         Members.Add(owner);
 
         return owner;
+    }
+
+    // Không mời thêm owner qua đây (ERD mục 2.3) — chỉ hr_manager/hr_member.
+    public OrganizationInvitation InviteMember(string email, EmployerMemberRole invitedRole, Guid invitedBy, string tokenHash)
+    {
+        var invitation = new OrganizationInvitation
+        {
+            OrganizationId = Id,
+            Email = email,
+            InvitedRole = invitedRole,
+            InvitedBy = invitedBy,
+            TokenHash = tokenHash,
+            ExpiresAt = DateTimeOffset.UtcNow.AddDays(7),
+        };
+
+        Invitations.Add(invitation);
+
+        return invitation;
+    }
+
+    public EmployerMember AcceptInvitation(OrganizationInvitation invitation, Guid userId)
+    {
+        invitation.AcceptedAt = DateTimeOffset.UtcNow;
+
+        var member = new EmployerMember
+        {
+            OrganizationId = Id,
+            UserId = userId,
+            MemberRole = invitation.InvitedRole,
+            InvitedBy = invitation.InvitedBy,
+            JoinedAt = DateTimeOffset.UtcNow,
+        };
+
+        Members.Add(member);
+
+        return member;
     }
 
     public void Verify(Guid verifiedBy)

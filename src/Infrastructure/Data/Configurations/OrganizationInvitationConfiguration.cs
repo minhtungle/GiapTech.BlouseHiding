@@ -14,7 +14,7 @@ public class OrganizationInvitationConfiguration : IEntityTypeConfiguration<Orga
         builder.HasIndex(i => new { i.Email, i.AcceptedAt });
 
         builder.HasOne(i => i.Organization)
-            .WithMany()
+            .WithMany(o => o.Invitations)
             .HasForeignKey(i => i.OrganizationId)
             .OnDelete(DeleteBehavior.Cascade);
     }

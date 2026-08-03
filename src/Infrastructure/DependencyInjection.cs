@@ -80,5 +80,6 @@ public static class DependencyInjection
         builder.Services.AddTransient<IIdentityService, IdentityService>();
         builder.Services.AddTransient<IJwtTokenService, JwtTokenService>();
         builder.Services.AddTransient<IOtpSender, LoggingOtpSender>();
+        builder.Services.AddTransient<IInvitationSender, LoggingInvitationSender>();
     }
 }
