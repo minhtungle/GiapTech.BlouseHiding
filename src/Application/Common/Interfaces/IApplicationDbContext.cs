@@ -24,5 +24,11 @@ public interface IApplicationDbContext
 
     DbSet<OtpCode> OtpCodes { get; }
 
+    DbSet<CandidateProfile> CandidateProfiles { get; }
+
+    DbSet<License> Licenses { get; }
+
+    DbSet<ProfileSpecialty> ProfileSpecialties { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

@@ -34,6 +34,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     public DbSet<OtpCode> OtpCodes => Set<OtpCode>();
 
+    public DbSet<CandidateProfile> CandidateProfiles => Set<CandidateProfile>();
+
+    public DbSet<License> Licenses => Set<License>();
+
+    public DbSet<ProfileSpecialty> ProfileSpecialties => Set<ProfileSpecialty>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

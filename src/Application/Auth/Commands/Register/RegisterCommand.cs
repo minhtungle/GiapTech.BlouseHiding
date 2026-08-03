@@ -1,6 +1,7 @@
 using GiapTech.BlouseHiding.Application.Common.Interfaces;
 using GiapTech.BlouseHiding.Domain.Constants;
 using GiapTech.BlouseHiding.Domain.Enums;
+using ValidationException = GiapTech.BlouseHiding.Application.Common.Exceptions.ValidationException;
 
 namespace GiapTech.BlouseHiding.Application.Auth.Commands.Register;
 

@@ -71,11 +71,14 @@
 - ✅ Xóa tài khoản (`DELETE /users/me` — soft-delete + anonymize PII, giữ audit log/application đã ẩn danh)
 
 ### Hồ sơ ứng viên
-- ⬜ Hồ sơ cơ bản (học vấn, kinh nghiệm, kỹ năng)
-- ⬜ Quản lý CCHN (thêm/sửa/upload document)
-- ⬜ Gắn chuyên khoa + trình độ
+- ✅ Hồ sơ cơ bản (`candidate_profiles` — tên, mô tả ngắn, tiểu sử; tự tạo lúc `PUT /candidates/me` lần
+  đầu). Học vấn/kinh nghiệm/kỹ năng (`experiences`/`educations`) chưa làm — dời sang đợt sau
+- ✅ Quản lý CCHN — thêm/sửa (chỉ khi `pending`/`rejected`)/xóa (chỉ khi chưa `verified`); upload document
+  giả định URL có sẵn (chưa nối `POST /uploads/presigned-url`/MinIO thật)
+- ✅ Gắn chuyên khoa + trình độ (`profile_specialties`, không trùng chuyên khoa)
 - ⬜ CV Builder (mẫu dựng sẵn) + upload PDF
-- ⬜ Hàng đợi duyệt CCHN (Vận hành)
+- ✅ Hàng đợi duyệt CCHN (Vận hành) — `GET /ops/licenses`, `POST /ops/licenses/{id}/verify` (duyệt/từ
+  chối kèm lý do bắt buộc khi từ chối)
 
 ### Cơ sở y tế
 - ⬜ Đăng ký hồ sơ tổ chức

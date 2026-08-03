@@ -35,7 +35,7 @@ Nếu có mục không đạt, ghi rõ lý do + kế hoạch xử lý vào nhậ
 |---|---|---|
 | 0.1 — UI Shell | 🟨 Gần xong | Còn thiếu tin nhắn/thông báo thật, export PDF CV |
 | 0.2 — Backend & hạ tầng | 🟨 Gần xong | Danh mục (đọc+ghi) + CI/CD xong; Jobs/ATS/Credit chưa làm |
-| 1 — MVP | 🟨 Đang làm | Identity thật (JWT+OTP giả lập) + tạo tổ chức xong; hồ sơ ứng viên/Jobs/ATS/Credit chưa làm |
+| 1 — MVP | 🟨 Đang làm | Identity thật + tạo tổ chức + hồ sơ ứng viên (core: profile/CCHN/chuyên khoa) xong; CV Builder/Jobs/ATS/Credit chưa làm |
 | 2 — Hoàn thiện | ⬜ Chưa bắt đầu | |
 | 3 — Mở rộng | ⬜ Chưa bắt đầu | |
 
@@ -131,24 +131,54 @@ Còn thiếu (chặn việc chốt giai đoạn):
 - Migration `InitialCreate` viết lại từ đầu (schema Identity đổi `Id` từ `string` sang `Guid` — thay
   đổi phá vỡ, chấp nhận được vì migration cũ chưa từng lên production, chỉ tồn tại trong nhánh feature
   chưa merge `main`).
+- Bounded context **Hồ sơ ứng viên (core)**: `CandidateProfile`/`License`/`ProfileSpecialty` — Domain
+  entity (`License.Verify()`/`Reject()`, `CanEdit` invariant chỉ sửa khi `pending`/`rejected`) → EF Core
+  config → migration `AddCandidateProfile`. Application: `GetMyProfileQuery` (resolve tên chuyên khoa
+  theo locale), `UpdateMyProfileCommand` (tự tạo hồ sơ ở lần gọi đầu — "upsert"), `AddLicenseCommand`/
+  `UpdateLicenseCommand`/`DeleteLicenseCommand`, `AddProfileSpecialtyCommand` (chặn gắn trùng chuyên
+  khoa). Web: `GET/PUT /candidates/me`, `POST/PUT/DELETE /candidates/me/licenses/*`,
+  `POST /candidates/me/specialties` — đúng path API-DESIGN.md mục 3.
+- Hàng đợi duyệt CCHN cho Vận hành: `GET /ops/licenses`, `POST /ops/licenses/{id}/verify` (bắt buộc
+  `rejectReason` khi từ chối) — `[Authorize(Roles = "admin,moderator")]`.
+- Tính `completion_pct` hồ sơ (`ProfileCompletion`, trọng số đơn giản 5 tiêu chí x 20%, tính lại mỗi khi
+  cập nhật profile/license/specialty) — quyết định MVP, không cần logic phức tạp hơn ở giai đoạn này.
+- Enum toàn API chuyển sang serialize dạng string (`JsonStringEnumConverter` toàn cục) thay vì số thứ
+  tự — áp dụng lùi cho cả Catalog đã có từ Giai đoạn 0.2.
 
-Verify đã chạy: `dotnet test` 11/11 pass (3 unit + 8 functional — functional dùng Testcontainers Postgres
-thật, có test riêng cho rotate refresh token, revoke khi logout, sai mật khẩu, reset password đổi được
-mật khẩu và login lại được); migration áp thành công vào Postgres thật (`\d "AspNetUsers"` xác nhận `Id
-uuid`); chạy `dotnet run --project src/Web` thật + curl toàn bộ luồng
-register→verify-otp→login→GET /users/me (200 có token, 401 không token)→refresh (xoay vòng, token cũ
-dùng lại bị 401)→logout→forgot-password→reset-password→login lại bằng mật khẩu mới — tất cả đúng như
-thiết kế; `POST /organizations` tạo tổ chức + owner member thành công với JWT role `employer`.
+Verify đã chạy: `dotnet test` 17/17 pass (3 unit + 14 functional — functional dùng Testcontainers
+Postgres thật, có test riêng cho rotate refresh token, revoke khi logout, sai mật khẩu, reset password,
+thêm/sửa/xóa CCHN theo đúng invariant `CanEdit`, duyệt/từ chối CCHN, gắn chuyên khoa trùng bị chặn);
+migration áp thành công vào Postgres thật (`\dt` xác nhận đủ bảng); chạy `dotnet run --project src/Web`
+thật + curl toàn bộ luồng register→verify-otp→login→PUT /candidates/me→POST .../licenses (pending)→
+GET /ops/licenses (thấy trong hàng đợi, 401 khi không có token)→POST .../verify (approved)→
+GET /candidates/me (license chuyển `Verified`, hàng đợi Ops rỗng)→POST .../specialties
+(`completionPct` đạt 100%); `POST /organizations` tạo tổ chức + owner member thành công với JWT role
+`employer`.
+
+**Lỗi phát hiện và sửa trong lúc viết test** (đáng ghi lại vì không hiển nhiên): thêm entity mới vào
+collection navigation của 1 entity cha **đã được `Include()` load lại** (không phải entity mới tạo từ
+đầu) không đủ để EF Core tự động detect state "Added" khi PK được gán sẵn (`Guid.NewGuid()` ở
+constructor thay vì để DB tự sinh) — gây `DbUpdateConcurrencyException` ("expected 1 row affected 0")
+vì EF coi INSERT là UPDATE trên row không tồn tại. Khắc phục: luôn gọi `_context.<DbSet>.Add(entity)`
+tường minh song song với việc thêm vào collection Domain, không chỉ dựa vào change-tracker tự suy luận
+qua navigation. Áp dụng ở `AddLicenseCommand`/`AddProfileSpecialtyCommand`. Cũng phát hiện 4 Command
+(bao gồm `RegisterCommand` từ vòng trước) throw thẳng `FluentValidation.ValidationException` trong
+handler body thay vì `Application.Common.Exceptions.ValidationException` — `ProblemDetailsExceptionHandler`
+chỉ bắt loại thứ 2, nên lỗi loại thứ nhất sẽ rơi xuống 500 thay vì 400 đúng thiết kế. Sửa bằng alias
+`using ValidationException = ...Exceptions.ValidationException;` ở cả 4 file.
 
 Còn thiếu (chặn việc chốt giai đoạn):
 - OAuth Google/Zalo — chưa làm, quyết định hoãn sang sau khi Identity cốt lõi ổn định (đã xác nhận với
   người dùng).
 - `POST /organizations/{id}/members/invite` + luồng chấp nhận lời mời (`organization_invitations`) —
   chưa làm, mới có tạo tổ chức lần đầu.
-- Hồ sơ ứng viên (`candidate_profiles`, CCHN, CV Builder), Jobs, Applications/ATS, Credit/Payment —
-  chưa bắt đầu bounded context nào trong số này.
-- Chưa nối `web/`/`web-admin/` tới API Identity thật (màn hình đăng ký/đăng nhập vẫn dùng mock/form
-  tĩnh) — ưu tiên tiếp theo sau khi có thêm bounded context để có gì nối.
+- Hồ sơ ứng viên: học vấn/kinh nghiệm (`experiences`/`educations`), CME (`continuing_certificates`), CV
+  Builder + export PDF — chưa làm, quyết định tách khỏi vòng "core" (profile+CCHN+chuyên khoa) đã xác
+  nhận với người dùng. Upload document CCHN hiện giả định URL có sẵn, chưa nối
+  `POST /uploads/presigned-url`/MinIO thật.
+- Jobs, Applications/ATS, Credit/Payment — chưa bắt đầu bounded context nào trong số này.
+- Chưa nối `web/`/`web-admin/` tới API Identity/Hồ sơ ứng viên thật (màn hình đăng ký/đăng nhập/hồ sơ
+  vẫn dùng mock/form tĩnh) — ưu tiên tiếp theo sau khi có thêm bounded context để có gì nối.
 
 ### Giai đoạn 2 — Hoàn thiện
 

@@ -39,6 +39,14 @@ public static class TestApp
 
     public static List<string>? GetRoles() => _roles;
 
+    // Chuyển "current user" context về 1 user đã tồn tại (vd sau khi 1 user khác — Ops — vừa thao
+    // tác) mà không gọi lại UserManager.CreateAsync (sẽ fail vì username đã tồn tại).
+    public static void SetCurrentUser(Guid userId, string[] roles)
+    {
+        _userId = userId;
+        _roles = [..roles];
+    }
+
     public static async Task<Guid> RunAsDefaultUserAsync()
     {
         return await RunAsUserAsync("test@local", "Testing1234!", []);
