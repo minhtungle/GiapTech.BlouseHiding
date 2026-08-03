@@ -1,0 +1,9 @@
+[submodule "api"]
+	path = api
+	url = https://github.com/minhtungle/GiapTech.BlouseHiding.Api.git
+[submodule "web"]
+	path = web
+	url = https://github.com/minhtungle/GiapTech.BlouseHiding.Web.git
+[submodule "web-admin"]
+	path = web-admin
+	url = https://github.com/minhtungle/GiapTech.BlouseHiding.WebAdmin.git
