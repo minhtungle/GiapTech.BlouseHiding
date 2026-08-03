@@ -135,6 +135,7 @@ tránh tình trạng "sao lại chọn cái này" phải hỏi lại khi bàn gi
 | [0008](./adr/0008-shadcn-admin-app-rieng-cho-admin-van-hanh.md) | Admin (NTD) + Vận hành tách thành 1 app riêng, chạy thẳng shadcn-admin (đảo ngược 1 phần ADR-0004) |
 | [0009](./adr/0009-mediator-mapster-thay-mediatr-automapper.md) | Dùng Mediator + Mapster thay MediatR + AutoMapper (2 thư viện template mặc định đã thương mại hóa) |
 | [0010](./adr/0010-da-ngon-ngu-cho-web-admin.md) | Đảo ngược ADR-0008 mục 5 — `web-admin/` cũng áp dụng 6 ngôn ngữ, dùng react-i18next |
+| [0011](./adr/0011-tach-3-repo-git-submodule.md) | Tách backend/web/web-admin thành 3 repo Git riêng, gắn vào repo tổng qua git submodule |
 
 ---
 

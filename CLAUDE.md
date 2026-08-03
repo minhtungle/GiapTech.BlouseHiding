@@ -23,7 +23,7 @@ build/test/dev thật đã xác minh chạy được.
 |---|---|
 | Đọc một mạch để nắm tổng thể trước khi đi sâu | [`docs/TONG-THUAT-HE-THONG.md`](docs/TONG-THUAT-HE-THONG.md) |
 | Kiến trúc & công nghệ tổng quan, quyết định đã chốt | [`docs/kien-truc/TONG-QUAN-KIEN-TRUC.md`](docs/kien-truc/TONG-QUAN-KIEN-TRUC.md) |
-| Vì sao 1 quyết định lớn được chọn (không phải chọn cái khác) | [`docs/kien-truc/adr/`](docs/kien-truc/adr/) |
+| Vì sao 1 quyết định lớn được chọn (không phải chọn cái khác) | [`docs/kien-truc/adr/`](docs/kien-truc/adr/) — **đọc [ADR-0011](docs/kien-truc/adr/0011-tach-3-repo-git-submodule.md) trước khi commit** nếu chưa quen mô hình 3 submodule |
 | Thuật ngữ y tế/nghiệp vụ (CCHN, chuyên khoa, tuyến, locum...) | [`docs/kien-truc/THUAT-NGU.md`](docs/kien-truc/THUAT-NGU.md) |
 | Nghiệp vụ, actor, đối chiếu TopCV/Ybox, roadmap | [`docs/nghiep-vu/PHAN-TICH-NGHIEP-VU.md`](docs/nghiep-vu/PHAN-TICH-NGHIEP-VU.md) |
 | Luồng nghiệp vụ chi tiết + danh sách màn hình | [`docs/nghiep-vu/LUONG-NGHIEP-VU-MAN-HINH.md`](docs/nghiep-vu/LUONG-NGHIEP-VU-MAN-HINH.md) |
@@ -47,29 +47,41 @@ build/test/dev thật đã xác minh chạy được.
 | Chính sách bảo mật | [`SECURITY.md`](SECURITY.md) |
 | Nhật ký thay đổi | [`CHANGELOG.md`](CHANGELOG.md) |
 
-## 3. Cấu trúc repo (đã khởi tạo thật — xem `docs/backend/KIEN-TRUC-BACKEND.md` mục 1 để biết chi tiết)
+## 3. Cấu trúc repo — 1 repo tổng + 3 git submodule (xem [ADR-0011](docs/kien-truc/adr/0011-tach-3-repo-git-submodule.md))
+
+⚠️ **Từ ADR-0011, backend/web/web-admin không còn nằm trực tiếp trong repo tổng** — mỗi thư mục dưới
+đây là 1 **git submodule** trỏ tới 1 repo GitHub riêng, ghim đúng 1 commit cụ thể. Sau khi clone repo
+tổng, phải chạy `git submodule update --init --recursive` (hoặc clone bằng
+`git clone --recurse-submodules ...`) mới có đủ code — clone thường chỉ có `docs/` + file cấu hình
+chung, 3 thư mục `api/`/`web/`/`web-admin/` sẽ trống.
 
 ```
-src/
-  Domain/            — entity, business invariant, KHÔNG reference project khác (0 NuGet package)
-  Application/        — use case (CQRS/Mediator), 1 thư mục / 1 bounded context
-  Infrastructure/     — EF Core, implement interface của Application
-  Web/                — Controllers/API (Minimal API), composition root
-  ServiceDefaults/    — OpenTelemetry + health checks dùng chung (không phải Aspire orchestration)
-  Shared/             — hằng số dùng chung giữa Infrastructure & test infra (vd tên connection string)
-tests/
-  Domain.UnitTests/ · Application.UnitTests/ · Application.FunctionalTests/ · Infrastructure.IntegrationTests/
-  TestAppHost/        — spin Postgres container thật cho Application.FunctionalTests (Aspire.Hosting.PostgreSQL,
-                        generic — không phải Aspire Azure orchestration đã gỡ ở src/AppHost)
-web/                  — Next.js (App Router) — CHỈ khu vực Client (candidate/guest), bản sắc
+api/                  — submodule → github.com/minhtungle/GiapTech.BlouseHiding.Api (.NET 10 Clean
+                        Architecture — xem docs/backend/KIEN-TRUC-BACKEND.md mục 1 cho chi tiết layer
+                        bên trong: src/Domain, src/Application, src/Infrastructure, src/Web,
+                        src/ServiceDefaults, src/Shared, tests/*.UnitTests, tests/*.FunctionalTests,
+                        tests/*.IntegrationTests, tests/TestAppHost)
+web/                  — submodule → github.com/minhtungle/GiapTech.BlouseHiding.Web
+                        Next.js (App Router) — CHỈ khu vực Client (candidate/guest), bản sắc
                         "Tin cậy lâm sàng" đầy đủ, cần SEO/SSR cho tin tuyển dụng
-web-admin/            — shadcn-admin (Vite + TanStack Router + TS) — 1 app riêng dùng chung cho
+web-admin/            — submodule → github.com/minhtungle/GiapTech.BlouseHiding.WebAdmin
+                        shadcn-admin (Vite + TanStack Router + TS) — 1 app riêng dùng chung cho
                         Admin (Nhà tuyển dụng) + Vận hành (nội bộ nền tảng), phân biệt màn hình theo
                         role đăng nhập, RBAC chặn thật ở backend (xem ADR-0008)
                         (xem docs/kien-truc/THUAT-NGU.md — role backend `admin` ≠ site "Admin")
 docker-compose.yml    — Postgres/Redis/RabbitMQ/MinIO cho dev cục bộ (self-host, xem ADR-0002)
+.devcontainer/        — môi trường dev chung cho cả workspace (không riêng app nào, giữ ở repo tổng)
 docs/                 — toàn bộ tài liệu (bản đồ ở mục 2)
 ```
+
+**Cách commit thay đổi trong 1 app (2 tầng, khác monorepo cũ):**
+1. `cd api/` (hoặc `web/`/`web-admin/`) → sửa code → `git add` + `git commit` + `git push` **ngay
+   trong submodule đó** — repo con có CI riêng, PR ở đó tự chạy build/test.
+2. Về repo tổng: `git add api` (hoặc `web`/`web-admin`) + `git commit` — ghim con trỏ submodule sang
+   commit mới. **Dễ quên bước này** — nếu quên, repo tổng vẫn ghim commit cũ dù submodule đã có code
+   mới, người khác clone lại sẽ không thấy thay đổi.
+3. Nếu 1 thay đổi đụng cả backend + 1 frontend (vd thêm API mới + nối UI trong 1 lượt làm việc) — đây
+   giờ là **2 PR ở 2 repo khác nhau**, không còn gộp 1 PR như monorepo cũ.
 
 ## 4. Quy tắc bất di bất dịch — không tự ý phá vỡ
 
@@ -137,12 +149,18 @@ tài liệu đó. Không tự ý coi 1 giai đoạn là xong chỉ vì code comp
 > Đã xác minh chạy được (Giai đoạn 0). Cần **.NET 10 SDK** (`global.json` pin `10.0.201`,
 > `rollForward: latestFeature` — cài qua [dotnet-install script](https://dot.net/v1/dotnet-install.sh)
 > nếu package manager hệ thống chưa có bản 10). Cần Docker chạy sẵn cho Postgres/Redis/RabbitMQ/MinIO.
+> ⚠️ Từ [ADR-0011](docs/kien-truc/adr/0011-tach-3-repo-git-submodule.md), `api/`/`web/`/`web-admin/` là
+> git submodule — **bước 0 bắt buộc trước mọi lệnh dưới đây** nếu vừa clone hoặc pull repo tổng.
 
 ```bash
+# Bước 0 — chỉ cần sau khi clone/pull repo tổng (đảm bảo 3 submodule có code, đúng commit đã ghim)
+git submodule update --init --recursive
+
 # Hạ tầng dev — chạy trước tiên
 docker compose up -d   # Postgres, Redis, RabbitMQ, MinIO — xem docker-compose.yml
 
-# Backend (.NET 10 Clean Architecture — src/, tests/)
+# Backend (.NET 10 Clean Architecture — submodule api/, chứa src/, tests/)
+cd api
 dotnet restore GiapTech.BlouseHiding.slnx
 dotnet build GiapTech.BlouseHiding.slnx
 dotnet test GiapTech.BlouseHiding.slnx
@@ -151,19 +169,26 @@ dotnet ef migrations add <Ten> --project src/Infrastructure --startup-project sr
 dotnet ef database update --project src/Infrastructure --startup-project src/Web
 # Chạy API (mặc định đọc ConnectionStrings:Postgres từ appsettings.json, đã khớp docker-compose.yml)
 dotnet run --project src/Web
+cd ..
 
-# Frontend Client (web/ — Next.js)
+# Frontend Client (web/ — Next.js, submodule)
 cd web && npm install
 npm run dev     # http://localhost:3000, redirect /vi mặc định
 npm run build
 npm run lint
+cd ..
 
-# Frontend Admin/Vận hành (web-admin/ — shadcn-admin, Vite + TanStack Router)
+# Frontend Admin/Vận hành (web-admin/ — shadcn-admin, Vite + TanStack Router, submodule)
 cd web-admin && npm install
 npm run dev     # http://localhost:5173
 npm run build   # build ra static assets, Caddy phục vụ thẳng — xem ADR-0008
 npm run lint
+cd ..
 ```
+
+**Sau khi sửa code trong 1 submodule** (`api/`/`web/`/`web-admin/`): commit + push **ngay trong
+submodule đó** trước, rồi về repo tổng `git add api` (hay `web`/`web-admin`) + commit để ghim con trỏ
+— xem chi tiết quy trình 2 tầng ở mục 3.
 
 **Lưu ý quan trọng khi sinh code backend:**
 - Dùng **Mediator** (namespace `Mediator`) và **Mapster**, KHÔNG phải MediatR/AutoMapper — xem
