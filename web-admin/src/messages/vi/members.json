@@ -1,0 +1,37 @@
+{
+  "role": {
+    "Owner": "Chủ tổ chức",
+    "HrManager": "Quản lý HR",
+    "HrMember": "Nhân viên HR"
+  },
+  "breadcrumb": "Nhà tuyển dụng (Admin)",
+  "pageTitle": "Thành viên",
+  "inviteButton": "Mời thành viên",
+  "membersCardTitle": "Thành viên tổ chức",
+  "colEmail": "Email",
+  "colRole": "Vai trò",
+  "colJoinedAt": "Ngày tham gia",
+  "noMembers": "Chưa có thành viên nào.",
+  "pendingInvitationsCardTitle": "Lời mời đang chờ",
+  "colExpiresAt": "Hết hạn",
+  "inviteDialog": {
+    "title": "Mời thành viên",
+    "emailLabel": "Email",
+    "emailPlaceholder": "ten@vidu.com",
+    "emailHint": "Có thể mời cả email chưa có tài khoản — họ sẽ đăng ký rồi chấp nhận lời mời.",
+    "roleLabel": "Vai trò",
+    "cancel": "Hủy",
+    "submit": "Gửi lời mời",
+    "success": "Đã gửi lời mời.",
+    "genericError": "Không mời được thành viên này.",
+    "failed": "Không gửi được lời mời."
+  },
+  "removeDialog": {
+    "title": "Xoá thành viên?",
+    "confirmText": "Xoá {{email}} khỏi tổ chức? Người này sẽ không còn truy cập được các tin tuyển dụng và ứng viên của tổ chức.",
+    "cancel": "Hủy",
+    "confirm": "Xoá thành viên",
+    "success": "Đã xoá thành viên.",
+    "failed": "Không xoá được thành viên."
+  }
+}

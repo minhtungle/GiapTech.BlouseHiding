@@ -1,0 +1,32 @@
+{
+  "reason": {
+    "Purchase": "Nạp Credit",
+    "UnlockProfile": "Mở hồ sơ ứng viên",
+    "Refund": "Hoàn Credit (tranh chấp)",
+    "Bonus": "Thưởng"
+  },
+  "pageTitle": "Ví Credit",
+  "currentBalance": "Số dư hiện tại",
+  "creditUnit": "{{count}} Credit",
+  "balanceHint": "1 Credit = 1 lượt mở hồ sơ ứng viên",
+  "topupButton": "Nạp thêm Credit",
+  "topupHint": "Chuyển khoản thủ công — Vận hành xác nhận trước khi cộng Credit",
+  "transactionHistory": "Lịch sử giao dịch",
+  "colDescription": "Nội dung",
+  "colAmount": "Số Credit",
+  "colDate": "Ngày",
+  "noTransactions": "Chưa có giao dịch nào.",
+  "topupDialog": {
+    "title": "Nạp thêm Credit",
+    "amountLabel": "Số Credit muốn nạp",
+    "conversionHint": "Quy đổi tạm thời: 1 Credit = {{rate}}đ. Số tiền chuyển khoản: {{amount}}đ",
+    "transferHint": "Chuyển khoản theo thông tin bên dưới, ghi đúng nội dung để Vận hành đối soát tự động.",
+    "amountToPayLabel": "Số tiền",
+    "referenceLabel": "Nội dung chuyển khoản",
+    "creditedHint": "Credit sẽ được cộng vào ví sau khi Vận hành xác nhận đã nhận được chuyển khoản.",
+    "cancel": "Hủy",
+    "close": "Đóng",
+    "submit": "Tạo yêu cầu nạp",
+    "createFailed": "Không tạo được yêu cầu nạp Credit (có thể đang có giao dịch chờ xử lý)."
+  }
+}

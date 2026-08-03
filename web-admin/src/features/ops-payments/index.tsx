@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Landmark, X, Check } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { opsApi } from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
@@ -12,12 +13,8 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { ThemeSwitch } from '@/components/theme-switch'
 
-const TYPE_LABEL: Record<string, string> = {
-  JobPackage: 'Mua gói tin',
-  CreditTopup: 'Nạp Credit',
-}
-
 export function OpsPayments() {
+  const { t } = useTranslation('ops')
   const queryClient = useQueryClient()
 
   const { data: payments } = useQuery({
@@ -29,18 +26,18 @@ export function OpsPayments() {
     mutationFn: (paymentId: string) => opsApi.confirmPayment(paymentId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ops', 'payments'] })
-      toast.success('Đã xác nhận giao dịch.')
+      toast.success(t('payments.confirmSuccess'))
     },
-    onError: () => toast.error('Xác nhận giao dịch không thành công.'),
+    onError: () => toast.error(t('payments.confirmFailed')),
   })
 
   const reject = useMutation({
     mutationFn: (paymentId: string) => opsApi.rejectPayment(paymentId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ops', 'payments'] })
-      toast.success('Đã đánh dấu không khớp.')
+      toast.success(t('payments.rejectSuccess'))
     },
-    onError: () => toast.error('Xử lý giao dịch không thành công.'),
+    onError: () => toast.error(t('payments.rejectFailed')),
   })
 
   return (
@@ -55,16 +52,16 @@ export function OpsPayments() {
       </Header>
 
       <Main>
-        <p className='text-xs font-medium text-muted-foreground'>Vận hành</p>
+        <p className='text-xs font-medium text-muted-foreground'>{t('breadcrumb')}</p>
         <h1 className='mb-1 text-2xl font-semibold tracking-tight'>
-          Đối soát thanh toán thủ công
+          {t('payments.pageTitle')}
         </h1>
         <p className='mb-6 text-sm text-muted-foreground'>
-          Đối chiếu với sao kê ngân hàng theo mã tham chiếu trước khi xác nhận.
+          {t('payments.pageDescription')}
         </p>
 
         {payments?.length === 0 && (
-          <p className='text-sm text-muted-foreground'>Không có giao dịch nào chờ đối soát.</p>
+          <p className='text-sm text-muted-foreground'>{t('payments.noPayments')}</p>
         )}
 
         <div className='space-y-3'>
@@ -78,7 +75,7 @@ export function OpsPayments() {
                       {payment.organizationName}
                     </CardTitle>
                     <p className='text-sm text-muted-foreground'>
-                      {TYPE_LABEL[payment.type] ?? payment.type} ·{' '}
+                      {t(`payments.type.${payment.type}`, payment.type)} ·{' '}
                       {payment.amount.toLocaleString('vi-VN')}đ
                     </p>
                   </div>
@@ -89,8 +86,9 @@ export function OpsPayments() {
               </CardHeader>
               <CardContent className='flex items-center justify-between'>
                 <p className='text-xs text-muted-foreground'>
-                  Tạo lúc {new Date(payment.createdAt).toLocaleString('vi-VN')} — kiểm tra sao kê có
-                  giao dịch cùng mã tham chiếu và đúng số tiền
+                  {t('payments.createdAt', {
+                    date: new Date(payment.createdAt).toLocaleString('vi-VN'),
+                  })}
                 </p>
                 <div className='flex gap-2'>
                   <Button
@@ -100,11 +98,11 @@ export function OpsPayments() {
                     onClick={() => reject.mutate(payment.id)}
                   >
                     <X />
-                    Không khớp
+                    {t('payments.reject')}
                   </Button>
                   <Button size='sm' disabled={confirm.isPending} onClick={() => confirm.mutate(payment.id)}>
                     <Check />
-                    Xác nhận
+                    {t('payments.confirm')}
                   </Button>
                 </div>
               </CardContent>

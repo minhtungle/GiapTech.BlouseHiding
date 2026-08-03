@@ -1,7 +1,8 @@
 import { useDroppable } from '@dnd-kit/core'
+import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import { APPLICATION_STAGE_LABEL, type ApplicationStageValue } from './constants'
+import { type ApplicationStageValue } from './constants'
 
 export function KanbanColumn({
   stage,
@@ -12,13 +13,14 @@ export function KanbanColumn({
   count: number
   children: React.ReactNode
 }) {
+  const { t } = useTranslation('applications')
   const { setNodeRef, isOver } = useDroppable({ id: stage })
 
   return (
     <div className='w-72 shrink-0'>
       <div className='mb-2 flex items-center justify-between px-1'>
         <h2 className='text-sm font-semibold'>
-          {APPLICATION_STAGE_LABEL[stage]}
+          {t(`stage.${stage}`)}
         </h2>
         <Badge variant='secondary'>{count}</Badge>
       </div>
@@ -32,7 +34,7 @@ export function KanbanColumn({
         {children}
         {count === 0 && (
           <div className='rounded-md border border-dashed p-4 text-center text-xs text-muted-foreground'>
-            Chưa có ứng viên
+            {t('emptyColumn')}
           </div>
         )}
       </div>

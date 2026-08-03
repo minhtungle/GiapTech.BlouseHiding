@@ -1,0 +1,37 @@
+{
+  "role": {
+    "Owner": "Owner",
+    "HrManager": "HR Manager",
+    "HrMember": "HR Member"
+  },
+  "breadcrumb": "Employer (Admin)",
+  "pageTitle": "Members",
+  "inviteButton": "Invite Member",
+  "membersCardTitle": "Organization Members",
+  "colEmail": "Email",
+  "colRole": "Role",
+  "colJoinedAt": "Joined",
+  "noMembers": "No members yet.",
+  "pendingInvitationsCardTitle": "Pending Invitations",
+  "colExpiresAt": "Expires",
+  "inviteDialog": {
+    "title": "Invite Member",
+    "emailLabel": "Email",
+    "emailPlaceholder": "name@example.com",
+    "emailHint": "You can invite an email that doesn't have an account yet — they'll register and then accept the invite.",
+    "roleLabel": "Role",
+    "cancel": "Cancel",
+    "submit": "Send Invite",
+    "success": "Invitation sent.",
+    "genericError": "Could not invite this member.",
+    "failed": "Failed to send the invitation."
+  },
+  "removeDialog": {
+    "title": "Remove member?",
+    "confirmText": "Remove {{email}} from the organization? They will lose access to the organization's job postings and candidates.",
+    "cancel": "Cancel",
+    "confirm": "Remove Member",
+    "success": "Member removed.",
+    "failed": "Failed to remove the member."
+  }
+}

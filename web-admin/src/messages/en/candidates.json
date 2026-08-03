@@ -1,0 +1,17 @@
+{
+  "breadcrumb": "Employer (Admin)",
+  "pageTitle": "Search Candidates",
+  "specialtyPlaceholder": "Specialty",
+  "allSpecialties": "All specialties",
+  "locationPlaceholder": "Location",
+  "allLocations": "All locations",
+  "loading": "Searching candidates...",
+  "noResults": "No candidates match the current filters.",
+  "noHeadline": "Desired position not set",
+  "contactHidden": "Contact hidden",
+  "creditUnit": "{{count}} Credit",
+  "unlockButton": "Unlock profile ({{cost}} Credit)",
+  "unlockSuccess": "Profile unlocked, Credit deducted.",
+  "unlockInsufficientCredit": "Not enough Credit to unlock this profile.",
+  "unlockFailed": "Failed to unlock the profile."
+}

@@ -1,0 +1,19 @@
+{
+  "stage": {
+    "New": "New",
+    "Reviewing": "Reviewing",
+    "Shortlisted": "Shortlisted",
+    "Interview": "Interview",
+    "Offer": "Offer",
+    "Hired": "Hired",
+    "Rejected": "Rejected"
+  },
+  "atsTitle": "ATS — Candidates",
+  "dragHint": "Drag a card (⋮⋮ handle) to another column to change its stage.",
+  "transitionFailed": "Failed to change stage.",
+  "transitionSuccess": "{{name}} → {{stage}}",
+  "emptyColumn": "No candidates yet",
+  "scoreLabel": "Match score: {{score}}",
+  "dragToChangeStage": "Drag to change stage",
+  "appliedOn": "Applied on {{date}}"
+}

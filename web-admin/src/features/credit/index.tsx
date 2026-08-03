@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Wallet } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { organizationsApi, paymentsApi, type PaymentInstructions } from '@/lib/api'
 import { useMyOrganization } from '@/hooks/use-my-organization'
@@ -31,13 +32,6 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { ThemeSwitch } from '@/components/theme-switch'
 
-const REASON_LABEL: Record<string, string> = {
-  Purchase: 'Nạp Credit',
-  UnlockProfile: 'Mở hồ sơ ứng viên',
-  Refund: 'Hoàn Credit (tranh chấp)',
-  Bonus: 'Thưởng',
-}
-
 const VND_PER_CREDIT = 1_000
 
 function TopupDialog({
@@ -49,13 +43,14 @@ function TopupDialog({
   onOpenChange: (open: boolean) => void
   organizationId: string
 }) {
+  const { t } = useTranslation('credit')
   const [creditAmount, setCreditAmount] = useState('100')
   const [instructions, setInstructions] = useState<PaymentInstructions | null>(null)
 
   const mutation = useMutation({
     mutationFn: () => paymentsApi.createCreditTopupPayment(organizationId, Number(creditAmount)),
     onSuccess: (result) => setInstructions(result),
-    onError: () => toast.error('Không tạo được yêu cầu nạp Credit (có thể đang có giao dịch chờ xử lý).'),
+    onError: () => toast.error(t('topupDialog.createFailed')),
   })
 
   function handleClose(open: boolean) {
@@ -70,13 +65,13 @@ function TopupDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Nạp thêm Credit</DialogTitle>
+          <DialogTitle>{t('topupDialog.title')}</DialogTitle>
         </DialogHeader>
 
         {!instructions ? (
           <div className='space-y-4'>
             <div className='space-y-1.5'>
-              <Label>Số Credit muốn nạp</Label>
+              <Label>{t('topupDialog.amountLabel')}</Label>
               <Input
                 type='number'
                 min={1}
@@ -84,42 +79,44 @@ function TopupDialog({
                 onChange={(e) => setCreditAmount(e.target.value)}
               />
               <p className='text-xs text-muted-foreground'>
-                Quy đổi tạm thời: 1 Credit = {VND_PER_CREDIT.toLocaleString('vi-VN')}đ. Số tiền chuyển
-                khoản: {(Number(creditAmount || 0) * VND_PER_CREDIT).toLocaleString('vi-VN')}đ
+                {t('topupDialog.conversionHint', {
+                  rate: VND_PER_CREDIT.toLocaleString('vi-VN'),
+                  amount: (Number(creditAmount || 0) * VND_PER_CREDIT).toLocaleString('vi-VN'),
+                })}
               </p>
             </div>
           </div>
         ) : (
           <div className='space-y-3'>
             <p className='text-sm text-muted-foreground'>
-              Chuyển khoản theo thông tin bên dưới, ghi đúng nội dung để Vận hành đối soát tự động.
+              {t('topupDialog.transferHint')}
             </p>
             <div className='rounded-md border p-4 text-sm'>
               <div className='flex justify-between py-1'>
-                <span className='text-muted-foreground'>Số tiền</span>
+                <span className='text-muted-foreground'>{t('topupDialog.amountToPayLabel')}</span>
                 <span className='font-medium'>{instructions.amount.toLocaleString('vi-VN')}đ</span>
               </div>
               <div className='flex justify-between py-1'>
-                <span className='text-muted-foreground'>Nội dung chuyển khoản</span>
+                <span className='text-muted-foreground'>{t('topupDialog.referenceLabel')}</span>
                 <span className='font-mono font-medium'>{instructions.referenceCode}</span>
               </div>
             </div>
             <p className='text-xs text-muted-foreground'>
-              Credit sẽ được cộng vào ví sau khi Vận hành xác nhận đã nhận được chuyển khoản.
+              {t('topupDialog.creditedHint')}
             </p>
           </div>
         )}
 
         <DialogFooter>
           <Button variant='outline' onClick={() => handleClose(false)}>
-            {instructions ? 'Đóng' : 'Hủy'}
+            {instructions ? t('topupDialog.close') : t('topupDialog.cancel')}
           </Button>
           {!instructions && (
             <Button
               disabled={!creditAmount || Number(creditAmount) <= 0 || mutation.isPending}
               onClick={() => mutation.mutate()}
             >
-              Tạo yêu cầu nạp
+              {t('topupDialog.submit')}
             </Button>
           )}
         </DialogFooter>
@@ -129,6 +126,7 @@ function TopupDialog({
 }
 
 export function Credit() {
+  const { t } = useTranslation('credit')
   const { organization } = useMyOrganization()
   const queryClient = useQueryClient()
   const [topupOpen, setTopupOpen] = useState(false)
@@ -165,60 +163,60 @@ export function Credit() {
 
       <Main>
         <h1 className='mb-6 text-2xl font-semibold tracking-tight'>
-          Ví Credit
+          {t('pageTitle')}
         </h1>
 
         <div className='mb-6 grid gap-4 sm:grid-cols-[1fr_auto]'>
           <Card>
             <CardHeader className='flex flex-row items-center justify-between pb-2'>
               <CardTitle className='text-sm font-medium text-muted-foreground'>
-                Số dư hiện tại
+                {t('currentBalance')}
               </CardTitle>
               <Wallet className='size-4 text-muted-foreground' />
             </CardHeader>
             <CardContent>
               <div className='text-3xl font-semibold'>
-                {wallet?.balance ?? 0} Credit
+                {t('creditUnit', { count: wallet?.balance ?? 0 })}
               </div>
               <p className='mt-1 text-xs text-muted-foreground'>
-                1 Credit = 1 lượt mở hồ sơ ứng viên
+                {t('balanceHint')}
               </p>
             </CardContent>
           </Card>
           <div className='flex flex-col items-center justify-center gap-1'>
             <Button size='lg' onClick={() => setTopupOpen(true)} disabled={!organization}>
-              Nạp thêm Credit
+              {t('topupButton')}
             </Button>
             <p className='text-center text-xs text-muted-foreground'>
-              Chuyển khoản thủ công — Vận hành xác nhận trước khi cộng Credit
+              {t('topupHint')}
             </p>
           </div>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle className='text-base'>Lịch sử giao dịch</CardTitle>
+            <CardTitle className='text-base'>{t('transactionHistory')}</CardTitle>
           </CardHeader>
           <CardContent className='p-0'>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nội dung</TableHead>
-                  <TableHead className='text-right'>Số Credit</TableHead>
-                  <TableHead>Ngày</TableHead>
+                  <TableHead>{t('colDescription')}</TableHead>
+                  <TableHead className='text-right'>{t('colAmount')}</TableHead>
+                  <TableHead>{t('colDate')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {transactions?.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={3} className='text-center text-muted-foreground'>
-                      Chưa có giao dịch nào.
+                      {t('noTransactions')}
                     </TableCell>
                   </TableRow>
                 )}
                 {transactions?.map((tx) => (
                   <TableRow key={tx.id}>
-                    <TableCell>{REASON_LABEL[tx.reason] ?? tx.reason}</TableCell>
+                    <TableCell>{t(`reason.${tx.reason}`, tx.reason)}</TableCell>
                     <TableCell className='text-right'>
                       <Badge
                         variant='outline'

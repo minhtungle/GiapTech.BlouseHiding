@@ -1,0 +1,17 @@
+{
+  "breadcrumb": "Nhà tuyển dụng (Admin)",
+  "pageTitle": "Tìm ứng viên",
+  "specialtyPlaceholder": "Chuyên khoa",
+  "allSpecialties": "Tất cả chuyên khoa",
+  "locationPlaceholder": "Địa điểm",
+  "allLocations": "Tất cả địa điểm",
+  "loading": "Đang tìm ứng viên...",
+  "noResults": "Không tìm thấy ứng viên phù hợp bộ lọc hiện tại.",
+  "noHeadline": "Chưa cập nhật vị trí mong muốn",
+  "contactHidden": "Liên hệ đã ẩn",
+  "creditUnit": "{{count}} Credit",
+  "unlockButton": "Mở hồ sơ ({{cost}} Credit)",
+  "unlockSuccess": "Đã mở hồ sơ, đã trừ Credit.",
+  "unlockInsufficientCredit": "Không đủ Credit để mở hồ sơ này.",
+  "unlockFailed": "Mở hồ sơ không thành công."
+}

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import { Lock, Search, Unlock } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { candidatesApi, catalogApi } from '@/lib/api'
 import { useMyOrganization } from '@/hooks/use-my-organization'
@@ -25,6 +26,7 @@ import { ThemeSwitch } from '@/components/theme-switch'
 const ALL = '__all__'
 
 export function Candidates() {
+  const { t } = useTranslation('candidates')
   const { organization } = useMyOrganization()
   const queryClient = useQueryClient()
   const [specialtyId, setSpecialtyId] = useState<string>(ALL)
@@ -55,14 +57,14 @@ export function Candidates() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['candidates', 'search'] })
       queryClient.invalidateQueries({ queryKey: ['credit-wallet', organization?.id] })
-      toast.success('Đã mở hồ sơ, đã trừ Credit.')
+      toast.success(t('unlockSuccess'))
     },
     onError: (error) => {
       if (error instanceof AxiosError && error.response?.status === 400) {
-        toast.error('Không đủ Credit để mở hồ sơ này.')
+        toast.error(t('unlockInsufficientCredit'))
         return
       }
-      toast.error('Mở hồ sơ không thành công.')
+      toast.error(t('unlockFailed'))
     },
   })
 
@@ -79,19 +81,19 @@ export function Candidates() {
 
       <Main>
         <p className='text-xs font-medium text-muted-foreground'>
-          Nhà tuyển dụng (Admin)
+          {t('breadcrumb')}
         </p>
         <h1 className='mb-6 text-2xl font-semibold tracking-tight'>
-          Tìm ứng viên
+          {t('pageTitle')}
         </h1>
 
         <div className='mb-6 flex flex-wrap gap-3'>
           <Select value={specialtyId} onValueChange={setSpecialtyId}>
             <SelectTrigger className='w-56'>
-              <SelectValue placeholder='Chuyên khoa' />
+              <SelectValue placeholder={t('specialtyPlaceholder')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={ALL}>Tất cả chuyên khoa</SelectItem>
+              <SelectItem value={ALL}>{t('allSpecialties')}</SelectItem>
               {specialties?.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
                   {s.name}
@@ -102,10 +104,10 @@ export function Candidates() {
 
           <Select value={locationId} onValueChange={setLocationId}>
             <SelectTrigger className='w-56'>
-              <SelectValue placeholder='Địa điểm' />
+              <SelectValue placeholder={t('locationPlaceholder')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={ALL}>Tất cả địa điểm</SelectItem>
+              <SelectItem value={ALL}>{t('allLocations')}</SelectItem>
               {locations?.map((l) => (
                 <SelectItem key={l.id} value={l.id}>
                   {l.name}
@@ -116,14 +118,14 @@ export function Candidates() {
         </div>
 
         {isLoading && (
-          <p className='text-sm text-muted-foreground'>Đang tìm ứng viên...</p>
+          <p className='text-sm text-muted-foreground'>{t('loading')}</p>
         )}
 
         {!isLoading && candidates?.length === 0 && (
           <div className='flex flex-col items-center gap-2 py-16 text-center'>
             <Search className='size-8 text-muted-foreground' />
             <p className='text-sm text-muted-foreground'>
-              Không tìm thấy ứng viên phù hợp bộ lọc hiện tại.
+              {t('noResults')}
             </p>
           </div>
         )}
@@ -133,7 +135,7 @@ export function Candidates() {
             <Card key={candidate.id}>
               <CardHeader className='pb-2'>
                 <CardTitle className='text-base'>
-                  {candidate.headline ?? 'Chưa cập nhật vị trí mong muốn'}
+                  {candidate.headline ?? t('noHeadline')}
                 </CardTitle>
               </CardHeader>
               <CardContent className='space-y-3'>
@@ -146,9 +148,9 @@ export function Candidates() {
                   <div className='flex items-center justify-between'>
                     <div className='flex items-center gap-2 text-sm text-muted-foreground'>
                       <Lock className='size-4' />
-                      <span>Liên hệ đã ẩn</span>
+                      <span>{t('contactHidden')}</span>
                     </div>
-                    <Badge variant='outline'>{candidate.unlockCost} Credit</Badge>
+                    <Badge variant='outline'>{t('creditUnit', { count: candidate.unlockCost })}</Badge>
                   </div>
                 )}
 
@@ -159,7 +161,7 @@ export function Candidates() {
                     disabled={unlock.isPending}
                     onClick={() => unlock.mutate(candidate.id)}
                   >
-                    Mở hồ sơ ({candidate.unlockCost} Credit)
+                    {t('unlockButton', { cost: candidate.unlockCost })}
                   </Button>
                 )}
               </CardContent>

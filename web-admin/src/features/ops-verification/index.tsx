@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ShieldCheck, ShieldX } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { opsApi } from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
@@ -28,6 +29,7 @@ type RejectTarget =
   | { kind: 'job'; id: string }
 
 export function OpsVerification() {
+  const { t } = useTranslation('ops')
   const queryClient = useQueryClient()
   const [rejectTarget, setRejectTarget] = useState<RejectTarget | null>(null)
   const [rejectReason, setRejectReason] = useState('')
@@ -50,9 +52,9 @@ export function OpsVerification() {
       opsApi.verifyLicense(id, approved, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ops', 'licenses'] })
-      toast.success('Đã xử lý CCHN.')
+      toast.success(t('verification.licenseSuccess'))
     },
-    onError: () => toast.error('Xử lý CCHN không thành công.'),
+    onError: () => toast.error(t('verification.licenseFailed')),
   })
 
   const verifyOrganization = useMutation({
@@ -60,9 +62,9 @@ export function OpsVerification() {
       opsApi.verifyOrganization(id, approved ? 'Verify' : 'Reject', reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ops', 'organizations'] })
-      toast.success('Đã xử lý tổ chức.')
+      toast.success(t('verification.orgSuccess'))
     },
-    onError: () => toast.error('Xử lý tổ chức không thành công.'),
+    onError: () => toast.error(t('verification.orgFailed')),
   })
 
   const moderateJob = useMutation({
@@ -70,9 +72,9 @@ export function OpsVerification() {
       opsApi.moderateJob(id, approved, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ops', 'jobs'] })
-      toast.success('Đã xử lý tin tuyển dụng.')
+      toast.success(t('verification.jobSuccess'))
     },
-    onError: () => toast.error('Xử lý tin không thành công.'),
+    onError: () => toast.error(t('verification.jobFailed')),
   })
 
   function openRejectDialog(target: RejectTarget) {
@@ -105,27 +107,27 @@ export function OpsVerification() {
       </Header>
 
       <Main>
-        <p className='text-xs font-medium text-muted-foreground'>Vận hành</p>
+        <p className='text-xs font-medium text-muted-foreground'>{t('breadcrumb')}</p>
         <h1 className='mb-6 text-2xl font-semibold tracking-tight'>
-          Duyệt CCHN, tổ chức &amp; tin tuyển dụng
+          {t('verification.pageTitle')}
         </h1>
 
         <Tabs defaultValue='license'>
           <TabsList>
             <TabsTrigger value='license'>
-              CCHN ({licenses?.length ?? 0})
+              {t('verification.tabLicense', { count: licenses?.length ?? 0 })}
             </TabsTrigger>
             <TabsTrigger value='org'>
-              Tổ chức ({organizations?.length ?? 0})
+              {t('verification.tabOrg', { count: organizations?.length ?? 0 })}
             </TabsTrigger>
             <TabsTrigger value='job'>
-              Tin tuyển dụng ({jobs?.length ?? 0})
+              {t('verification.tabJob', { count: jobs?.length ?? 0 })}
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value='license' className='space-y-3'>
             {licenses?.length === 0 && (
-              <p className='text-sm text-muted-foreground'>Không có CCHN chờ duyệt.</p>
+              <p className='text-sm text-muted-foreground'>{t('verification.noLicenses')}</p>
             )}
             {licenses?.map((item) => (
               <Card key={item.id}>
@@ -135,11 +137,11 @@ export function OpsVerification() {
                       {item.candidateFullName}
                     </CardTitle>
                     <p className='text-sm text-muted-foreground'>
-                      Số CCHN {item.licenseNo} · {item.issuedBy}
+                      {t('verification.licenseNo', { no: item.licenseNo, issuedBy: item.issuedBy })}
                     </p>
                   </div>
                   <Badge className='bg-amber-pending text-white'>
-                    Chờ duyệt
+                    {t('verification.pendingBadge')}
                   </Badge>
                 </CardHeader>
                 <CardContent className='flex items-center justify-between'>
@@ -149,7 +151,7 @@ export function OpsVerification() {
                     rel='noreferrer'
                     className='text-xs text-accent-jade hover:underline'
                   >
-                    Xem ảnh CCHN đã tải lên →
+                    {t('verification.viewLicenseDocument')}
                   </a>
                   <div className='flex gap-2'>
                     <Button
@@ -158,14 +160,14 @@ export function OpsVerification() {
                       onClick={() => openRejectDialog({ kind: 'license', id: item.id })}
                     >
                       <ShieldX />
-                      Từ chối
+                      {t('verification.reject')}
                     </Button>
                     <Button
                       size='sm'
                       onClick={() => verifyLicense.mutate({ id: item.id, approved: true, reason: null })}
                     >
                       <ShieldCheck />
-                      Duyệt
+                      {t('verification.approve')}
                     </Button>
                   </div>
                 </CardContent>
@@ -175,7 +177,7 @@ export function OpsVerification() {
 
           <TabsContent value='org' className='space-y-3'>
             {organizations?.length === 0 && (
-              <p className='text-sm text-muted-foreground'>Không có tổ chức chờ duyệt.</p>
+              <p className='text-sm text-muted-foreground'>{t('verification.noOrgs')}</p>
             )}
             {organizations?.map((item) => (
               <Card key={item.id}>
@@ -185,7 +187,7 @@ export function OpsVerification() {
                     <p className='text-sm text-muted-foreground'>{item.orgType}</p>
                   </div>
                   <Badge className='bg-amber-pending text-white'>
-                    Chờ duyệt
+                    {t('verification.pendingBadge')}
                   </Badge>
                 </CardHeader>
                 <CardContent className='flex items-center justify-end'>
@@ -196,7 +198,7 @@ export function OpsVerification() {
                       onClick={() => openRejectDialog({ kind: 'organization', id: item.id })}
                     >
                       <ShieldX />
-                      Từ chối
+                      {t('verification.reject')}
                     </Button>
                     <Button
                       size='sm'
@@ -205,7 +207,7 @@ export function OpsVerification() {
                       }
                     >
                       <ShieldCheck />
-                      Duyệt
+                      {t('verification.approve')}
                     </Button>
                   </div>
                 </CardContent>
@@ -215,7 +217,7 @@ export function OpsVerification() {
 
           <TabsContent value='job' className='space-y-3'>
             {jobs?.length === 0 && (
-              <p className='text-sm text-muted-foreground'>Không có tin chờ duyệt.</p>
+              <p className='text-sm text-muted-foreground'>{t('verification.noJobs')}</p>
             )}
             {jobs?.map((item) => (
               <Card key={item.id}>
@@ -227,7 +229,7 @@ export function OpsVerification() {
                     </p>
                   </div>
                   <Badge className='bg-amber-pending text-white'>
-                    Chờ duyệt
+                    {t('verification.pendingBadge')}
                   </Badge>
                 </CardHeader>
                 <CardContent className='flex items-center justify-between'>
@@ -241,14 +243,14 @@ export function OpsVerification() {
                       onClick={() => openRejectDialog({ kind: 'job', id: item.id })}
                     >
                       <ShieldX />
-                      Từ chối
+                      {t('verification.reject')}
                     </Button>
                     <Button
                       size='sm'
                       onClick={() => moderateJob.mutate({ id: item.id, approved: true, reason: null })}
                     >
                       <ShieldCheck />
-                      Duyệt
+                      {t('verification.approve')}
                     </Button>
                   </div>
                 </CardContent>
@@ -261,20 +263,20 @@ export function OpsVerification() {
       <Dialog open={!!rejectTarget} onOpenChange={(open) => !open && setRejectTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Lý do từ chối</DialogTitle>
+            <DialogTitle>{t('verification.rejectDialog.title')}</DialogTitle>
           </DialogHeader>
           <Textarea
             value={rejectReason}
             onChange={(e) => setRejectReason(e.target.value)}
-            placeholder='Nhập lý do từ chối...'
+            placeholder={t('verification.rejectDialog.placeholder')}
             rows={3}
           />
           <DialogFooter>
             <Button variant='outline' onClick={() => setRejectTarget(null)}>
-              Hủy
+              {t('verification.rejectDialog.cancel')}
             </Button>
             <Button variant='destructive' disabled={!rejectReason.trim()} onClick={confirmReject}>
-              Xác nhận từ chối
+              {t('verification.rejectDialog.confirm')}
             </Button>
           </DialogFooter>
         </DialogContent>

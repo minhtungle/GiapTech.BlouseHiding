@@ -452,14 +452,35 @@ Wallet"/... đúng bản dịch, kèm ảnh chụp màn hình xác nhận trực
 verify: `plan: 'nav.brandPlan'` sai namespace path (đúng phải là `plan: 'brandPlan'`, không nằm trong
 `nav`) — sửa ngay, verify lại xác nhận đúng.
 
+Bổ sung ngay sau — **hoàn thiện rút chuỗi hardcode ở `web-admin/`** cho toàn bộ 6 namespace còn lại
+(`jobs`, `applications`, `credit`, `candidates`, `members`, `ops`), gộp với `common` đã xong ở đợt
+trước thành đủ 7 namespace. Tạo `web-admin/src/messages/{locale}/{namespace}.json` cho từng cái (6
+locale × 6 namespace mới = 36 file, cùng cách tiếp cận đợt trước: `vi`/`en` dịch tay thật, `ja`/`zh`/
+`ko`/`es` tạm giữ tiếng Việt làm placeholder). Sửa toàn bộ 9 file component tương ứng
+(`jobs/index.tsx`, `jobs/new.tsx`, `applications/index.tsx` + `constants.ts` + `kanban-card.tsx` +
+`kanban-column.tsx`, `credit/index.tsx`, `candidates/index.tsx`, `users/index.tsx`,
+`ops-verification/index.tsx`, `ops-payments/index.tsx`, `ops-catalog/index.tsx`) dùng
+`useTranslation(namespace)` thay chuỗi cứng — bao gồm cả các `Record<string, string>` map tĩnh (status
+label, reason label, role label, stage label) chuyển sang gọi `t('key.value', fallback)` thay vì định
+nghĩa lại trong component. `i18n.ts` cập nhật danh sách `NAMESPACES` + import/khai báo resources cho
+đủ 6 locale × 7 namespace trong 1 file config duy nhất.
+Verify: `tsc -b`/`build`/`lint` sạch sau mỗi namespace (kiểm tra tăng dần, không dồn lỗi tới cuối).
+**Verify thật bằng Playwright** — đăng nhập qua backend thật, set `localStorage` locale = `en` trực
+tiếp (nhanh hơn click dropdown lặp lại), rồi duyệt qua cả 9 route chính
+(`/`, `/jobs`, `/jobs/new`, `/credit`, `/candidates`, `/users`, `/ops/verification`, `/ops/payments`,
+`/ops/catalog`) và assert từng trang chứa đúng cụm từ tiếng Anh mong đợi — cả 9/9 pass. `vitest run`
+101/102 (1 fail flaky không liên quan, như mọi log trước).
+
 Còn thiếu (chặn việc chốt giai đoạn):
-- **Rút chuỗi hardcode các namespace còn lại** ở `web-admin/` — chỉ mới xong `common` (sidebar/nav).
-  Toàn bộ `features/**/*.tsx` (jobs, credit, candidates, users, ops-*) vẫn hardcode tiếng Việt trực
-  tiếp trong component — cần rút theo từng feature, cập nhật `TIEN-DO-CHI-TIET.md` khi xong mỗi cái.
 - Dịch thuật thật cho `ja`/`zh`/`ko`/`es` ở cả 2 app — hiện đều tạm dùng tiếng Việt làm placeholder,
   chưa thuê dịch giả/vendor.
 - Đồng bộ lựa chọn ngôn ngữ `web-admin/` với `users.locale` ở backend — chưa quyết định (ADR-0010 mục
   5 để ngỏ), hiện 2 app không chia sẻ lựa chọn ngôn ngữ dù cùng 1 tài khoản.
+- Chuỗi hardcode ở `web/` (khác `web-admin/` — chưa động vào đợt này): `profile-form.tsx`,
+  `profile/page.tsx`, `license-section.tsx`, `settings/page.tsx`, `delete-account-button.tsx`,
+  `dashboard/page.tsx`, home `page.tsx`, `jobs/[id]/page.tsx`.
+- `chats/`, `tasks/`, `apps/`, trang Settings cá nhân ở `web-admin/` — tàn dư template shadcn-admin gốc,
+  cố ý không rút chuỗi (không thuộc nghiệp vụ, xem `TIEN-DO-CHI-TIET.md` điểm 8 — cân nhắc gỡ hẳn).
 - Cổng thanh toán tự động (VNPay/Momo/ZaloPay) — hoãn theo ADR-0003, chưa chọn nhà cung cấp cụ thể.
 - `/ops/reports` — chưa có bounded context Report ở backend, `web-admin/` vẫn cố ý dùng mock.
 - OAuth, học vấn/kinh nghiệm/CME/CV Builder, đổi mật khẩu khi đã đăng nhập, hoàn Credit thủ công khi

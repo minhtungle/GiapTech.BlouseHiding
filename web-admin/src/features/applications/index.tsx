@@ -7,6 +7,7 @@ import {
 } from '@dnd-kit/core'
 import { useParams } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { applicationsApi, jobsApi } from '@/lib/api'
 import { ConfigDrawer } from '@/components/config-drawer'
@@ -16,11 +17,12 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { APPLICATION_STAGES, APPLICATION_STAGE_LABEL, type ApplicationStageValue } from './constants'
+import { APPLICATION_STAGES, type ApplicationStageValue } from './constants'
 import { KanbanCard } from './kanban-card'
 import { KanbanColumn } from './kanban-column'
 
 export function Applications() {
+  const { t } = useTranslation('applications')
   const { jobId } = useParams({ from: '/_authenticated/applications/$jobId' })
   const queryClient = useQueryClient()
 
@@ -41,7 +43,7 @@ export function Applications() {
       queryClient.invalidateQueries({ queryKey: ['applications', jobId] })
     },
     onError: () => {
-      toast.error('Chuyển giai đoạn không thành công.')
+      toast.error(t('transitionFailed'))
     },
   })
 
@@ -58,7 +60,12 @@ export function Applications() {
     if (!application || application.stage === targetStage) return
 
     transitionStage.mutate({ applicationId: application.id, stage: targetStage })
-    toast.success(`${application.candidateFullName} → ${APPLICATION_STAGE_LABEL[targetStage]}`)
+    toast.success(
+      t('transitionSuccess', {
+        name: application.candidateFullName,
+        stage: t(`stage.${targetStage}`),
+      })
+    )
   }
 
   return (
@@ -79,10 +86,10 @@ export function Applications() {
             {job?.title ?? '...'}
           </p>
           <h1 className='text-2xl font-semibold tracking-tight'>
-            ATS — Ứng viên
+            {t('atsTitle')}
           </h1>
           <p className='mt-1 text-sm text-muted-foreground'>
-            Kéo thẻ (biểu tượng ⋮⋮) sang cột khác để chuyển giai đoạn.
+            {t('dragHint')}
           </p>
         </div>
 

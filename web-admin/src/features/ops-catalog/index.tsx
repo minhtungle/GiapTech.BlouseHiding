@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Pencil } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import {
   catalogApi,
@@ -57,6 +58,7 @@ function SpecialtyDialog({
   specialty: ApiSpecialty | null
   specialties: ApiSpecialty[]
 }) {
+  const { t } = useTranslation('ops')
   const queryClient = useQueryClient()
   const [code, setCode] = useState(specialty?.code ?? '')
   const [name, setName] = useState(specialty?.name ?? '')
@@ -73,37 +75,45 @@ function SpecialtyDialog({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['catalog', 'specialties'] })
-      toast.success(specialty ? 'Đã lưu chuyên khoa.' : 'Đã thêm chuyên khoa.')
+      toast.success(
+        specialty ? t('catalog.specialtyDialog.updateSuccess') : t('catalog.specialtyDialog.createSuccess')
+      )
       onOpenChange(false)
     },
-    onError: () => toast.error('Không lưu được chuyên khoa.'),
+    onError: () => toast.error(t('catalog.specialtyDialog.failed')),
   })
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{specialty ? 'Sửa chuyên khoa' : 'Thêm chuyên khoa'}</DialogTitle>
+          <DialogTitle>
+            {specialty ? t('catalog.specialtyDialog.editTitle') : t('catalog.specialtyDialog.createTitle')}
+          </DialogTitle>
         </DialogHeader>
         <div className='space-y-4'>
           {!specialty && (
             <div className='space-y-1.5'>
-              <Label>Mã (code)</Label>
-              <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder='vd: noi-khoa' />
+              <Label>{t('catalog.specialtyDialog.codeLabel')}</Label>
+              <Input
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                placeholder={t('catalog.specialtyDialog.codePlaceholder')}
+              />
             </div>
           )}
           <div className='space-y-1.5'>
-            <Label>Tên (tiếng Việt)</Label>
+            <Label>{t('catalog.specialtyDialog.nameLabel')}</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className='space-y-1.5'>
-            <Label>Chuyên khoa cha (tuỳ chọn)</Label>
+            <Label>{t('catalog.specialtyDialog.parentLabel')}</Label>
             <Select value={parentId} onValueChange={setParentId}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={NO_PARENT}>Không có (cấp gốc)</SelectItem>
+                <SelectItem value={NO_PARENT}>{t('catalog.specialtyDialog.noParent')}</SelectItem>
                 {specialties
                   .filter((s) => s.id !== specialty?.id)
                   .map((s) => (
@@ -117,13 +127,13 @@ function SpecialtyDialog({
         </div>
         <DialogFooter>
           <Button variant='outline' onClick={() => onOpenChange(false)}>
-            Hủy
+            {t('catalog.specialtyDialog.cancel')}
           </Button>
           <Button
             disabled={!name.trim() || (!specialty && !code.trim()) || mutation.isPending}
             onClick={() => mutation.mutate()}
           >
-            Lưu
+            {t('catalog.specialtyDialog.save')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -142,6 +152,7 @@ function LocationDialog({
   location: ApiLocation | null
   locations: ApiLocation[]
 }) {
+  const { t } = useTranslation('ops')
   const queryClient = useQueryClient()
   const [name, setName] = useState(location?.name ?? '')
   const [parentId, setParentId] = useState(location?.parentId ?? NO_PARENT)
@@ -157,31 +168,39 @@ function LocationDialog({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['catalog', 'locations'] })
-      toast.success(location ? 'Đã lưu địa điểm.' : 'Đã thêm địa điểm.')
+      toast.success(
+        location ? t('catalog.locationDialog.updateSuccess') : t('catalog.locationDialog.createSuccess')
+      )
       onOpenChange(false)
     },
-    onError: () => toast.error('Không lưu được địa điểm.'),
+    onError: () => toast.error(t('catalog.locationDialog.failed')),
   })
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{location ? 'Sửa địa điểm' : 'Thêm địa điểm'}</DialogTitle>
+          <DialogTitle>
+            {location ? t('catalog.locationDialog.editTitle') : t('catalog.locationDialog.createTitle')}
+          </DialogTitle>
         </DialogHeader>
         <div className='space-y-4'>
           <div className='space-y-1.5'>
-            <Label>Tên</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder='vd: Hà Nội' />
+            <Label>{t('catalog.locationDialog.nameLabel')}</Label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={t('catalog.locationDialog.namePlaceholder')}
+            />
           </div>
           <div className='space-y-1.5'>
-            <Label>Thuộc tỉnh/thành (tuỳ chọn — để trống nếu đây là tỉnh/thành)</Label>
+            <Label>{t('catalog.locationDialog.parentLabel')}</Label>
             <Select value={parentId} onValueChange={setParentId}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={NO_PARENT}>Không có (tỉnh/thành gốc)</SelectItem>
+                <SelectItem value={NO_PARENT}>{t('catalog.locationDialog.noParent')}</SelectItem>
                 {locations
                   .filter((l) => l.id !== location?.id)
                   .map((l) => (
@@ -195,10 +214,10 @@ function LocationDialog({
         </div>
         <DialogFooter>
           <Button variant='outline' onClick={() => onOpenChange(false)}>
-            Hủy
+            {t('catalog.locationDialog.cancel')}
           </Button>
           <Button disabled={!name.trim() || mutation.isPending} onClick={() => mutation.mutate()}>
-            Lưu
+            {t('catalog.locationDialog.save')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -215,6 +234,7 @@ function JobPackageDialog({
   onOpenChange: (open: boolean) => void
   jobPackage: ApiJobPackage | null
 }) {
+  const { t } = useTranslation('ops')
   const queryClient = useQueryClient()
   const [tier, setTier] = useState<(typeof JOB_PACKAGE_TIERS)[number]>(
     (jobPackage?.tier as (typeof JOB_PACKAGE_TIERS)[number]) ?? 'Free'
@@ -242,30 +262,34 @@ function JobPackageDialog({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['catalog', 'job-packages'] })
-      toast.success(jobPackage ? 'Đã lưu gói tin.' : 'Đã thêm gói tin.')
+      toast.success(
+        jobPackage ? t('catalog.packageDialog.updateSuccess') : t('catalog.packageDialog.createSuccess')
+      )
       onOpenChange(false)
     },
-    onError: () => toast.error('Không lưu được gói tin.'),
+    onError: () => toast.error(t('catalog.packageDialog.failed')),
   })
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{jobPackage ? 'Sửa gói tin' : 'Thêm gói tin'}</DialogTitle>
+          <DialogTitle>
+            {jobPackage ? t('catalog.packageDialog.editTitle') : t('catalog.packageDialog.createTitle')}
+          </DialogTitle>
         </DialogHeader>
         <div className='space-y-4'>
           {!jobPackage && (
             <div className='space-y-1.5'>
-              <Label>Hạng gói (không đổi được sau khi tạo)</Label>
+              <Label>{t('catalog.packageDialog.tierLabel')}</Label>
               <Select value={tier} onValueChange={(v) => setTier(v as typeof tier)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {JOB_PACKAGE_TIERS.map((t) => (
-                    <SelectItem key={t} value={t}>
-                      {t}
+                  {JOB_PACKAGE_TIERS.map((tierOption) => (
+                    <SelectItem key={tierOption} value={tierOption}>
+                      {tierOption}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -273,16 +297,16 @@ function JobPackageDialog({
             </div>
           )}
           <div className='space-y-1.5'>
-            <Label>Tên gói</Label>
+            <Label>{t('catalog.packageDialog.nameLabel')}</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className='grid grid-cols-2 gap-4'>
             <div className='space-y-1.5'>
-              <Label>Giá (VNĐ)</Label>
+              <Label>{t('catalog.packageDialog.priceLabel')}</Label>
               <Input type='number' min={0} value={price} onChange={(e) => setPrice(e.target.value)} />
             </div>
             <div className='space-y-1.5'>
-              <Label>Thời hạn (ngày)</Label>
+              <Label>{t('catalog.packageDialog.durationLabel')}</Label>
               <Input
                 type='number'
                 min={1}
@@ -292,25 +316,25 @@ function JobPackageDialog({
             </div>
           </div>
           <div className='space-y-1.5'>
-            <Label>Số tin tối đa đang đăng (tuỳ chọn)</Label>
+            <Label>{t('catalog.packageDialog.maxActiveJobsLabel')}</Label>
             <Input
               type='number'
               min={0}
               value={maxActiveJobs}
               onChange={(e) => setMaxActiveJobs(e.target.value)}
-              placeholder='Không giới hạn nếu để trống'
+              placeholder={t('catalog.packageDialog.maxActiveJobsPlaceholder')}
             />
           </div>
         </div>
         <DialogFooter>
           <Button variant='outline' onClick={() => onOpenChange(false)}>
-            Hủy
+            {t('catalog.packageDialog.cancel')}
           </Button>
           <Button
             disabled={!name.trim() || !durationDays || !price || mutation.isPending}
             onClick={() => mutation.mutate()}
           >
-            Lưu
+            {t('catalog.packageDialog.save')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -319,6 +343,7 @@ function JobPackageDialog({
 }
 
 export function OpsCatalog() {
+  const { t } = useTranslation('ops')
   const { data: specialties } = useQuery({
     queryKey: ['catalog', 'specialties'],
     queryFn: catalogApi.getSpecialties,
@@ -357,23 +382,23 @@ export function OpsCatalog() {
       </Header>
 
       <Main>
-        <p className='text-xs font-medium text-muted-foreground'>Vận hành</p>
+        <p className='text-xs font-medium text-muted-foreground'>{t('breadcrumb')}</p>
         <h1 className='mb-6 text-2xl font-semibold tracking-tight'>
-          Danh mục &amp; gói tin
+          {t('catalog.pageTitle')}
         </h1>
 
         <Tabs defaultValue='specialty'>
           <TabsList>
-            <TabsTrigger value='specialty'>Chuyên khoa</TabsTrigger>
-            <TabsTrigger value='location'>Địa điểm</TabsTrigger>
-            <TabsTrigger value='package'>Gói tin</TabsTrigger>
+            <TabsTrigger value='specialty'>{t('catalog.tabSpecialty')}</TabsTrigger>
+            <TabsTrigger value='location'>{t('catalog.tabLocation')}</TabsTrigger>
+            <TabsTrigger value='package'>{t('catalog.tabPackage')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value='specialty' className='space-y-4'>
             <div className='flex justify-end'>
               <Button size='sm' onClick={() => setSpecialtyDialog({ open: true, item: null })}>
                 <Plus />
-                Thêm chuyên khoa
+                {t('catalog.addSpecialty')}
               </Button>
             </div>
             <div className='divide-y divide-border rounded-md border'>
@@ -397,7 +422,7 @@ export function OpsCatalog() {
             <div className='flex justify-end'>
               <Button size='sm' onClick={() => setLocationDialog({ open: true, item: null })}>
                 <Plus />
-                Thêm địa điểm
+                {t('catalog.addLocation')}
               </Button>
             </div>
             <div className='divide-y divide-border rounded-md border'>
@@ -421,21 +446,21 @@ export function OpsCatalog() {
             <div className='mb-4 flex justify-end'>
               <Button size='sm' onClick={() => setPackageDialog({ open: true, item: null })}>
                 <Plus />
-                Thêm gói tin
+                {t('catalog.addPackage')}
               </Button>
             </div>
             <Card>
               <CardHeader>
-                <CardTitle className='text-base'>Gói đăng tin</CardTitle>
+                <CardTitle className='text-base'>{t('catalog.packageTableTitle')}</CardTitle>
               </CardHeader>
               <CardContent className='p-0'>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Hạng</TableHead>
-                      <TableHead>Tên gói</TableHead>
-                      <TableHead>Giá</TableHead>
-                      <TableHead>Thời hạn</TableHead>
+                      <TableHead>{t('catalog.colTier')}</TableHead>
+                      <TableHead>{t('catalog.colName')}</TableHead>
+                      <TableHead>{t('catalog.colPrice')}</TableHead>
+                      <TableHead>{t('catalog.colDuration')}</TableHead>
                       <TableHead className='w-16' />
                     </TableRow>
                   </TableHeader>
@@ -447,7 +472,7 @@ export function OpsCatalog() {
                         <TableCell>
                           {pkg.price === 0 ? '0đ' : `${pkg.price.toLocaleString('vi-VN')}đ`}
                         </TableCell>
-                        <TableCell>{pkg.durationDays} ngày</TableCell>
+                        <TableCell>{t('catalog.durationDays', { count: pkg.durationDays })}</TableCell>
                         <TableCell>
                           <Button
                             size='icon'

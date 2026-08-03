@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import { Mail, Plus, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { organizationsApi } from '@/lib/api'
 import { useMyOrganization } from '@/hooks/use-my-organization'
@@ -39,12 +40,6 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { ThemeSwitch } from '@/components/theme-switch'
 
-const ROLE_LABEL: Record<string, string> = {
-  Owner: 'Chủ tổ chức',
-  HrManager: 'Quản lý HR',
-  HrMember: 'Nhân viên HR',
-}
-
 function InviteMemberDialog({
   open,
   onOpenChange,
@@ -54,6 +49,7 @@ function InviteMemberDialog({
   onOpenChange: (open: boolean) => void
   organizationId: string
 }) {
+  const { t } = useTranslation('members')
   const queryClient = useQueryClient()
   const [email, setEmail] = useState('')
   const [invitedRole, setInvitedRole] = useState<'HrManager' | 'HrMember'>('HrMember')
@@ -62,7 +58,7 @@ function InviteMemberDialog({
     mutationFn: () => organizationsApi.inviteMember(organizationId, email, invitedRole),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['organizations', 'members', organizationId] })
-      toast.success('Đã gửi lời mời.')
+      toast.success(t('inviteDialog.success'))
       setEmail('')
       onOpenChange(false)
     },
@@ -70,11 +66,11 @@ function InviteMemberDialog({
       if (error instanceof AxiosError && error.response?.status === 400) {
         const message = error.response.data?.errors
           ? Object.values(error.response.data.errors).flat().join(' ')
-          : 'Không mời được thành viên này.'
+          : t('inviteDialog.genericError')
         toast.error(message)
         return
       }
-      toast.error('Không gửi được lời mời.')
+      toast.error(t('inviteDialog.failed'))
     },
   })
 
@@ -82,40 +78,40 @@ function InviteMemberDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Mời thành viên</DialogTitle>
+          <DialogTitle>{t('inviteDialog.title')}</DialogTitle>
         </DialogHeader>
         <div className='space-y-4'>
           <div className='space-y-1.5'>
-            <Label>Email</Label>
+            <Label>{t('inviteDialog.emailLabel')}</Label>
             <Input
               type='email'
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder='ten@vidu.com'
+              placeholder={t('inviteDialog.emailPlaceholder')}
             />
             <p className='text-xs text-muted-foreground'>
-              Có thể mời cả email chưa có tài khoản — họ sẽ đăng ký rồi chấp nhận lời mời.
+              {t('inviteDialog.emailHint')}
             </p>
           </div>
           <div className='space-y-1.5'>
-            <Label>Vai trò</Label>
+            <Label>{t('inviteDialog.roleLabel')}</Label>
             <Select value={invitedRole} onValueChange={(v) => setInvitedRole(v as typeof invitedRole)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='HrMember'>Nhân viên HR</SelectItem>
-                <SelectItem value='HrManager'>Quản lý HR</SelectItem>
+                <SelectItem value='HrMember'>{t('role.HrMember')}</SelectItem>
+                <SelectItem value='HrManager'>{t('role.HrManager')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
         <DialogFooter>
           <Button variant='outline' onClick={() => onOpenChange(false)}>
-            Hủy
+            {t('inviteDialog.cancel')}
           </Button>
           <Button disabled={!email.trim() || mutation.isPending} onClick={() => mutation.mutate()}>
-            Gửi lời mời
+            {t('inviteDialog.submit')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -124,6 +120,7 @@ function InviteMemberDialog({
 }
 
 export function Users() {
+  const { t } = useTranslation('members')
   const { organization } = useMyOrganization()
   const queryClient = useQueryClient()
   const [inviteOpen, setInviteOpen] = useState(false)
@@ -139,10 +136,10 @@ export function Users() {
     mutationFn: (memberId: string) => organizationsApi.removeMember(organization!.id, memberId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['organizations', 'members', organization?.id] })
-      toast.success('Đã xoá thành viên.')
+      toast.success(t('removeDialog.success'))
       setRemoveTarget(null)
     },
-    onError: () => toast.error('Không xoá được thành viên.'),
+    onError: () => toast.error(t('removeDialog.failed')),
   })
 
   return (
@@ -160,27 +157,27 @@ export function Users() {
         <div className='mb-6 flex items-center justify-between'>
           <div>
             <p className='text-xs font-medium text-muted-foreground'>
-              Nhà tuyển dụng (Admin)
+              {t('breadcrumb')}
             </p>
-            <h1 className='text-2xl font-semibold tracking-tight'>Thành viên</h1>
+            <h1 className='text-2xl font-semibold tracking-tight'>{t('pageTitle')}</h1>
           </div>
           <Button onClick={() => setInviteOpen(true)}>
             <Plus />
-            Mời thành viên
+            {t('inviteButton')}
           </Button>
         </div>
 
         <Card className='mb-6'>
           <CardHeader>
-            <CardTitle className='text-base'>Thành viên tổ chức</CardTitle>
+            <CardTitle className='text-base'>{t('membersCardTitle')}</CardTitle>
           </CardHeader>
           <CardContent className='p-0'>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Vai trò</TableHead>
-                  <TableHead>Ngày tham gia</TableHead>
+                  <TableHead>{t('colEmail')}</TableHead>
+                  <TableHead>{t('colRole')}</TableHead>
+                  <TableHead>{t('colJoinedAt')}</TableHead>
                   <TableHead className='w-16' />
                 </TableRow>
               </TableHeader>
@@ -188,7 +185,7 @@ export function Users() {
                 {data?.members.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={4} className='text-center text-muted-foreground'>
-                      Chưa có thành viên nào.
+                      {t('noMembers')}
                     </TableCell>
                   </TableRow>
                 )}
@@ -196,7 +193,7 @@ export function Users() {
                   <TableRow key={member.id}>
                     <TableCell className='font-medium'>{member.email}</TableCell>
                     <TableCell>
-                      <Badge variant='outline'>{ROLE_LABEL[member.memberRole] ?? member.memberRole}</Badge>
+                      <Badge variant='outline'>{t(`role.${member.memberRole}`, member.memberRole)}</Badge>
                     </TableCell>
                     <TableCell className='text-muted-foreground'>
                       {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString('vi-VN') : '—'}
@@ -223,15 +220,15 @@ export function Users() {
         {(data?.pendingInvitations.length ?? 0) > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle className='text-base'>Lời mời đang chờ</CardTitle>
+              <CardTitle className='text-base'>{t('pendingInvitationsCardTitle')}</CardTitle>
             </CardHeader>
             <CardContent className='p-0'>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Vai trò</TableHead>
-                    <TableHead>Hết hạn</TableHead>
+                    <TableHead>{t('colEmail')}</TableHead>
+                    <TableHead>{t('colRole')}</TableHead>
+                    <TableHead>{t('colExpiresAt')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -242,7 +239,9 @@ export function Users() {
                         {invitation.email}
                       </TableCell>
                       <TableCell>
-                        <Badge variant='outline'>{ROLE_LABEL[invitation.invitedRole] ?? invitation.invitedRole}</Badge>
+                        <Badge variant='outline'>
+                          {t(`role.${invitation.invitedRole}`, invitation.invitedRole)}
+                        </Badge>
                       </TableCell>
                       <TableCell className='text-muted-foreground'>
                         {new Date(invitation.expiresAt).toLocaleDateString('vi-VN')}
@@ -267,22 +266,21 @@ export function Users() {
       <Dialog open={!!removeTarget} onOpenChange={(open) => !open && setRemoveTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Xoá thành viên?</DialogTitle>
+            <DialogTitle>{t('removeDialog.title')}</DialogTitle>
           </DialogHeader>
           <p className='text-sm text-muted-foreground'>
-            Xoá <span className='font-medium text-foreground'>{removeTarget?.email}</span> khỏi tổ
-            chức? Người này sẽ không còn truy cập được các tin tuyển dụng và ứng viên của tổ chức.
+            {t('removeDialog.confirmText', { email: removeTarget?.email })}
           </p>
           <DialogFooter>
             <Button variant='outline' onClick={() => setRemoveTarget(null)}>
-              Hủy
+              {t('removeDialog.cancel')}
             </Button>
             <Button
               variant='destructive'
               disabled={removeMember.isPending}
               onClick={() => removeTarget && removeMember.mutate(removeTarget.id)}
             >
-              Xoá thành viên
+              {t('removeDialog.confirm')}
             </Button>
           </DialogFooter>
         </DialogContent>

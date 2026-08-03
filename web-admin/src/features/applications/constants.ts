@@ -8,15 +8,7 @@ export type ApplicationStageValue =
   | 'Hired'
   | 'Rejected'
 
-export const APPLICATION_STAGE_LABEL: Record<ApplicationStageValue, string> = {
-  New: 'Mới',
-  Reviewing: 'Đang xem',
-  Shortlisted: 'Phù hợp',
-  Interview: 'Hẹn phỏng vấn',
-  Offer: 'Offer',
-  Hired: 'Trúng tuyển',
-  Rejected: 'Từ chối',
-}
+// Nhãn hiển thị lấy qua t(`stage.${value}`) trong namespace "applications" — xem src/messages/.
 
 // Không đưa "Rejected" vào cột Kanban chính — kéo sang cột nào cũng là bước tiến, từ chối xử lý qua
 // hành động riêng (không nằm trong phạm vi MVP hiện tại, để nguyên trong danh sách nhưng không cột).

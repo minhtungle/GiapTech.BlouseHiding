@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { jobsApi } from '@/lib/api'
 import { useMyOrganization } from '@/hooks/use-my-organization'
 import { Badge } from '@/components/ui/badge'
@@ -21,17 +22,6 @@ import { Search } from '@/components/search'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { ThemeSwitch } from '@/components/theme-switch'
 
-const STATUS_LABEL: Record<string, string> = {
-  Draft: 'Nháp',
-  PendingPayment: 'Chờ thanh toán',
-  Pending: 'Chờ duyệt',
-  Published: 'Đang tuyển',
-  Rejected: 'Bị từ chối',
-  Expired: 'Hết hạn',
-  Closed: 'Đã đóng',
-  Suspended: 'Bị ẩn',
-}
-
 const STATUS_BADGE_CLASS: Record<string, string> = {
   Published: 'bg-accent-jade text-white',
   PendingPayment: 'bg-amber-pending text-white',
@@ -41,6 +31,7 @@ const STATUS_BADGE_CLASS: Record<string, string> = {
 }
 
 export function Jobs() {
+  const { t } = useTranslation('jobs')
   const { organization } = useMyOrganization()
 
   const { data: jobs } = useQuery({
@@ -65,16 +56,16 @@ export function Jobs() {
         <div className='mb-6 flex items-center justify-between'>
           <div>
             <p className='text-xs font-medium text-muted-foreground'>
-              Admin — Nhà tuyển dụng
+              {t('breadcrumb')}
             </p>
             <h1 className='text-2xl font-semibold tracking-tight'>
-              Tin tuyển dụng
+              {t('list.title')}
             </h1>
           </div>
           <Button asChild>
             <Link to='/jobs/new'>
               <Plus />
-              Đăng tin mới
+              {t('list.newJob')}
             </Link>
           </Button>
         </div>
@@ -83,10 +74,10 @@ export function Jobs() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Tin tuyển dụng</TableHead>
-                <TableHead>Chuyên khoa · Địa điểm</TableHead>
-                <TableHead>Trạng thái</TableHead>
-                <TableHead>Ứng viên</TableHead>
+                <TableHead>{t('list.colTitle')}</TableHead>
+                <TableHead>{t('list.colSpecialtyLocation')}</TableHead>
+                <TableHead>{t('list.colStatus')}</TableHead>
+                <TableHead>{t('list.colApplicants')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -103,7 +94,7 @@ export function Jobs() {
                         STATUS_BADGE_CLASS[job.status] ? 'default' : 'outline'
                       }
                     >
-                      {STATUS_LABEL[job.status] ?? job.status}
+                      {t(`status.${job.status}`, job.status)}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -112,7 +103,7 @@ export function Jobs() {
                       params={{ jobId: job.id }}
                       className='text-accent-jade hover:underline'
                     >
-                      Xem ATS →
+                      {t('list.viewAts')}
                     </Link>
                   </TableCell>
                 </TableRow>

@@ -1,0 +1,59 @@
+{
+  "breadcrumb": "Admin — Nhà tuyển dụng",
+  "status": {
+    "Draft": "Nháp",
+    "PendingPayment": "Chờ thanh toán",
+    "Pending": "Chờ duyệt",
+    "Published": "Đang tuyển",
+    "Rejected": "Bị từ chối",
+    "Expired": "Hết hạn",
+    "Closed": "Đã đóng",
+    "Suspended": "Bị ẩn"
+  },
+  "list": {
+    "title": "Tin tuyển dụng",
+    "newJob": "Đăng tin mới",
+    "colTitle": "Tin tuyển dụng",
+    "colSpecialtyLocation": "Chuyên khoa · Địa điểm",
+    "colStatus": "Trạng thái",
+    "colApplicants": "Ứng viên",
+    "viewAts": "Xem ATS →"
+  },
+  "new": {
+    "backToList": "Danh sách tin",
+    "pageTitle": "Đăng tin tuyển dụng",
+    "formCardTitle": "Thông tin tin tuyển dụng",
+    "position": "Vị trí tuyển dụng",
+    "positionPlaceholder": "VD: Điều dưỡng ICU — Ca đêm",
+    "specialty": "Chuyên khoa",
+    "specialtyPlaceholder": "Chọn chuyên khoa",
+    "location": "Địa điểm",
+    "locationPlaceholder": "Chọn địa điểm",
+    "salaryMin": "Lương tối thiểu",
+    "salaryMax": "Lương tối đa",
+    "employmentType": "Loại hình",
+    "employmentTypePlaceholder": "Chọn loại hình",
+    "description": "Mô tả công việc",
+    "requirements": "Yêu cầu ứng viên",
+    "benefits": "Quyền lợi",
+    "packageCardTitle": "Chọn gói đăng tin",
+    "durationDays": "{{count}} ngày",
+    "submit": "Lưu & nộp duyệt",
+    "packageHint": "Gói Free vào hàng đợi duyệt nội dung ngay. Gói trả phí cần chuyển khoản thủ công — tin vào hàng chờ duyệt sau khi Vận hành xác nhận đã nhận tiền.",
+    "errors": {
+      "noOrganization": "Không tìm thấy tổ chức của bạn.",
+      "missingFields": "Vui lòng điền đủ thông tin bắt buộc.",
+      "noPackage": "Vui lòng chọn gói đăng tin.",
+      "submitFailed": "Đăng tin không thành công."
+    },
+    "successFree": "Đăng tin thành công, đang chờ duyệt nội dung.",
+    "paymentDialog": {
+      "title": "Hoàn tất chuyển khoản để đăng tin",
+      "description": "Tin đã lưu và đang chờ thanh toán. Chuyển khoản theo thông tin bên dưới, ghi đúng nội dung để Vận hành đối soát.",
+      "amountLabel": "Số tiền",
+      "referenceLabel": "Nội dung chuyển khoản",
+      "hint": "Tin sẽ vào hàng đợi duyệt nội dung sau khi Vận hành xác nhận đã nhận được chuyển khoản.",
+      "confirm": "Đã hiểu"
+    }
+  }
+}

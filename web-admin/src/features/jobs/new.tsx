@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { ChevronLeft, Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { catalogApi, jobsApi, paymentsApi, type PaymentInstructions } from '@/lib/api'
 import { useMyOrganization } from '@/hooks/use-my-organization'
@@ -32,6 +33,7 @@ import { LanguageSwitcher } from '@/components/language-switcher'
 import { ThemeSwitch } from '@/components/theme-switch'
 
 export function NewJob() {
+  const { t } = useTranslation('jobs')
   const navigate = useNavigate()
   const { organization } = useMyOrganization()
 
@@ -69,11 +71,11 @@ export function NewJob() {
 
   async function handleSubmit() {
     if (!organization) {
-      toast.error('Không tìm thấy tổ chức của bạn.')
+      toast.error(t('new.errors.noOrganization'))
       return
     }
     if (!title || !specialtyId || !locationId || !employmentType || !description) {
-      toast.error('Vui lòng điền đủ thông tin bắt buộc.')
+      toast.error(t('new.errors.missingFields'))
       return
     }
 
@@ -99,14 +101,14 @@ export function NewJob() {
 
       const selectedPackage = jobPackages?.find((p) => p.id === packageId) ?? freePackage
       if (!selectedPackage) {
-        toast.error('Vui lòng chọn gói đăng tin.')
+        toast.error(t('new.errors.noPackage'))
         return
       }
 
       await jobsApi.submit(jobId, selectedPackage.id)
 
       if (selectedPackage.tier === 'Free') {
-        toast.success('Đăng tin thành công, đang chờ duyệt nội dung.')
+        toast.success(t('new.successFree'))
         navigate({ to: '/jobs' })
         return
       }
@@ -114,7 +116,7 @@ export function NewJob() {
       const instructions = await paymentsApi.createJobPackagePayment(jobId, selectedPackage.id)
       setPaymentInstructions(instructions)
     } catch {
-      toast.error('Đăng tin không thành công.')
+      toast.error(t('new.errors.submitFailed'))
     } finally {
       setIsSubmitting(false)
     }
@@ -137,23 +139,23 @@ export function NewJob() {
           className='mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground'
         >
           <ChevronLeft className='size-4' />
-          Danh sách tin
+          {t('new.backToList')}
         </Link>
         <h1 className='mb-6 text-2xl font-semibold tracking-tight'>
-          Đăng tin tuyển dụng
+          {t('new.pageTitle')}
         </h1>
 
         <div className='grid gap-6 lg:grid-cols-3'>
           <Card className='lg:col-span-2'>
             <CardHeader>
-              <CardTitle className='text-base'>Thông tin tin tuyển dụng</CardTitle>
+              <CardTitle className='text-base'>{t('new.formCardTitle')}</CardTitle>
             </CardHeader>
             <CardContent className='space-y-4'>
               <div className='space-y-1.5'>
-                <Label htmlFor='title'>Vị trí tuyển dụng</Label>
+                <Label htmlFor='title'>{t('new.position')}</Label>
                 <Input
                   id='title'
-                  placeholder='VD: Điều dưỡng ICU — Ca đêm'
+                  placeholder={t('new.positionPlaceholder')}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                 />
@@ -161,10 +163,10 @@ export function NewJob() {
 
               <div className='grid grid-cols-2 gap-4'>
                 <div className='space-y-1.5'>
-                  <Label htmlFor='specialty'>Chuyên khoa</Label>
+                  <Label htmlFor='specialty'>{t('new.specialty')}</Label>
                   <Select value={specialtyId} onValueChange={setSpecialtyId}>
                     <SelectTrigger id='specialty' className='w-full'>
-                      <SelectValue placeholder='Chọn chuyên khoa' />
+                      <SelectValue placeholder={t('new.specialtyPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {specialties?.map((s) => (
@@ -176,10 +178,10 @@ export function NewJob() {
                   </Select>
                 </div>
                 <div className='space-y-1.5'>
-                  <Label htmlFor='location'>Địa điểm</Label>
+                  <Label htmlFor='location'>{t('new.location')}</Label>
                   <Select value={locationId} onValueChange={setLocationId}>
                     <SelectTrigger id='location' className='w-full'>
-                      <SelectValue placeholder='Chọn địa điểm' />
+                      <SelectValue placeholder={t('new.locationPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {locations?.map((l) => (
@@ -195,7 +197,7 @@ export function NewJob() {
               <div className='grid grid-cols-2 gap-4'>
                 <div className='grid grid-cols-2 gap-2'>
                   <div className='space-y-1.5'>
-                    <Label htmlFor='salaryMin'>Lương tối thiểu</Label>
+                    <Label htmlFor='salaryMin'>{t('new.salaryMin')}</Label>
                     <Input
                       id='salaryMin'
                       type='number'
@@ -205,7 +207,7 @@ export function NewJob() {
                     />
                   </div>
                   <div className='space-y-1.5'>
-                    <Label htmlFor='salaryMax'>Lương tối đa</Label>
+                    <Label htmlFor='salaryMax'>{t('new.salaryMax')}</Label>
                     <Input
                       id='salaryMax'
                       type='number'
@@ -216,10 +218,10 @@ export function NewJob() {
                   </div>
                 </div>
                 <div className='space-y-1.5'>
-                  <Label htmlFor='employmentType'>Loại hình</Label>
+                  <Label htmlFor='employmentType'>{t('new.employmentType')}</Label>
                   <Select value={employmentType} onValueChange={setEmploymentType}>
                     <SelectTrigger id='employmentType' className='w-full'>
-                      <SelectValue placeholder='Chọn loại hình' />
+                      <SelectValue placeholder={t('new.employmentTypePlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {employmentTypes?.map((e) => (
@@ -233,7 +235,7 @@ export function NewJob() {
               </div>
 
               <div className='space-y-1.5'>
-                <Label htmlFor='description'>Mô tả công việc</Label>
+                <Label htmlFor='description'>{t('new.description')}</Label>
                 <Textarea
                   id='description'
                   rows={4}
@@ -242,7 +244,7 @@ export function NewJob() {
                 />
               </div>
               <div className='space-y-1.5'>
-                <Label htmlFor='requirements'>Yêu cầu ứng viên</Label>
+                <Label htmlFor='requirements'>{t('new.requirements')}</Label>
                 <Textarea
                   id='requirements'
                   rows={3}
@@ -251,7 +253,7 @@ export function NewJob() {
                 />
               </div>
               <div className='space-y-1.5'>
-                <Label htmlFor='benefits'>Quyền lợi</Label>
+                <Label htmlFor='benefits'>{t('new.benefits')}</Label>
                 <Textarea
                   id='benefits'
                   rows={3}
@@ -264,7 +266,7 @@ export function NewJob() {
 
           <Card>
             <CardHeader>
-              <CardTitle className='text-base'>Chọn gói đăng tin</CardTitle>
+              <CardTitle className='text-base'>{t('new.packageCardTitle')}</CardTitle>
             </CardHeader>
             <CardContent className='space-y-3'>
               {jobPackages?.map((pkg) => (
@@ -283,7 +285,7 @@ export function NewJob() {
                     />
                     <span className='font-medium'>{pkg.tier}</span>
                     <span className='block text-xs text-muted-foreground'>
-                      {pkg.durationDays} ngày · {pkg.name}
+                      {t('new.durationDays', { count: pkg.durationDays })} · {pkg.name}
                     </span>
                   </span>
                   <span className='font-medium'>
@@ -294,11 +296,10 @@ export function NewJob() {
 
               <Button className='w-full' disabled={isSubmitting} onClick={handleSubmit}>
                 {isSubmitting && <Loader2 className='animate-spin' />}
-                Lưu & nộp duyệt
+                {t('new.submit')}
               </Button>
               <p className='text-center text-xs text-muted-foreground'>
-                Gói Free vào hàng đợi duyệt nội dung ngay. Gói trả phí cần chuyển khoản thủ công —
-                tin vào hàng chờ duyệt sau khi Vận hành xác nhận đã nhận tiền.
+                {t('new.packageHint')}
               </p>
             </CardContent>
           </Card>
@@ -316,26 +317,25 @@ export function NewJob() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Hoàn tất chuyển khoản để đăng tin</DialogTitle>
+            <DialogTitle>{t('new.paymentDialog.title')}</DialogTitle>
           </DialogHeader>
           <p className='text-sm text-muted-foreground'>
-            Tin đã lưu và đang chờ thanh toán. Chuyển khoản theo thông tin bên dưới, ghi đúng nội
-            dung để Vận hành đối soát.
+            {t('new.paymentDialog.description')}
           </p>
           <div className='rounded-md border p-4 text-sm'>
             <div className='flex justify-between py-1'>
-              <span className='text-muted-foreground'>Số tiền</span>
+              <span className='text-muted-foreground'>{t('new.paymentDialog.amountLabel')}</span>
               <span className='font-medium'>
                 {paymentInstructions?.amount.toLocaleString('vi-VN')}đ
               </span>
             </div>
             <div className='flex justify-between py-1'>
-              <span className='text-muted-foreground'>Nội dung chuyển khoản</span>
+              <span className='text-muted-foreground'>{t('new.paymentDialog.referenceLabel')}</span>
               <span className='font-mono font-medium'>{paymentInstructions?.referenceCode}</span>
             </div>
           </div>
           <p className='text-xs text-muted-foreground'>
-            Tin sẽ vào hàng đợi duyệt nội dung sau khi Vận hành xác nhận đã nhận được chuyển khoản.
+            {t('new.paymentDialog.hint')}
           </p>
           <DialogFooter>
             <Button
@@ -344,7 +344,7 @@ export function NewJob() {
                 navigate({ to: '/jobs' })
               }}
             >
-              Đã hiểu
+              {t('new.paymentDialog.confirm')}
             </Button>
           </DialogFooter>
         </DialogContent>
