@@ -1,10 +1,21 @@
-import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Wallet } from 'lucide-react'
-import { organizationsApi } from '@/lib/api'
+import { toast } from 'sonner'
+import { organizationsApi, paymentsApi, type PaymentInstructions } from '@/lib/api'
 import { useMyOrganization } from '@/hooks/use-my-organization'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Table,
   TableBody,
@@ -26,8 +37,100 @@ const REASON_LABEL: Record<string, string> = {
   Bonus: 'Thưởng',
 }
 
+const VND_PER_CREDIT = 1_000
+
+function TopupDialog({
+  open,
+  onOpenChange,
+  organizationId,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  organizationId: string
+}) {
+  const [creditAmount, setCreditAmount] = useState('100')
+  const [instructions, setInstructions] = useState<PaymentInstructions | null>(null)
+
+  const mutation = useMutation({
+    mutationFn: () => paymentsApi.createCreditTopupPayment(organizationId, Number(creditAmount)),
+    onSuccess: (result) => setInstructions(result),
+    onError: () => toast.error('Không tạo được yêu cầu nạp Credit (có thể đang có giao dịch chờ xử lý).'),
+  })
+
+  function handleClose(open: boolean) {
+    if (!open) {
+      setInstructions(null)
+      setCreditAmount('100')
+    }
+    onOpenChange(open)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Nạp thêm Credit</DialogTitle>
+        </DialogHeader>
+
+        {!instructions ? (
+          <div className='space-y-4'>
+            <div className='space-y-1.5'>
+              <Label>Số Credit muốn nạp</Label>
+              <Input
+                type='number'
+                min={1}
+                value={creditAmount}
+                onChange={(e) => setCreditAmount(e.target.value)}
+              />
+              <p className='text-xs text-muted-foreground'>
+                Quy đổi tạm thời: 1 Credit = {VND_PER_CREDIT.toLocaleString('vi-VN')}đ. Số tiền chuyển
+                khoản: {(Number(creditAmount || 0) * VND_PER_CREDIT).toLocaleString('vi-VN')}đ
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className='space-y-3'>
+            <p className='text-sm text-muted-foreground'>
+              Chuyển khoản theo thông tin bên dưới, ghi đúng nội dung để Vận hành đối soát tự động.
+            </p>
+            <div className='rounded-md border p-4 text-sm'>
+              <div className='flex justify-between py-1'>
+                <span className='text-muted-foreground'>Số tiền</span>
+                <span className='font-medium'>{instructions.amount.toLocaleString('vi-VN')}đ</span>
+              </div>
+              <div className='flex justify-between py-1'>
+                <span className='text-muted-foreground'>Nội dung chuyển khoản</span>
+                <span className='font-mono font-medium'>{instructions.referenceCode}</span>
+              </div>
+            </div>
+            <p className='text-xs text-muted-foreground'>
+              Credit sẽ được cộng vào ví sau khi Vận hành xác nhận đã nhận được chuyển khoản.
+            </p>
+          </div>
+        )}
+
+        <DialogFooter>
+          <Button variant='outline' onClick={() => handleClose(false)}>
+            {instructions ? 'Đóng' : 'Hủy'}
+          </Button>
+          {!instructions && (
+            <Button
+              disabled={!creditAmount || Number(creditAmount) <= 0 || mutation.isPending}
+              onClick={() => mutation.mutate()}
+            >
+              Tạo yêu cầu nạp
+            </Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 export function Credit() {
   const { organization } = useMyOrganization()
+  const queryClient = useQueryClient()
+  const [topupOpen, setTopupOpen] = useState(false)
 
   const { data: wallet } = useQuery({
     queryKey: ['credit-wallet', organization?.id],
@@ -40,6 +143,13 @@ export function Credit() {
     queryFn: () => organizationsApi.getCreditTransactions(organization!.id),
     enabled: !!organization,
   })
+
+  function handleTopupOpenChange(open: boolean) {
+    setTopupOpen(open)
+    if (!open) {
+      queryClient.invalidateQueries({ queryKey: ['credit-wallet', organization?.id] })
+    }
+  }
 
   return (
     <>
@@ -74,11 +184,11 @@ export function Credit() {
             </CardContent>
           </Card>
           <div className='flex flex-col items-center justify-center gap-1'>
-            <Button size='lg' disabled title='Đang chờ nối cổng thanh toán'>
+            <Button size='lg' onClick={() => setTopupOpen(true)} disabled={!organization}>
               Nạp thêm Credit
             </Button>
             <p className='text-center text-xs text-muted-foreground'>
-              Liên hệ Vận hành để nạp Credit trong lúc chờ hoàn thiện
+              Chuyển khoản thủ công — Vận hành xác nhận trước khi cộng Credit
             </p>
           </div>
         </div>
@@ -130,6 +240,14 @@ export function Credit() {
           </CardContent>
         </Card>
       </Main>
+
+      {organization && (
+        <TopupDialog
+          open={topupOpen}
+          onOpenChange={handleTopupOpenChange}
+          organizationId={organization.id}
+        />
+      )}
     </>
   )
 }

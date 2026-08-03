@@ -413,12 +413,23 @@ job-package confirm→job Pending; job-package reject→job Draft; chặn tạo 
 giao dịch pending; credit-topup confirm→ví tăng đúng; credit-topup forbidden khi không phải member;
 chặn tạo credit-topup trùng theo tổ chức).
 
+Bổ sung ngay sau — **nối `web-admin/` tới toàn bộ API Payments vừa xây**. Thêm `opsApi.getPendingPayments/
+confirmPayment/rejectPayment` và `paymentsApi.createJobPackagePayment/createCreditTopupPayment/getById`
+vào `lib/api.ts`. Viết lại `features/ops-payments/index.tsx` (bỏ `MOCK_PAYMENT_QUEUE`, dùng
+`useQuery`/`useMutation` thật, cùng pattern các trang Ops khác). `features/credit/index.tsx` — nút
+"Nạp thêm Credit" trước đó `disabled` với tooltip "Đang chờ nối cổng thanh toán" (từ đợt Credit/Unlock
+trước, lúc Payments chưa tồn tại) giờ mở dialog thật: nhập số Credit → hiện số tiền quy đổi (1 Credit =
+1.000đ) + mã tham chiếu để chuyển khoản. `features/jobs/new.tsx` — trước đó chỉ hỗ trợ gói Free (đã
+ghi rõ trong UI "chỉ Free hỗ trợ ở MVP"), giờ chọn gói Eco/Pro/Max sẽ tạo `Payment` ngay sau khi submit
+và hiện dialog thông tin chuyển khoản (đóng dialog mới điều hướng về `/jobs`, để NTD kịp ghi lại mã
+tham chiếu). Dọn code chết: `MOCK_PAYMENT_QUEUE`/`MockPaymentQueueItem` ở `lib/mock-data.ts` không còn
+ai import (giữ lại `MOCK_REPORT_QUEUE` vì `ops-reports` vẫn cố ý dùng mock).
+Verify: `tsc -b`/`build`/`lint` sạch; `vitest run` 101/102 (1 fail flaky `search-provider.test.tsx`
+không liên quan, đã ghi nhiều lần ở các log trước, không chặn việc chốt phần này).
+
 Còn thiếu (chặn việc chốt giai đoạn):
-- `web-admin/`: `/ops/payments` (đối soát) và nút "Nạp thêm Credit" ở trang Ví Credit — backend đã
-  xong hoàn toàn, frontend chưa nối (việc ngay sau log này). Nút "Nạp thêm Credit" hiện đang
-  `disabled` với tooltip "Đang chờ nối cổng thanh toán" từ đợt Credit/Unlock trước — giờ không còn
-  đúng nữa vì backend đã có, cần bật lại.
 - Cổng thanh toán tự động (VNPay/Momo/ZaloPay) — hoãn theo ADR-0003, chưa chọn nhà cung cấp cụ thể.
+- `/ops/reports` — chưa có bounded context Report ở backend, `web-admin/` vẫn cố ý dùng mock.
 - OAuth, học vấn/kinh nghiệm/CME/CV Builder, đổi mật khẩu khi đã đăng nhập, hoàn Credit thủ công khi
   tranh chấp — vẫn như log trước, chưa có gì thay đổi ở đợt này.
 

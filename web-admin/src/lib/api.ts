@@ -223,6 +223,15 @@ export type PendingJob = {
   description: string
 }
 
+export type PendingPayment = {
+  id: string
+  referenceCode: string
+  organizationName: string
+  type: 'JobPackage' | 'CreditTopup'
+  amount: number
+  createdAt: string
+}
+
 export const opsApi = {
   getPendingLicenses: () => http.get<PendingLicense[]>('/ops/licenses').then((r) => r.data),
   verifyLicense: (licenseId: string, approved: boolean, rejectReason: string | null = null) =>
@@ -237,6 +246,9 @@ export const opsApi = {
   getPendingJobs: () => http.get<PendingJob[]>('/ops/jobs').then((r) => r.data),
   moderateJob: (jobId: string, approved: boolean, rejectReason: string | null = null) =>
     http.post(`/ops/jobs/${jobId}/moderate`, { approved, rejectReason }),
+  getPendingPayments: () => http.get<PendingPayment[]>('/ops/payments').then((r) => r.data),
+  confirmPayment: (paymentId: string) => http.post(`/ops/payments/${paymentId}/confirm`),
+  rejectPayment: (paymentId: string) => http.post(`/ops/payments/${paymentId}/reject`),
 }
 
 // 5 locale không phải "vi" (vi nằm ở field name gốc) — xem CatalogLocales.cs.
@@ -281,4 +293,27 @@ export const opsCatalogApi = {
     http.post<string>('/ops/job-packages', input).then((r) => r.data),
   updateJobPackage: (id: string, input: UpdateJobPackageInput) =>
     http.put(`/ops/job-packages/${id}`, input),
+}
+
+export type PaymentInstructions = {
+  paymentId: string
+  amount: number
+  referenceCode: string
+}
+export type ApiPayment = {
+  id: string
+  type: 'JobPackage' | 'CreditTopup'
+  amount: number
+  referenceCode: string
+  status: 'Pending' | 'Success' | 'Failed'
+}
+
+export const paymentsApi = {
+  createJobPackagePayment: (jobId: string, packageId: string) =>
+    http.post<PaymentInstructions>('/payments/job-package', { jobId, packageId }).then((r) => r.data),
+  createCreditTopupPayment: (organizationId: string, creditAmount: number) =>
+    http
+      .post<PaymentInstructions>('/payments/credit-topup', { organizationId, creditAmount })
+      .then((r) => r.data),
+  getById: (paymentId: string) => http.get<ApiPayment>(`/payments/${paymentId}`).then((r) => r.data),
 }

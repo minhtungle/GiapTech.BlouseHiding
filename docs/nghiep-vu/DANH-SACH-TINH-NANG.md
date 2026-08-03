@@ -63,8 +63,12 @@
   gói tin Free/Eco/Pro/Max — hạng gói không đổi được sau khi tạo, đúng ràng buộc backend), thành viên
   tổ chức (`features/users/` viết lại hoàn toàn — bỏ data-table generic + faker của shadcn-admin gốc,
   thay bằng bảng thành viên + lời mời đang chờ, dialog mời thành viên mới, xoá thành viên có xác nhận,
-  không cho xoá owner)**. **Chưa nối**: `/ops/payments` (backend Payments đã xong, frontend chưa nối
-  — việc tiếp theo), `/ops/reports` (chưa có bounded context backend).
+  không cho xoá owner), đối soát thanh toán (`ops-payments/`, hàng đợi thật từ `GET /ops/payments`,
+  nút Xác nhận/Không khớp gọi `POST /ops/payments/{id}/confirm|reject`), nạp Credit (dialog ở trang Ví
+  Credit — nhập số Credit, hiện số tiền quy đổi + mã tham chiếu để chuyển khoản, nút "Nạp thêm Credit"
+  không còn `disabled` như trước), đăng tin gói trả phí (`jobs/new.tsx` — chọn gói Eco/Pro/Max gọi
+  `POST /payments/job-package` sau khi submit, hiện dialog thông tin chuyển khoản)**. **Chưa nối**:
+  `/ops/reports` (chưa có bounded context backend).
 
 ## Giai đoạn 1 — MVP
 

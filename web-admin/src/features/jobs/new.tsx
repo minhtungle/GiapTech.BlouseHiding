@@ -3,10 +3,17 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { ChevronLeft, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { catalogApi, jobsApi } from '@/lib/api'
+import { catalogApi, jobsApi, paymentsApi, type PaymentInstructions } from '@/lib/api'
 import { useMyOrganization } from '@/hooks/use-my-organization'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -55,6 +62,7 @@ export function NewJob() {
   const [benefits, setBenefits] = useState('')
   const [packageId, setPackageId] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [paymentInstructions, setPaymentInstructions] = useState<PaymentInstructions | null>(null)
 
   const freePackage = jobPackages?.find((p) => p.tier === 'Free')
 
@@ -88,15 +96,22 @@ export function NewJob() {
         benefits: benefits || null,
       })
 
-      // MVP chỉ hỗ trợ gói Free (submit thẳng pending, không qua thanh toán) — gói trả phí là
-      // bounded context Payments riêng, chưa làm (xem docs/nghiep-vu/TIEN-DO-DU-AN.md).
-      const selectedPackageId = packageId || freePackage?.id
-      if (selectedPackageId) {
-        await jobsApi.submit(jobId, selectedPackageId)
+      const selectedPackage = jobPackages?.find((p) => p.id === packageId) ?? freePackage
+      if (!selectedPackage) {
+        toast.error('Vui lòng chọn gói đăng tin.')
+        return
       }
 
-      toast.success('Đăng tin thành công, đang chờ duyệt nội dung.')
-      navigate({ to: '/jobs' })
+      await jobsApi.submit(jobId, selectedPackage.id)
+
+      if (selectedPackage.tier === 'Free') {
+        toast.success('Đăng tin thành công, đang chờ duyệt nội dung.')
+        navigate({ to: '/jobs' })
+        return
+      }
+
+      const instructions = await paymentsApi.createJobPackagePayment(jobId, selectedPackage.id)
+      setPaymentInstructions(instructions)
     } catch {
       toast.error('Đăng tin không thành công.')
     } finally {
@@ -280,13 +295,58 @@ export function NewJob() {
                 Lưu & nộp duyệt
               </Button>
               <p className='text-center text-xs text-muted-foreground'>
-                Chỉ gói Free hỗ trợ ở MVP — vào hàng đợi duyệt nội dung ngay. Gói trả phí (chuyển
-                khoản thủ công) chưa hỗ trợ.
+                Gói Free vào hàng đợi duyệt nội dung ngay. Gói trả phí cần chuyển khoản thủ công —
+                tin vào hàng chờ duyệt sau khi Vận hành xác nhận đã nhận tiền.
               </p>
             </CardContent>
           </Card>
         </div>
       </Main>
+
+      <Dialog
+        open={!!paymentInstructions}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPaymentInstructions(null)
+            navigate({ to: '/jobs' })
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Hoàn tất chuyển khoản để đăng tin</DialogTitle>
+          </DialogHeader>
+          <p className='text-sm text-muted-foreground'>
+            Tin đã lưu và đang chờ thanh toán. Chuyển khoản theo thông tin bên dưới, ghi đúng nội
+            dung để Vận hành đối soát.
+          </p>
+          <div className='rounded-md border p-4 text-sm'>
+            <div className='flex justify-between py-1'>
+              <span className='text-muted-foreground'>Số tiền</span>
+              <span className='font-medium'>
+                {paymentInstructions?.amount.toLocaleString('vi-VN')}đ
+              </span>
+            </div>
+            <div className='flex justify-between py-1'>
+              <span className='text-muted-foreground'>Nội dung chuyển khoản</span>
+              <span className='font-mono font-medium'>{paymentInstructions?.referenceCode}</span>
+            </div>
+          </div>
+          <p className='text-xs text-muted-foreground'>
+            Tin sẽ vào hàng đợi duyệt nội dung sau khi Vận hành xác nhận đã nhận được chuyển khoản.
+          </p>
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                setPaymentInstructions(null)
+                navigate({ to: '/jobs' })
+              }}
+            >
+              Đã hiểu
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
