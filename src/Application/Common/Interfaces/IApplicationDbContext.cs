@@ -44,6 +44,10 @@ public interface IApplicationDbContext
 
     DbSet<ProfileUnlock> ProfileUnlocks { get; }
 
+    DbSet<Payment> Payments { get; }
+
+    DbSet<JobPurchase> JobPurchases { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 
     // Bọc toàn bộ thao tác trong 1 DB transaction — dùng cho luồng phải atomic xuyên nhiều

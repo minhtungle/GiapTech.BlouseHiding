@@ -141,21 +141,21 @@
 ## 6. Gói tin & thanh toán — `/job-packages`, `/payments`
 
 > ⚠️ **MVP dùng quy trình thủ công** (xem [ADR-0003](../kien-truc/adr/0003-hoan-cong-thanh-toan-tu-dong.md))
-> — chưa có cổng thanh toán tự động. Endpoint dưới đây phản ánh đúng luồng thủ công hiện tại; các dòng
+> — chưa có cổng thanh toán tự động. Endpoint dưới đây đã implement đúng luồng thủ công; các dòng
 > đánh dấu 🔒 là **dự phòng cho tương lai**, chưa hoạt động ở MVP.
 
 | Method | Path | Quyền | Mô tả |
 |---|---|---|---|
 | GET | `/job-packages` | Public | Danh sách gói Eco/Pro/Max + giá |
-| POST | `/payments/job-package` | Employer | Gọi ngay sau `POST /jobs/{id}/submit` khi job đã ở `pending_payment` (mục 5) — tạo `payments` (`provider=manual_transfer`, `status=pending`) + sinh `reference_code` gắn với job đó. Response trả **thông tin chuyển khoản** (số tài khoản, nội dung ghi `reference_code`) — **không** trả URL cổng thanh toán ở MVP |
-| GET | `/payments/{id}` | Employer (owner) | Tra cứu trạng thái giao dịch (`pending`/`success`/`failed`) |
+| POST | `/payments/job-package` | Employer (member cùng org) | Gọi ngay sau `POST /jobs/{id}/submit` khi job đã ở `pending_payment` (mục 5) — tạo `payments` (`provider=manual_transfer`, `status=pending`) + `job_purchases` (liên kết `job_id`/`package_id`/`payment_id` ngay từ lúc này, không đợi tới confirm) + sinh `reference_code`. Response trả **thông tin chuyển khoản** (số tiền + `reference_code`) — **không** trả URL cổng thanh toán ở MVP. Chặn tạo giao dịch mới nếu tin đã có `payments.status=pending` khác |
+| GET | `/payments/{id}` | Employer (member cùng org) | Tra cứu trạng thái giao dịch (`pending`/`success`/`failed`) |
 | 🔒 POST | `/payments/webhook/{provider}` | Public (xác thực chữ ký) | Webhook callback cổng tự động — **chưa dùng ở MVP**, giữ chỗ endpoint/schema cho khi chọn cổng (xem `payments.provider` ở ERD) |
 
 **Xác nhận thanh toán thủ công** (đội Vận hành, xem mục 11): `POST /ops/payments/{id}/confirm` — đối
-soát sao kê ngân hàng theo `reference_code`, set `payments.status = success` + `confirmed_by`, tạo
-`job_purchases`, chuyển `jobs.status: pending_payment → pending` (vào hàng đợi duyệt nội dung).
+soát sao kê ngân hàng theo `reference_code`, set `payments.status = success` + `confirmed_by`, chuyển
+`jobs.status: pending_payment → pending` (vào hàng đợi duyệt nội dung) qua `Job.ConfirmPayment()`.
 Nếu từ chối (sai số tiền/không nhận được) → `POST /ops/payments/{id}/reject` → `jobs.status → draft`
-để NTD sửa lại và nộp lại.
+để NTD sửa lại và nộp lại qua `Job.RejectPayment()`.
 
 ---
 
@@ -165,13 +165,15 @@ Nếu từ chối (sai số tiền/không nhận được) → `POST /ops/paymen
 |---|---|---|---|
 | GET | `/organizations/{id}/credit-wallet` | Employer (member) | Xem số dư |
 | GET | `/organizations/{id}/credit-transactions` | Employer (member) | Lịch sử giao dịch |
-| POST | `/payments/credit-topup` | Employer | Tạo `payments` (`provider=manual_transfer`) như mục 6 — trả thông tin chuyển khoản + `reference_code`, **chưa cộng credit** cho tới khi Vận hành xác nhận |
+| POST | `/payments/credit-topup` | Employer (member) | Tạo `payments` (`type=credit_topup`, `provider=manual_transfer`) như mục 6 — trả thông tin chuyển khoản + `reference_code`, **chưa cộng credit** cho tới khi Vận hành xác nhận. Quy đổi tạm thời MVP: 1 Credit = 1.000đ (chưa có bảng giá gói Credit riêng như `job_packages`). Chặn tạo giao dịch mới nếu tổ chức đã có `payments.type=credit_topup, status=pending` khác |
 | GET | `/candidates/search` | Employer (member) | Tìm ứng viên theo chuyên khoa/kinh nghiệm/khu vực — **kết quả ẩn liên hệ** |
 | POST | `/candidates/{id}/unlock` | Employer (member) | Trừ Credit, tạo `profile_unlocks`, trả hồ sơ đầy đủ |
 
 **Xác nhận nạp Credit thủ công** (Vận hành): dùng chung `POST /ops/payments/{id}/confirm` (mục 6) —
-khi `payments.type = credit_topup` thành công, cộng `amount` vào `credit_wallets.balance` + ghi
-`credit_transactions` (`reason = purchase`) trong cùng transaction.
+khi `payments.type = credit_topup` thành công, cộng `credit_amount` (số Credit quy đổi từ `amount` lúc
+tạo) vào `credit_wallets.balance` + ghi `credit_transactions` (`reason = purchase`, khác `reason =
+bonus` của `POST /ops/organizations/{id}/credit-bonus` ở mục 11 — bonus là khuyến mãi/hỗ trợ thủ công,
+không qua Payment) trong cùng transaction.
 
 **Response khi chưa unlock (`GET /candidates/search`):**
 ```json
@@ -234,7 +236,8 @@ khi `payments.type = credit_topup` thành công, cộng `amount` vào `credit_wa
 | POST | `/ops/organizations/{id}/verify` | Admin/Moderator | Duyệt/từ chối/rút xác thực (`verified→rejected` hoặc `verified→suspended`). Chuyển khỏi `verified` sẽ **tự động** chuyển mọi `jobs.status=published` của tổ chức sang `suspended` trong cùng transaction (xem ERD mục 4.6) — không cần thao tác riêng cho từng tin |
 | GET | `/ops/jobs?status=pending` | Admin/Moderator | Hàng đợi duyệt tin (không lẫn tin đang `pending_payment` — cột lọc riêng) |
 | POST | `/ops/jobs/{id}/moderate` | Admin/Moderator | Duyệt/từ chối kèm lý do |
-| POST | `/ops/payments/{id}/confirm` | Admin/Moderator | **Xác nhận đã nhận chuyển khoản** theo `reference_code` — set `payments.status=success` + `confirmed_by`; nếu `type=job_package` → tạo `job_purchases` + `jobs.status: pending_payment→pending`; nếu `type=credit_topup` → cộng `credit_wallets.balance` (mục 6, 7) |
+| GET | `/ops/payments` | Admin/Moderator | Hàng đợi giao dịch chờ đối soát (`status=pending`, cả `job_package` lẫn `credit_topup`) |
+| POST | `/ops/payments/{id}/confirm` | Admin/Moderator | **Xác nhận đã nhận chuyển khoản** theo `reference_code` — set `payments.status=success` + `confirmed_by`; nếu `type=job_package` → `jobs.status: pending_payment→pending` qua `Job.ConfirmPayment()` (`job_purchases` đã tạo sẵn từ lúc `POST /payments/job-package`, mục 6); nếu `type=credit_topup` → cộng `credit_wallets.balance` (mục 6, 7) |
 | POST | `/ops/payments/{id}/reject` | Admin/Moderator | Không nhận được/sai số tiền → `payments.status=failed`, `jobs.status: pending_payment→draft` để NTD sửa & nộp lại |
 | POST | `/ops/organizations/{id}/credit-refund` | Admin | Hoàn Credit thủ công khi có tranh chấp — ghi `credit_transactions` (`reason=refund`, `created_by`) |
 | GET | `/ops/reports?status=pending` | Admin/Moderator | Danh sách báo cáo vi phạm |

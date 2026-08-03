@@ -54,6 +54,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     public DbSet<ProfileUnlock> ProfileUnlocks => Set<ProfileUnlock>();
 
+    public DbSet<Payment> Payments => Set<Payment>();
+
+    public DbSet<JobPurchase> JobPurchases => Set<JobPurchase>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

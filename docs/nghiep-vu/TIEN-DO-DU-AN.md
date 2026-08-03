@@ -383,9 +383,44 @@ Verify: `tsc -b`/`build`/`lint` sạch; `vitest run` 101/102 (17 test file, gi�
 xóa test cũ của users theo — 1 fail vẫn là `search-provider.test.tsx` flaky không liên quan, xác nhận
 không mention gì tới route `/users`).
 
+Bổ sung tiếp — **bounded context Payments** (đã thiết kế sẵn ở ERD mục 2.5, API-DESIGN.md mục 6-7, và
+ADR-0003 từ trước nhưng chưa implement — đây là gap lớn nhất còn lại, chặn cả gói trả phí Jobs lẫn nạp
+Credit thật). Quyết định làm ngay theo lựa chọn của người dùng khi được hỏi, đúng thiết kế thủ công đã
+chốt (không tích hợp cổng thanh toán tự động ở MVP).
+Domain: `Payment` (Type/Provider/Status, `ConfirmSuccess()`/`ConfirmFailed()`), `JobPurchase` (liên kết
+`JobId`/`PackageId`/`PaymentId`). Phát hiện thú vị: `Job.ConfirmPayment(durationDays)`/
+`RejectPayment()` và `JobStatus.PendingPayment` **đã tồn tại sẵn từ trước** (thiết kế đón đầu Payments
+ngay từ khi làm Jobs) — chỉ cần gọi tới, không phải viết mới. `PaymentReferenceCodeGenerator` sinh mã
+`PAY-XXXXXX` (bỏ ký tự dễ nhầm 0/O/1/I vì NTD gõ tay vào nội dung chuyển khoản).
+Command: `CreateJobPackagePaymentCommand` (gọi sau `SubmitJobCommand` khi job ở `pending_payment` —
+tạo `Payment` + `JobPurchase` ngay lúc này, không đợi confirm; chặn tạo trùng nếu tin đã có giao dịch
+`pending` khác), `CreateCreditTopupPaymentCommand` (quy đổi tạm 1 Credit = 1.000đ, chưa có bảng giá gói
+Credit riêng; chặn tạo trùng theo tổ chức), `ConfirmPaymentCommand`/`RejectPaymentCommand` (Ops — rẽ
+nhánh theo `Payment.Type`: `JobPackage` gọi `Job.ConfirmPayment()`/`RejectPayment()`, `CreditTopup`
+cộng thẳng `CreditWallet` qua `Credit()` với `reason=Purchase`, khác `reason=Bonus` của
+`CreditBonusCommand` đã có — giữ song song 2 luồng này vì mục đích khác nhau, không thay thế nhau).
+Query: `GetPaymentByIdQuery`, `GetPendingPaymentsQuery` (Ops, gồm cả 2 loại giao dịch trong 1 danh
+sách). Sửa `SubmitJobCommand` — bỏ hẳn đoạn chặn cứng "gói trả phí chưa hỗ trợ" của đợt Jobs trước,
+giờ mọi tier đều `Submit()` được (Free → `pending` thẳng, còn lại → `pending_payment` chờ
+`CreateJobPackagePaymentCommand`). Endpoint mới: `POST /payments/job-package`,
+`POST /payments/credit-topup`, `GET /payments/{id}`, `GET /ops/payments`,
+`POST /ops/payments/{id}/confirm|reject`.
+Verify: `dotnet build` sạch ngay lần đầu (0 lỗi) — nhờ `Job.ConfirmPayment()`/`RejectPayment()` có sẵn
+từ trước nên phần khó nhất coi như đã làm xong sẵn. Migration `AddPayments` (bảng `Payments`,
+`JobPurchases`, unique index `ReferenceCode`, FK `Restrict` tới `Organizations` — không cascade xoá dữ
+liệu tài chính). `dotnet test` 52/52 pass (3 unit + 49 functional, gồm 6 test mới:
+job-package confirm→job Pending; job-package reject→job Draft; chặn tạo payment trùng khi tin đã có
+giao dịch pending; credit-topup confirm→ví tăng đúng; credit-topup forbidden khi không phải member;
+chặn tạo credit-topup trùng theo tổ chức).
+
 Còn thiếu (chặn việc chốt giai đoạn):
-- OAuth, Payments, học vấn/kinh nghiệm/CME/CV Builder, đổi mật khẩu khi đã đăng nhập, hoàn Credit thủ
-  công khi tranh chấp — vẫn như log trước, chưa có gì thay đổi ở đợt này.
+- `web-admin/`: `/ops/payments` (đối soát) và nút "Nạp thêm Credit" ở trang Ví Credit — backend đã
+  xong hoàn toàn, frontend chưa nối (việc ngay sau log này). Nút "Nạp thêm Credit" hiện đang
+  `disabled` với tooltip "Đang chờ nối cổng thanh toán" từ đợt Credit/Unlock trước — giờ không còn
+  đúng nữa vì backend đã có, cần bật lại.
+- Cổng thanh toán tự động (VNPay/Momo/ZaloPay) — hoãn theo ADR-0003, chưa chọn nhà cung cấp cụ thể.
+- OAuth, học vấn/kinh nghiệm/CME/CV Builder, đổi mật khẩu khi đã đăng nhập, hoàn Credit thủ công khi
+  tranh chấp — vẫn như log trước, chưa có gì thay đổi ở đợt này.
 
 ### Giai đoạn 2 — Hoàn thiện
 

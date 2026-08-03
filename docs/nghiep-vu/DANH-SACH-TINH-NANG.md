@@ -63,7 +63,8 @@
   gói tin Free/Eco/Pro/Max — hạng gói không đổi được sau khi tạo, đúng ràng buộc backend), thành viên
   tổ chức (`features/users/` viết lại hoàn toàn — bỏ data-table generic + faker của shadcn-admin gốc,
   thay bằng bảng thành viên + lời mời đang chờ, dialog mời thành viên mới, xoá thành viên có xác nhận,
-  không cho xoá owner)**. **Chưa nối**: `/ops/payments`/`/ops/reports` (chưa có bounded context).
+  không cho xoá owner)**. **Chưa nối**: `/ops/payments` (backend Payments đã xong, frontend chưa nối
+  — việc tiếp theo), `/ops/reports` (chưa có bounded context backend).
 
 ## Giai đoạn 1 — MVP
 
@@ -107,10 +108,10 @@
 ### Tin tuyển dụng
 - ✅ Tạo/sửa tin (draft/rejected — `CanEdit` invariant), đóng tin sớm (`close`), gia hạn (`renew` — tạo
   `jobs` row mới, tin gốc chuyển `closed`, không tái sử dụng `job_id`)
-- 🟨 Nộp duyệt (`submit`) — **chỉ hỗ trợ gói Free ở MVP** (thẳng `pending`, không qua thanh toán). Gói
-  Eco/Pro/Max + `pending_payment` + quy trình thanh toán thủ công là bounded context Payments riêng,
-  quyết định tách khỏi vòng Jobs này (đã xác nhận với người dùng) — chưa làm
-- ⬜ Quy trình thanh toán thủ công (mã tham chiếu + Vận hành xác nhận/từ chối qua `/ops/payments/{id}`)
+- ✅ Nộp duyệt (`submit`) — gói Free thẳng `pending`; gói Eco/Pro/Max → `pending_payment`, chờ
+  `POST /payments/job-package` tạo giao dịch
+- ✅ Quy trình thanh toán thủ công (mã tham chiếu + Vận hành xác nhận/từ chối qua `/ops/payments/{id}`)
+  — xem mục "Thanh toán" bên dưới
 - ✅ Hàng đợi duyệt nội dung tin (Vận hành: Admin/Moderator) — `GET /ops/jobs`,
   `POST /ops/jobs/{id}/moderate`, chặn publish khi tổ chức chưa `verified` (ERD mục 4.1)
 - ✅ Rút xác thực tổ chức tự động ẩn (`suspended`) mọi tin `published` của tổ chức đó — xem mục
@@ -136,12 +137,26 @@
   — trừ Credit qua `ExecuteUpdateAsync` có điều kiện `WHERE Balance >= cost`, atomic tại DB, tránh
   race condition không cần row lock thủ công; idempotent theo `UNIQUE(org_id, candidate_id)`, mở lại
   không mất thêm Credit)
-- 🟨 Nạp Credit — **chưa nối `POST /payments/credit-topup` thật** (phụ thuộc bounded context Payments
-  chưa làm). Thay bằng `POST /ops/organizations/{id}/credit-bonus` (Vận hành cộng thủ công,
-  `reason=bonus`) để test unlock end-to-end — quyết định tạm thời đã xác nhận với người dùng, sẽ đổi
-  khi Payments hoàn thiện
+- ✅ Nạp Credit — `POST /payments/credit-topup` (quy đổi tạm thời 1 Credit = 1.000đ), Vận hành xác
+  nhận qua `POST /ops/payments/{id}/confirm` cộng `credit_wallets.balance` (`reason=purchase`).
+  `POST /ops/organizations/{id}/credit-bonus` (Vận hành cộng thủ công, `reason=bonus`) vẫn giữ song
+  song — dùng cho khuyến mãi/hỗ trợ, khác mục đích với nạp qua thanh toán
 - ⬜ Hoàn Credit thủ công khi có tranh chấp (`/ops/organizations/{id}/credit-refund`) — chưa làm, khác
   `credit-bonus` (dùng khi tranh chấp/lỗi hệ thống, không phải nạp thường)
+
+### Thanh toán
+- ✅ Gói tin trả phí (`POST /payments/job-package`) — tạo `payments` (`type=job_package`,
+  `provider=manual_transfer`) + `job_purchases` (liên kết ngay, `payment_id` gắn từ lúc tạo, không đợi
+  confirm) + sinh `reference_code` (dạng `PAY-XXXXXX`, loại bỏ ký tự dễ nhầm 0/O/1/I vì NTD gõ tay vào
+  nội dung chuyển khoản). Chặn tạo trùng khi tin đã có giao dịch `pending` khác
+- ✅ Nạp Credit (`POST /payments/credit-topup`) — tạo `payments` (`type=credit_topup`). Chặn tạo trùng
+  khi tổ chức đã có giao dịch nạp Credit `pending` khác
+- ✅ Vận hành đối soát (`GET /ops/payments` hàng đợi, `POST /ops/payments/{id}/confirm|reject`) —
+  confirm: `job_package` → `Job.ConfirmPayment()` (chuyển `pending_payment→pending`); `credit_topup` →
+  cộng ví. Reject: `job_package` → `Job.RejectPayment()` (`pending_payment→draft`); `credit_topup` →
+  chỉ đánh dấu `failed`, không cộng gì
+- ⬜ Cổng thanh toán tự động (VNPay/Momo/ZaloPay) — hoãn theo [ADR-0003](../kien-truc/adr/0003-hoan-cong-thanh-toan-tu-dong.md),
+  schema/enum `provider` đã dự phòng sẵn cho khi chọn cổng
 
 ### Thông báo
 - ⬜ Thông báo trong ứng dụng

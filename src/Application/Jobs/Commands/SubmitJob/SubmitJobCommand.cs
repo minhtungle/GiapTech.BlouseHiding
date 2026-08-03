@@ -2,13 +2,13 @@ using GiapTech.BlouseHiding.Application.Common.Exceptions;
 using GiapTech.BlouseHiding.Application.Common.Interfaces;
 using GiapTech.BlouseHiding.Application.Common.Security;
 using GiapTech.BlouseHiding.Domain.Constants;
-using GiapTech.BlouseHiding.Domain.Enums;
 using NotFoundException = GiapTech.BlouseHiding.Application.Common.Exceptions.NotFoundException;
 
 namespace GiapTech.BlouseHiding.Application.Jobs.Commands.SubmitJob;
 
-// MVP: chỉ hỗ trợ nộp qua gói Free (published không cần thanh toán). Gói trả phí (Eco/Pro/Max) và
-// luồng payments/manual_transfer là bounded context riêng, chưa làm — xem TIEN-DO-DU-AN.md.
+// Gói Free → thẳng "pending" (chờ duyệt nội dung). Gói trả phí (Eco/Pro/Max) → "pending_payment",
+// NTD phải gọi tiếp POST /payments/job-package để tạo giao dịch chuyển khoản (xem
+// docs/backend/API-DESIGN.md mục 5-6, ADR-0003 — MVP dùng quy trình thủ công).
 [Authorize(Roles = Roles.Employer)]
 public record SubmitJobCommand : ICommand
 {
@@ -51,12 +51,6 @@ public class SubmitJobCommandHandler : ICommandHandler<SubmitJobCommand>
 
         var package = await _context.JobPackages.FirstOrDefaultAsync(p => p.Id == command.PackageId, cancellationToken)
             ?? throw new NotFoundException(nameof(Domain.Entities.JobPackage), command.PackageId);
-
-        if (package.Tier != JobPackageTier.Free)
-        {
-            throw new Common.Exceptions.ValidationException([new FluentValidation.Results.ValidationFailure(
-                nameof(command.PackageId), "Gói trả phí chưa hỗ trợ ở MVP — chỉ nộp được qua gói Free.")]);
-        }
 
         job.Submit(package.Tier, package.DurationDays);
 
