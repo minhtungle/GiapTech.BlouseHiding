@@ -8,12 +8,48 @@ xác thực chứng chỉ hành nghề, phân loại chuyên khoa, loại hình 
 > Nếu bạn là AI agent, đọc [`CLAUDE.md`](./CLAUDE.md) trước — đó là nguồn quy tắc bắt buộc, file này
 > chỉ là mục lục điều hướng.
 
+## Bắt đầu nhanh (dev cục bộ)
+
+> ⚠️ Repo này gồm 1 **repo tổng** (tài liệu + hạ tầng dev chung) và **3 git submodule** riêng cho
+> backend/`web/`/`web-admin/` — xem [ADR-0011](docs/kien-truc/adr/0011-tach-3-repo-git-submodule.md).
+> Chi tiết đầy đủ cổng, tài khoản đăng nhập, lệnh build/test từng phần:
+> [`docs/ha-tang/MOI-TRUONG-DEV-CUC-BO.md`](docs/ha-tang/MOI-TRUONG-DEV-CUC-BO.md) và
+> [CLAUDE.md](./CLAUDE.md) mục 6.
+
+```bash
+# 1. Clone kèm cả 3 submodule (nếu quên --recurse-submodules, chạy
+#    `git submodule update --init --recursive` sau khi clone)
+git clone --recurse-submodules https://github.com/minhtungle/GiapTech.BlouseHiding.git
+cd GiapTech.BlouseHiding
+
+# 2. Hạ tầng dev — Postgres/Redis/RabbitMQ/MinIO (chạy 1 lần, giữ chạy nền)
+docker compose up -d
+```
+
+Sau đó mở **3 cửa sổ terminal riêng**, mỗi cửa sổ 1 app, chạy song song:
+
+```bash
+# Cửa sổ 1 — Backend (.NET)
+cd api && dotnet run --project src/Web
+
+# Cửa sổ 2 — web/ (Client, Next.js)
+cd web && npm install && npm run dev     # http://localhost:3000
+
+# Cửa sổ 3 — web-admin/ (Admin NTD + Vận hành, Vite)
+cd web-admin && npm install && npm run dev   # http://localhost:5173
+```
+
+`npm install` chỉ cần chạy lần đầu (hoặc khi có package mới). Lần sau chỉ cần `docker compose up -d`
++ mở lại 3 cửa sổ chạy `dotnet run`/`npm run dev`.
+
 ## Trạng thái
 
-Giai đoạn 0 — solution backend (.NET 10 Clean Architecture) và cả 2 app frontend (`web/`, `web-admin/`)
-đã scaffold thật, build/test đã verify chạy được (xem [CLAUDE.md](./CLAUDE.md) mục 6 cho lệnh cụ thể).
-Chưa có bounded context nghiệp vụ nào (chỉ có khung Identity mặc định) — UI Client/Admin/Vận hành đã
-dựng nhiều màn hình bằng mock data, chưa nối API thật.
+Giai đoạn 0 hoàn tất — solution backend (.NET 10 Clean Architecture) và cả 2 app frontend (`web/`,
+`web-admin/`) đã scaffold, build/test verify chạy được. Đã có nhiều bounded context nghiệp vụ hoạt
+động thật (Identity, Hồ sơ ứng viên, Cơ sở y tế, Tin tuyển dụng, Ứng tuyển/ATS, Credit, Payments,
+Danh mục, Vận hành) — cả `web/` và `web-admin/` đã nối API thật cho phần lớn màn hình chính. Tra cứu
+chi tiết module nào đã nối API thật, còn mock, hay chưa có ở
+[`docs/nghiep-vu/TIEN-DO-CHI-TIET.md`](docs/nghiep-vu/TIEN-DO-CHI-TIET.md).
 
 **Đã chốt:** backend **.NET 10 (ASP.NET Core)** + **Mediator/Mapster** (không phải MediatR/AutoMapper —
 2 thư viện đó đã thương mại hóa, xem [ADR-0009](docs/kien-truc/adr/0009-mediator-mapster-thay-mediatr-automapper.md)),

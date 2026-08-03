@@ -6,16 +6,37 @@
 > [`BIEN-MOI-TRUONG.md`](./BIEN-MOI-TRUONG.md); quy trình vận hành production xem
 > [`VAN-HANH-RUNBOOK.md`](./VAN-HANH-RUNBOOK.md). Lệnh khởi động đầy đủ xem
 > [`../../CLAUDE.md`](../../CLAUDE.md) mục 6.
+>
+> ⚠️ Từ [ADR-0011](../kien-truc/adr/0011-tach-3-repo-git-submodule.md), backend/`web/`/`web-admin/` là
+> **git submodule** — clone phải kèm `--recurse-submodules`, xem mục 0.
 
 ---
 
+## 0. Clone lần đầu
+
+```bash
+git clone --recurse-submodules https://github.com/minhtungle/GiapTech.BlouseHiding.git
+cd GiapTech.BlouseHiding
+```
+
+Nếu đã clone thường (quên `--recurse-submodules`) — 3 thư mục `api/`, `web/`, `web-admin/` sẽ trống,
+chạy thêm:
+```bash
+git submodule update --init --recursive
+```
+
 ## 1. Ứng dụng
+
+Toàn bộ lệnh dưới đây chạy **từ thư mục gốc repo tổng** (`GiapTech.BlouseHiding/`) — `cd` vào submodule
+tương ứng trước khi chạy `dotnet run`/`npm run dev`.
 
 | Ứng dụng | Lệnh chạy | URL | Ghi chú |
 |---|---|---|---|
-| Backend API (.NET) | `dotnet run --project src/Web` | http://localhost:5256 (theo `launchSettings.json`) | ⚠️ **Không khớp** biến `NEXT_PUBLIC_API_BASE_URL`/`VITE_API_BASE_URL` mặc định của 2 frontend (đang trỏ `5100`, xem mục 3) — chạy `ASPNETCORE_URLS=http://localhost:5100 dotnet run --project src/Web --no-launch-profile` để khớp, hoặc sửa `.env` của frontend trỏ đúng `5256`. Xem [`scalar`](http://localhost:5256/scalar) để có UI thử API (OpenAPI/Scalar tự bật ở Development) |
+| Backend API (.NET) | `cd api && dotnet run --project src/Web` | http://localhost:5256 (theo `launchSettings.json`) | ⚠️ **Không khớp** biến `NEXT_PUBLIC_API_BASE_URL`/`VITE_API_BASE_URL` mặc định của 2 frontend (đang trỏ `5100`, xem mục 3) — chạy `ASPNETCORE_URLS=http://localhost:5100 dotnet run --project src/Web --no-launch-profile` để khớp, hoặc sửa `.env` của frontend trỏ đúng `5256`. Xem [`scalar`](http://localhost:5256/scalar) để có UI thử API (OpenAPI/Scalar tự bật ở Development) |
 | `web/` — Client (Next.js) | `cd web && npm run dev` | http://localhost:3000 | Next.js mặc định, redirect `/vi` |
 | `web-admin/` — Admin (NTD) + Vận hành (Vite) | `cd web-admin && npm run dev` | http://localhost:5173 | Vite mặc định |
+
+Chạy song song bằng 3 cửa sổ terminal riêng (mỗi app 1 cửa sổ, không tắt cửa sổ nào giữa lúc test).
 
 ## 2. Hạ tầng (Docker Compose — `docker-compose.yml` ở repo root)
 
@@ -38,14 +59,14 @@ Khởi động: `docker compose up -d` ở repo root. Kiểm tra container khỏ
 | `web/.env` (hoặc `.env.local`) | `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:5100/api/v1` |
 | `web-admin/.env` | `VITE_API_BASE_URL` | `http://localhost:5100/api/v1` |
 
-Cả 2 đều trỏ **`5100`**, trong khi `dotnet run --project src/Web` mặc định chạy ở **`5256`** (theo
-`src/Web/Properties/launchSettings.json`). Đây là gap có sẵn trong repo, chưa được thống nhất — chọn 1
-trong 2 cách khi chạy backend cho khớp:
-- Ép backend chạy đúng `5100`: `ASPNETCORE_URLS=http://localhost:5100 dotnet run --project src/Web --no-launch-profile`
+Cả 2 đều trỏ **`5100`**, trong khi `dotnet run --project src/Web` (chạy từ trong `api/`) mặc định chạy
+ở **`5256`** (theo `api/src/Web/Properties/launchSettings.json`). Đây là gap có sẵn trong repo, chưa
+được thống nhất — chọn 1 trong 2 cách khi chạy backend cho khớp:
+- Ép backend chạy đúng `5100` (từ trong `api/`): `ASPNETCORE_URLS=http://localhost:5100 dotnet run --project src/Web --no-launch-profile`
   (cờ `--no-launch-profile` bỏ qua `applicationUrl` trong `launchSettings.json`, nhưng cũng bỏ qua
   `ASPNETCORE_ENVIRONMENT=Development` — log vẫn hiện OTP giả lập bình thường, không ảnh hưởng test).
 - Hoặc sửa `.env`/`.env.local` của 2 frontend trỏ về `5256` rồi chạy backend bình thường qua
-  `dotnet run --project src/Web`.
+  `dotnet run --project src/Web` (từ trong `api/`).
 
 ## 4. Tài khoản đăng nhập
 
