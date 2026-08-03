@@ -35,7 +35,7 @@ Nếu có mục không đạt, ghi rõ lý do + kế hoạch xử lý vào nhậ
 |---|---|---|
 | 0.1 — UI Shell | 🟨 Gần xong | Còn thiếu tin nhắn/thông báo thật, export PDF CV |
 | 0.2 — Backend & hạ tầng | 🟨 Gần xong | Danh mục (đọc+ghi) + CI/CD xong; Jobs/ATS/Credit chưa làm |
-| 1 — MVP | 🟨 Đang làm | Identity thật + tạo tổ chức + hồ sơ ứng viên (core: profile/CCHN/chuyên khoa) xong; CV Builder/Jobs/ATS/Credit chưa làm |
+| 1 — MVP | 🟨 Đang làm | Identity + tạo tổ chức + hồ sơ ứng viên (core) + Jobs (core, gói Free) xong; Payments/ATS/Credit chưa làm |
 | 2 — Hoàn thiện | ⬜ Chưa bắt đầu | |
 | 3 — Mở rộng | ⬜ Chưa bắt đầu | |
 
@@ -167,18 +167,44 @@ handler body thay vì `Application.Common.Exceptions.ValidationException` — `P
 chỉ bắt loại thứ 2, nên lỗi loại thứ nhất sẽ rơi xuống 500 thay vì 400 đúng thiết kế. Sửa bằng alias
 `using ValidationException = ...Exceptions.ValidationException;` ở cả 4 file.
 
+- Bounded context **Tin tuyển dụng (core, gói Free)**: `Job` entity — invariant `CanEdit`
+  (draft/rejected), `Submit()`/`ConfirmPayment()`/`RejectPayment()`/`Moderate()`/`Close()`/
+  `Suspend()`/`CreateRenewalCopy()` đều nằm trong Domain, Handler chỉ điều phối. `Moderate()` enforce
+  đúng ERD mục 4.1 (`published` chỉ khi `organization.verify_status = verified`) — kiểm tra ở cả
+  Application layer (`ModerateJobCommandHandler`) trước khi gọi Domain method, không phó mặc 1 lớp.
+  Web: `GET/POST /jobs`, `GET/PUT /jobs/{id}`, `POST /jobs/{id}/{submit,close,renew}`,
+  `GET /organizations/{id}/jobs`, `GET /ops/jobs`, `POST /ops/jobs/{id}/moderate` — đúng path
+  API-DESIGN.md mục 5, 11. **Chỉ hỗ trợ gói Free ở MVP** (submit thẳng `pending`, không qua thanh
+  toán) — gói Eco/Pro/Max + `payments`/`pending_payment` là bounded context Payments riêng, quyết định
+  tách khỏi vòng này đã xác nhận với người dùng.
+
+Verify đã chạy: `dotnet test` 23/23 pass (3 unit + 20 functional, có test riêng cho publish chặn khi
+tổ chức chưa verified, draft không hiện cho guest, sửa tin sau submit bị chặn, đóng tin bởi người
+không phải thành viên tổ chức bị 403); migration `AddJobs` áp thành công; chạy `dotnet run --project
+src/Web` thật + curl toàn bộ luồng tạo tin (draft, guest 404)→submit gói Free→hàng đợi Vận hành→
+duyệt→published (guest xem được, search theo keyword thấy đúng)→renew (tin cũ `closed`, tin mới
+`draft` sao chép đúng nội dung)→`GET /organizations/{id}/jobs` thấy đủ mọi trạng thái.
+
 Còn thiếu (chặn việc chốt giai đoạn):
 - OAuth Google/Zalo — chưa làm, quyết định hoãn sang sau khi Identity cốt lõi ổn định (đã xác nhận với
   người dùng).
 - `POST /organizations/{id}/members/invite` + luồng chấp nhận lời mời (`organization_invitations`) —
   chưa làm, mới có tạo tổ chức lần đầu.
+- **`/ops/organizations/{id}/verify`** — chưa làm, hiện tại chỉ đổi `verify_status` được qua UPDATE
+  SQL thủ công lúc test, chặn việc test end-to-end đầy đủ luồng "tổ chức đăng ký → Vận hành duyệt →
+  đăng tin được" mà không cần thao tác DB tay.
 - Hồ sơ ứng viên: học vấn/kinh nghiệm (`experiences`/`educations`), CME (`continuing_certificates`), CV
   Builder + export PDF — chưa làm, quyết định tách khỏi vòng "core" (profile+CCHN+chuyên khoa) đã xác
   nhận với người dùng. Upload document CCHN hiện giả định URL có sẵn, chưa nối
   `POST /uploads/presigned-url`/MinIO thật.
-- Jobs, Applications/ATS, Credit/Payment — chưa bắt đầu bounded context nào trong số này.
-- Chưa nối `web/`/`web-admin/` tới API Identity/Hồ sơ ứng viên thật (màn hình đăng ký/đăng nhập/hồ sơ
-  vẫn dùng mock/form tĩnh) — ưu tiên tiếp theo sau khi có thêm bounded context để có gì nối.
+- Jobs: gói trả phí (Eco/Pro/Max) + Payments (`payments`/`job_purchases`/`pending_payment`/
+  `/ops/payments/*`) — chưa làm, quyết định tách bounded context riêng đã xác nhận với người dùng.
+  Tìm kiếm hiện dùng LINQ/EF Core thay vì Postgres full-text (`pg_trgm`) như ERD mục 0 ghi — đủ dùng
+  cho MVP, tối ưu sau.
+- Applications/ATS, Credit/Payment — chưa bắt đầu bounded context nào trong số này.
+- Chưa nối `web/`/`web-admin/` tới API Identity/Hồ sơ ứng viên/Jobs thật (màn hình đăng ký/đăng nhập/
+  hồ sơ/đăng tin vẫn dùng mock/form tĩnh) — ưu tiên tiếp theo sau khi có thêm bounded context để có gì
+  nối.
 
 ### Giai đoạn 2 — Hoàn thiện
 

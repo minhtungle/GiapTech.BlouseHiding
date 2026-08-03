@@ -81,20 +81,27 @@
   chối kèm lý do bắt buộc khi từ chối)
 
 ### Cơ sở y tế
-- ⬜ Đăng ký hồ sơ tổ chức
+- ✅ Đăng ký hồ sơ tổ chức (`POST /organizations` — tạo tổ chức lần đầu → owner member, xem mục
+  "Tài khoản & định danh")
 - ⬜ Upload giấy phép hoạt động
-- ⬜ Hàng đợi duyệt tổ chức (Vận hành)
+- ⬜ Hàng đợi duyệt tổ chức (Vận hành) — `verify_status` hiện chỉ đổi được thủ công qua DB (chưa có
+  endpoint `/ops/organizations/{id}/verify`), chặn việc test end-to-end đầy đủ luồng publish
 - ⬜ Trang công khai cơ sở y tế
 
 ### Tin tuyển dụng
-- ⬜ Tạo/sửa tin (draft)
-- ⬜ Gói đăng tin Eco/Pro/Max
-- ⬜ Trạng thái `pending_payment` riêng biệt với `pending` (chờ thanh toán ≠ chờ duyệt nội dung)
+- ✅ Tạo/sửa tin (draft/rejected — `CanEdit` invariant), đóng tin sớm (`close`), gia hạn (`renew` — tạo
+  `jobs` row mới, tin gốc chuyển `closed`, không tái sử dụng `job_id`)
+- 🟨 Nộp duyệt (`submit`) — **chỉ hỗ trợ gói Free ở MVP** (thẳng `pending`, không qua thanh toán). Gói
+  Eco/Pro/Max + `pending_payment` + quy trình thanh toán thủ công là bounded context Payments riêng,
+  quyết định tách khỏi vòng Jobs này (đã xác nhận với người dùng) — chưa làm
 - ⬜ Quy trình thanh toán thủ công (mã tham chiếu + Vận hành xác nhận/từ chối qua `/ops/payments/{id}`)
-- ⬜ Hàng đợi duyệt nội dung tin (Vận hành: Admin/Moderator)
-- ⬜ Gia hạn tin = tạo tin mới (clone), không tái sử dụng `job_id`
-- ⬜ Rút xác thực tổ chức tự động ẩn (`suspended`) mọi tin `published` của tổ chức đó
-- ⬜ Tìm kiếm & lọc (Postgres full-text)
+- ✅ Hàng đợi duyệt nội dung tin (Vận hành: Admin/Moderator) — `GET /ops/jobs`,
+  `POST /ops/jobs/{id}/moderate`, chặn publish khi tổ chức chưa `verified` (ERD mục 4.1)
+- ⬜ Rút xác thực tổ chức tự động ẩn (`suspended`) mọi tin `published` của tổ chức đó — chưa làm vì
+  chưa có endpoint duyệt/rút xác thực tổ chức
+- 🟨 Tìm kiếm & lọc — `GET /jobs` lọc theo specialty/location/employmentType/salaryMin/keyword bằng
+  LINQ (EF Core), chưa chuyển sang Postgres full-text (`pg_trgm`/`tsvector`) như thiết kế ban đầu ghi
+  ở ERD mục 0 — đủ dùng cho lượng dữ liệu MVP, tối ưu sau khi có traffic thật
 
 ### Ứng tuyển & ATS
 - ⬜ Ứng tuyển bằng CV nền tảng/upload

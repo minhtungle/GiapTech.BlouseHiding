@@ -30,5 +30,7 @@ public interface IApplicationDbContext
 
     DbSet<ProfileSpecialty> ProfileSpecialties { get; }
 
+    DbSet<Job> Jobs { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }
