@@ -334,9 +334,18 @@ mở (đúng ERD mục 7), nút "Mở hồ sơ" gọi `candidatesApi.unlock` th�
 ví không đủ Credit (400) thay vì lỗi chung. Verify: `npx tsc -b`/`npm run build`/`npm run lint` sạch;
 route tree tự sinh đúng (`routeTree.gen.ts` có `/candidates/`).
 
+Bổ sung tiếp — nối form thêm/sửa ở `web-admin/src/features/ops-catalog/` (trước đó chỉ đọc) tới
+`opsCatalogApi` mới (thêm vào `lib/api.ts`): dialog Thêm/Sửa cho chuyên khoa (dạng cây cha-con qua
+`parentId`, `code` chỉ nhập lúc tạo — không đổi được sau), địa điểm (cùng cấu trúc cây, tỉnh/thành là
+node gốc), gói tin (Free/Eco/Pro/Max — `tier` chỉ chọn lúc tạo, khớp đúng ràng buộc
+`UpdateJobPackageCommand` không có field Tier ở backend). Không có nút xóa vì backend chưa có
+Delete/Deactivate cho 3 entity này — cố ý không dựng nút xóa giả không gọi được gì. Dọn luôn code chết
+liên quan ở `lib/mock-data.ts` (`MOCK_SPECIALTIES`/`MOCK_LOCATIONS`/`MOCK_JOB_PACKAGES` và các mock
+Job/Application/Credit/License/Org cũ không còn nơi nào import — chỉ giữ `MOCK_PAYMENT_QUEUE`/
+`MOCK_REPORT_QUEUE` vì 2 trang đó vẫn cố ý dùng mock). Verify: `tsc -b`/`build`/`lint` sạch,
+`vitest run` 128/129 (1 fail flaky không liên quan, đã ghi ở log trước).
+
 Còn thiếu (chặn việc chốt giai đoạn):
-- `web-admin/src/features/ops-catalog/` — chỉ nối phần đọc (danh mục chuyên khoa/địa điểm/gói) từ
-  trước, form thêm/sửa danh mục vẫn chưa gọi Command thật.
 - `web-admin/src/features/users/` — vẫn dùng `@faker-js/faker` với role không khớp domain thật
   (superadmin/admin/cashier/manager thay vì employer/admin/moderator/candidate) — cần viết lại.
 - OAuth, Payments, học vấn/kinh nghiệm/CME/CV Builder, đổi mật khẩu khi đã đăng nhập, hoàn Credit thủ

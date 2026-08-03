@@ -214,3 +214,47 @@ export const opsApi = {
   moderateJob: (jobId: string, approved: boolean, rejectReason: string | null = null) =>
     http.post(`/ops/jobs/${jobId}/moderate`, { approved, rejectReason }),
 }
+
+// 5 locale không phải "vi" (vi nằm ở field name gốc) — xem CatalogLocales.cs.
+export type CatalogTranslations = Partial<Record<'en' | 'ja' | 'zh' | 'ko' | 'es', string>>
+
+export type CreateSpecialtyInput = {
+  code: string
+  name: string
+  parentId?: string | null
+  translations?: CatalogTranslations
+}
+export type UpdateSpecialtyInput = Omit<CreateSpecialtyInput, 'code'>
+
+export type CreateLocationInput = {
+  name: string
+  parentId?: string | null
+  translations?: CatalogTranslations
+}
+export type UpdateLocationInput = CreateLocationInput
+
+export type CreateJobPackageInput = {
+  tier: 'Free' | 'Eco' | 'Pro' | 'Max'
+  name: string
+  durationDays: number
+  price: number
+  maxActiveJobs?: number | null
+  perks?: Record<string, boolean>
+  translations?: CatalogTranslations
+}
+export type UpdateJobPackageInput = Omit<CreateJobPackageInput, 'tier'>
+
+export const opsCatalogApi = {
+  createSpecialty: (input: CreateSpecialtyInput) =>
+    http.post<string>('/ops/catalog/specialties', input).then((r) => r.data),
+  updateSpecialty: (id: string, input: UpdateSpecialtyInput) =>
+    http.put(`/ops/catalog/specialties/${id}`, input),
+  createLocation: (input: CreateLocationInput) =>
+    http.post<string>('/ops/catalog/locations', input).then((r) => r.data),
+  updateLocation: (id: string, input: UpdateLocationInput) =>
+    http.put(`/ops/catalog/locations/${id}`, input),
+  createJobPackage: (input: CreateJobPackageInput) =>
+    http.post<string>('/ops/job-packages', input).then((r) => r.data),
+  updateJobPackage: (id: string, input: UpdateJobPackageInput) =>
+    http.put(`/ops/job-packages/${id}`, input),
+}

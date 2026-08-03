@@ -59,9 +59,10 @@
   thật), dashboard NTD, ví Credit (số dư + lịch sử), hàng đợi duyệt Vận hành (CCHN/tổ chức/tin, có
   dialog nhập lý do khi từ chối), tìm/mở hồ sơ ứng viên chủ động (`features/candidates/`, filter
   chuyên khoa/địa điểm, ẩn liên hệ tới khi mở, nút mở hồ sơ trừ Credit thật, báo lỗi rõ khi không đủ
-  Credit)**. **Chưa nối**: form thêm/sửa danh mục ở `/ops/catalog` (chỉ đọc), `/ops/payments`/
-  `/ops/reports` (chưa có bounded context), trang quản lý người dùng (`features/users/` vẫn dùng
-  faker + role giả).
+  Credit), form thêm/sửa danh mục ở `/ops/catalog` (chuyên khoa + địa điểm dạng cây cha-con qua dialog,
+  gói tin Free/Eco/Pro/Max — hạng gói không đổi được sau khi tạo, đúng ràng buộc backend)**. **Chưa
+  nối**: `/ops/payments`/`/ops/reports` (chưa có bounded context), trang quản lý người dùng
+  (`features/users/` vẫn dùng faker + role giả).
 
 ## Giai đoạn 1 — MVP
 
