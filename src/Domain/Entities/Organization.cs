@@ -42,4 +42,26 @@ public class Organization : BaseAuditableEntity
 
         return owner;
     }
+
+    public void Verify(Guid verifiedBy)
+    {
+        VerifyStatus = OrganizationVerifyStatus.Verified;
+        VerifiedBy = verifiedBy;
+        RejectReason = null;
+    }
+
+    public void Reject(Guid verifiedBy, string reason)
+    {
+        VerifyStatus = OrganizationVerifyStatus.Rejected;
+        VerifiedBy = verifiedBy;
+        RejectReason = reason;
+    }
+
+    // Rút xác thực (verified → suspended) — luôn kéo theo tự động ẩn mọi tin published của tổ chức
+    // trong cùng transaction (ERD mục 4.6), không phải thao tác thủ công riêng dễ quên.
+    public void Suspend(Guid verifiedBy)
+    {
+        VerifyStatus = OrganizationVerifyStatus.Suspended;
+        VerifiedBy = verifiedBy;
+    }
 }

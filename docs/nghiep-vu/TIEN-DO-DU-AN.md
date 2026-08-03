@@ -35,7 +35,7 @@ Nếu có mục không đạt, ghi rõ lý do + kế hoạch xử lý vào nhậ
 |---|---|---|
 | 0.1 — UI Shell | 🟨 Gần xong | Còn thiếu tin nhắn/thông báo thật, export PDF CV |
 | 0.2 — Backend & hạ tầng | 🟨 Gần xong | Danh mục (đọc+ghi) + CI/CD xong; Jobs/ATS/Credit chưa làm |
-| 1 — MVP | 🟨 Đang làm | Identity + tổ chức + hồ sơ ứng viên (core) + Jobs (core, gói Free) + Applications/ATS xong; Payments/Credit chưa làm |
+| 1 — MVP | 🟨 Đang làm | Identity + tổ chức (+ duyệt) + hồ sơ ứng viên (core) + Jobs (core, gói Free) + Applications/ATS xong; Payments/Credit chưa làm |
 | 2 — Hoàn thiện | ⬜ Chưa bắt đầu | |
 | 3 — Mở rộng | ⬜ Chưa bắt đầu | |
 
@@ -205,14 +205,28 @@ src/Web` thật + curl toàn bộ luồng: candidate ứng tuyển vào tin publ
 Kanban)→chuyển stage `New→Shortlisted` (ghi lịch sử đúng)→thêm ghi chú→chấm điểm ghi đè→xem lịch sử;
 ứng tuyển trùng bị chặn 400 đúng thiết kế.
 
+- **Hàng đợi duyệt tổ chức (Vận hành)**: `GET /ops/organizations`, `POST /ops/organizations/{id}/verify`
+  (action `Verify`/`Reject`/`Suspend`, không phải 3 endpoint riêng — đúng thiết kế API-DESIGN.md mục
+  11). `Organization.Suspend()` (Domain method) chỉ đổi `verify_status`; enforce ERD mục 4.6 (tự động
+  suspend mọi tin `published` của tổ chức cùng transaction) nằm ở `VerifyOrganizationCommandHandler`
+  — query toàn bộ `Job` đang published của org rồi gọi `job.Suspend()` cho từng cái, save 1 lần. Đây
+  là gap được ghi nhận là quan trọng nhất ở log trước (chặn test end-to-end không cần SQL tay) — đã
+  giải quyết ngay lượt tiếp theo.
+
+Verify đã chạy: `dotnet test` 35/35 pass (3 unit + 32 functional, có test riêng cho verify/reject
+tổ chức, và **test quan trọng nhất**: rút xác thực tổ chức đã `verified` có tin `published` → tin tự
+động chuyển `suspended` trong cùng lần gọi, không cần thao tác thứ 2); không cần migration mới (không
+thêm DbSet, chỉ thêm Domain method + Command/Query + endpoint). Verify curl end-to-end thật: tạo tổ
+chức (pending)→`GET /ops/organizations` thấy trong hàng đợi→`POST .../verify` (Verify) 200→tạo tin→
+submit→duyệt→published (curl xác nhận)→`POST .../verify` (Suspend) 200→`GET /jobs/{id}` guest trả 404
+(không còn published)→`SELECT "Status" FROM "Jobs"` xác nhận giá trị enum `Suspended` (7) trong Postgres
+thật.
+
 Còn thiếu (chặn việc chốt giai đoạn):
 - OAuth Google/Zalo — chưa làm, quyết định hoãn sang sau khi Identity cốt lõi ổn định (đã xác nhận với
   người dùng).
 - `POST /organizations/{id}/members/invite` + luồng chấp nhận lời mời (`organization_invitations`) —
   chưa làm, mới có tạo tổ chức lần đầu.
-- **`/ops/organizations/{id}/verify`** — chưa làm, hiện tại chỉ đổi `verify_status` được qua UPDATE
-  SQL thủ công lúc test, chặn việc test end-to-end đầy đủ luồng "tổ chức đăng ký → Vận hành duyệt →
-  đăng tin được" mà không cần thao tác DB tay. Đây là gap quan trọng nhất còn lại — nên ưu tiên sớm.
 - Hồ sơ ứng viên: học vấn/kinh nghiệm (`experiences`/`educations`), CME (`continuing_certificates`), CV
   Builder + export PDF — chưa làm, quyết định tách khỏi vòng "core" (profile+CCHN+chuyên khoa) đã xác
   nhận với người dùng. Upload document CCHN hiện giả định URL có sẵn, chưa nối
