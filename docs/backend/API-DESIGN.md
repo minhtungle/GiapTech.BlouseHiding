@@ -59,8 +59,9 @@
 | POST | `/auth/logout` | Owner | Thu hồi refresh token |
 | POST | `/auth/forgot-password` | Public | Gửi email reset |
 | POST | `/auth/reset-password` | Public (reset token) | Đặt lại mật khẩu |
-| GET | `/users/me` | Owner | Thông tin tài khoản hiện tại |
+| GET | `/users/me` | Owner | Thông tin tài khoản hiện tại (gồm `locale` hiện tại) |
 | PATCH | `/users/me` | Owner | Đổi email/SĐT (yêu cầu xác thực lại) |
+| PUT | `/users/me/locale` | Owner | Đổi ngôn ngữ giao diện đã lưu (`users.locale`) — đồng bộ lựa chọn giữa `web/` và `web-admin/` khi cùng 1 tài khoản, body `{ locale: "vi"\|"en"\|"ja"\|"zh"\|"ko"\|"es" }` |
 | DELETE | `/users/me` | Owner | Yêu cầu xóa tài khoản (NĐ 13/2023 — soft delete + anonymize) |
 
 ---
@@ -109,7 +110,8 @@
 | POST | `/organizations` | Employer (đã đăng ký user) | Tạo hồ sơ tổ chức lần đầu → tạo `owner` member |
 | GET | `/organizations/{id}` | Public | Trang công khai của cơ sở y tế |
 | PUT | `/organizations/{id}` | Employer (owner/hr_manager) | Cập nhật thông tin |
-| POST | `/organizations/{id}/documents` | Employer (owner) | Upload giấy phép hoạt động |
+| GET | `/organizations/{id}/documents` | Public | Danh sách giấy phép đã upload — Vận hành xem qua `GET /ops/organizations` (đã lồng sẵn `documents` vào response, không gọi endpoint này riêng) |
+| POST | `/organizations/{id}/documents` | Employer (thành viên, không giới hạn chỉ owner) | Ghi nhận 1 document sau khi đã `PUT` file lên MinIO qua `POST /uploads/presigned-url` (`purpose=org_document`) — endpoint này chỉ lưu `fileUrl` trả về, không nhận file trực tiếp |
 | GET | `/organizations/{id}/members` | Employer (thành viên) | Danh sách thành viên + lời mời đang chờ (`PendingInvitations`) trong tổ chức |
 | POST | `/organizations/{id}/members/invite` | Employer (thành viên) | Tạo `organization_invitations` (role `hr_manager`/`hr_member`, không mời thêm `owner`), gửi email chứa link token — hoạt động **kể cả khi email chưa có tài khoản** (driver hiện là giả lập nội bộ log token, giống OTP — xem `docs/nghiep-vu/TIEN-DO-DU-AN.md`) |
 | POST | `/invitations/{token}/accept` | Đã đăng nhập, email khớp lời mời | Chấp nhận → tạo `employer_members` thật, set `accepted_at`. **Chưa làm** endpoint xem trước lời mời trước khi đăng nhập (`GET .../invitations/{token}`) — MVP yêu cầu đăng nhập/đăng ký trước rồi mới biết được lời mời hợp lệ hay không |
@@ -240,14 +242,16 @@ không qua Payment) trong cùng transaction.
 | POST | `/ops/payments/{id}/confirm` | Admin/Moderator | **Xác nhận đã nhận chuyển khoản** theo `reference_code` — set `payments.status=success` + `confirmed_by`; nếu `type=job_package` → `jobs.status: pending_payment→pending` qua `Job.ConfirmPayment()` (`job_purchases` đã tạo sẵn từ lúc `POST /payments/job-package`, mục 6); nếu `type=credit_topup` → cộng `credit_wallets.balance` (mục 6, 7) |
 | POST | `/ops/payments/{id}/reject` | Admin/Moderator | Không nhận được/sai số tiền → `payments.status=failed`, `jobs.status: pending_payment→draft` để NTD sửa & nộp lại |
 | POST | `/ops/organizations/{id}/credit-refund` | Admin | Hoàn Credit thủ công khi có tranh chấp — ghi `credit_transactions` (`reason=refund`, `created_by`) |
-| GET | `/ops/reports?status=pending` | Admin/Moderator | Danh sách báo cáo vi phạm |
-| POST | `/ops/reports/{id}/resolve` | Admin/Moderator | Body: `{ action: "warned" \| "content_removed" \| "account_suspended", note }`. `content_removed`/`account_suspended` phải trigger state change tương ứng của entity bị báo cáo (đóng tin/rút xác thực tổ chức) trong cùng transaction, không tách 2 bước thủ công (xem ERD mục 4.10) |
-| GET | `/ops/users` | Admin | Tìm kiếm/quản lý người dùng |
-| POST | `/ops/users/{id}/suspend` | Admin | Khóa tài khoản |
+| POST | `/reports` | Owner (bất kỳ user đăng nhập) | Tạo báo cáo vi phạm — `{ targetType, targetId, reason }` |
+| GET | `/ops/reports` | Admin/Moderator | Danh sách báo cáo đang `pending` (không nhận query filter — MVP chỉ có 1 hàng đợi) |
+| POST | `/ops/reports/{id}/resolve` | Admin/Moderator | Body: `{ action: "dismissed" \| "warned" \| "content_removed" \| "account_suspended", note }` — `dismissed` thêm ngoài 3 giá trị ERD gốc, dùng cho "Bỏ qua" (không có `resolution_action`, tách khỏi trạng thái `resolved`). `content_removed` khi `targetType=Job` gọi `Job.Close()` cùng transaction; các `targetType` khác (`Organization`/`Profile`/`Message`) hiện chỉ lưu action, chưa có state change tương ứng — giới hạn MVP đã xác nhận, xem `docs/nghiep-vu/TIEN-DO-DU-AN.md` |
+| GET | `/ops/users?email=` | Admin | Tìm kiếm người dùng theo email (tối đa 50 kết quả) |
+| POST | `/ops/users/{id}/suspend` | Admin | Khóa tài khoản (`status: active→suspended`) |
+| POST | `/ops/users/{id}/unsuspend` | Admin | Mở khóa tài khoản (`status: suspended→active`) — bổ sung ngoài thiết kế gốc, cần thiết để đảo ngược `suspend` |
 | CRUD | `/ops/catalog/specialties`, `/ops/catalog/locations` | Admin | Quản lý danh mục |
 | CRUD | `/ops/job-packages` | Admin | Cấu hình gói tin/giá |
 | GET | `/ops/audit-logs` | Admin | Tra cứu nhật ký kiểm toán |
-| GET | `/ops/dashboard/stats` | Admin | Số liệu tổng quan |
+| GET | `/ops/dashboard/stats` | Admin/Moderator | Số liệu đếm tổng quan — tổng ứng viên/NTD theo role, tin theo `status`, tổ chức theo `verify_status`, số báo cáo/thanh toán đang chờ xử lý |
 
 ---
 

@@ -90,23 +90,29 @@
 - ✅ Mời thành viên HR qua email (kể cả email chưa có tài khoản — `organization_invitations`, token
   hash SHA-256 lưu DB, hết hạn sau 7 ngày). Gửi email hiện là **driver giả lập nội bộ** (log token thay
   vì gửi thật, cùng quyết định với OTP — xem `docs/nghiep-vu/TIEN-DO-DU-AN.md`)
-- ⬜ Chọn/ghi nhớ ngôn ngữ giao diện (`users.locale`), email/thông báo gửi đúng ngôn ngữ đã chọn
+- ✅ Chọn/ghi nhớ ngôn ngữ giao diện (`PUT /users/me/locale`, `GET /users/me` trả kèm `locale`) — cả
+  `web/` và `web-admin/` tự đồng bộ khi đổi ngôn ngữ/đăng nhập lại. Email/thông báo gửi đúng ngôn ngữ đã
+  chọn chưa làm (chưa có bounded context Thông báo)
 - ✅ Xóa tài khoản (`DELETE /users/me` — soft-delete + anonymize PII, giữ audit log/application đã ẩn danh)
 
 ### Hồ sơ ứng viên
 - ✅ Hồ sơ cơ bản (`candidate_profiles` — tên, mô tả ngắn, tiểu sử; tự tạo lúc `PUT /candidates/me` lần
   đầu). Học vấn/kinh nghiệm/kỹ năng (`experiences`/`educations`) chưa làm — dời sang đợt sau
-- ✅ Quản lý CCHN — thêm/sửa (chỉ khi `pending`/`rejected`)/xóa (chỉ khi chưa `verified`); upload document
-  giả định URL có sẵn (chưa nối `POST /uploads/presigned-url`/MinIO thật)
+- ✅ Quản lý CCHN — thêm/sửa (chỉ khi `pending`/`rejected`)/xóa (chỉ khi chưa `verified`); upload ảnh/scan
+  CCHN thật qua MinIO (`POST /uploads/presigned-url` + `PUT` thẳng lên MinIO, `web/` đã nối UI thật).
+  Sửa/xóa CCHN qua UI (Route Handler proxy đã có sẵn) — chưa nối
 - ✅ Gắn chuyên khoa + trình độ (`profile_specialties`, không trùng chuyên khoa)
 - ⬜ CV Builder (mẫu dựng sẵn) + upload PDF
 - ✅ Hàng đợi duyệt CCHN (Vận hành) — `GET /ops/licenses`, `POST /ops/licenses/{id}/verify` (duyệt/từ
   chối kèm lý do bắt buộc khi từ chối)
 
 ### Cơ sở y tế
-- ✅ Đăng ký hồ sơ tổ chức (`POST /organizations` — tạo tổ chức lần đầu → owner member, xem mục
-  "Tài khoản & định danh")
-- ⬜ Upload giấy phép hoạt động
+- ✅ Đăng ký hồ sơ tổ chức (`POST /organizations` — tạo tổ chức lần đầu → owner member). Đã nối UI ở
+  `web-admin/` (trang "Hồ sơ tổ chức", `/organization`) — trước đó chỉ có backend, employer không có
+  cách tạo tổ chức qua UI
+- ✅ Upload giấy phép hoạt động — entity `OrganizationDocument` mới (`GET/POST
+  /organizations/{id}/documents`), Vận hành xem file thật ngay trong hàng đợi duyệt tổ chức
+  (`GET /ops/organizations` trả kèm `documents`), cảnh báo rõ khi tổ chức chưa upload gì
 - ✅ Hàng đợi duyệt tổ chức (Vận hành) — `GET /ops/organizations`, `POST /ops/organizations/{id}/verify`
   (action `Verify`/`Reject`/`Suspend`). Rút xác thực (`Suspend`) **tự động** chuyển mọi tin `published`
   của tổ chức sang `suspended` trong cùng transaction (ERD mục 4.6) — không thao tác riêng từng tin
@@ -167,13 +173,25 @@
   schema/enum `provider` đã dự phòng sẵn cho khi chọn cổng
 
 ### Thông báo
-- ⬜ Thông báo trong ứng dụng
-- ⬜ Thông báo email
+- ✅ Thông báo trong ứng dụng — backend (`GET /notifications`, `PATCH /notifications/{id}/read`), kích
+  hoạt khi duyệt/từ chối CCHN, chuyển giai đoạn ứng tuyển (trừ khi "âm thầm"), duyệt/từ chối tin tuyển
+  dụng. Đã nối UI chuông thông báo (poll 30s, đánh dấu đã đọc) ở cả `web/` và `web-admin/`. Chưa có nút
+  "đánh dấu tất cả đã đọc" hay trang xem toàn bộ lịch sử (chỉ có dropdown hiện thông báo chưa đọc)
+- ⬜ Thông báo email — hạ tầng driver giả lập đã có (`INotificationEmailSender`), nhưng chưa trigger nào
+  dùng `Channel = Email` (cả 3 trigger hiện tại đều `InApp`); chưa chốt nhà cung cấp SMTP thật
 
 ### Vận hành
-- ⬜ Dashboard số liệu cơ bản
-- ⬜ Quản lý người dùng (khóa/mở khóa)
-- ⬜ Xử lý báo cáo vi phạm (`POST /reports` tạo báo cáo, `/ops/reports/{id}/resolve` với 3 hành động: `warned`/`content_removed`/`account_suspended`)
+- ✅ Dashboard số liệu cơ bản (`GET /ops/dashboard/stats` — tổng ứng viên/NTD, tin theo trạng thái, tổ
+  chức theo trạng thái xác thực, báo cáo/thanh toán chờ xử lý). Chưa có biểu đồ xu hướng theo thời gian
+- ✅ Quản lý người dùng hệ thống (khóa/mở khóa) — `GET /ops/users?email=`,
+  `POST /ops/users/{id}/{suspend,unsuspend}`, tách hẳn khỏi "Thành viên tổ chức" (`/users`, scope theo
+  1 organization). Đã nối UI ở `web-admin/` (`/ops/users`)
+- ✅ Xử lý báo cáo vi phạm — `POST /reports` (tạo, không giới hạn role), `GET /ops/reports`,
+  `POST /ops/reports/{id}/resolve` (4 action: `dismissed`/`warned`/`content_removed`/
+  `account_suspended` — `dismissed` thêm ngoài thiết kế gốc cho nút "Bỏ qua"). `content_removed` chỉ
+  trigger state change thật (đóng tin) khi `targetType=Job` — `Organization`/`Profile`/`Message` chưa
+  có cơ chế ẩn/gỡ tương ứng (giới hạn MVP). Đã nối UI ở `web-admin/` (`/ops/reports`, thay hoàn toàn
+  mock cũ)
 
 ## Giai đoạn 2 — Hoàn thiện
 

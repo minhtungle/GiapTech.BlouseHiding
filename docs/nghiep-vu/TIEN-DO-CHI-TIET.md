@@ -94,10 +94,10 @@
 | Tìm kiếm/lọc tin công khai | ✅ `GET /jobs` (LINQ/EF Core, chưa chuyển Postgres full-text) | ✅ `/jobs` — filter qua URL query, giữ SSR | — |
 | Xem chi tiết tin | ✅ `GET /jobs/{id}` | ✅ `/jobs/[id]` | ✅ (trong danh sách tin của tổ chức) |
 | Tạo tin (draft) | ✅ `POST /jobs` | — | ✅ `/jobs/new` |
-| Sửa tin (chỉ draft/rejected) | ✅ `PUT /jobs/{id}` | — | ⬜ **chưa có UI sửa tin** — `jobsApi.update` tồn tại trong `lib/api.ts` nhưng không route/feature nào gọi |
+| Sửa tin (chỉ draft/rejected) | ✅ `PUT /jobs/{id}` | — | ✅ `/jobs/$jobId/edit` — nút bút chì chỉ hiện khi `Draft`/`Rejected` |
 | Nộp duyệt (gói Free/Eco/Pro/Max) | ✅ `POST /jobs/{id}/submit` | — | ✅ `/jobs/new` (Free thẳng pending; trả phí → tạo Payment) |
-| Đóng tin sớm | ✅ `POST /jobs/{id}/close` | — | ⬜ **chưa có nút** trong danh sách tin (`jobsApi.close` tồn tại, chưa gọi) |
-| Gia hạn tin (tạo `jobs` row mới) | ✅ `POST /jobs/{id}/renew` | — | ⬜ **chưa có nút** (`jobsApi.renew` tồn tại, chưa gọi) |
+| Đóng tin sớm | ✅ `POST /jobs/{id}/close` | — | ✅ nút trong danh sách tin (`/jobs`, có xác nhận trước khi gọi) |
+| Gia hạn tin (tạo `jobs` row mới) | ✅ `POST /jobs/{id}/renew` | — | ✅ nút trong danh sách tin (`/jobs`, hiện khi `Closed`/`Expired`/`Suspended`) |
 | Danh sách tin của tổ chức (mọi trạng thái) | ✅ `GET /organizations/{id}/jobs` | — | ✅ `/jobs` |
 | Hàng đợi duyệt nội dung (Vận hành) | ✅ `GET /ops/jobs`, `POST /ops/jobs/{id}/moderate` | — | ✅ `/ops/verification` (tab Tin tuyển dụng) |
 | Trang chủ hiện tin nổi bật | — | ✅ 6 tin đầu từ `getJobs()` | — |
@@ -193,7 +193,7 @@ Những mục này **không nằm trong checklist cũ**, phát hiện khi rà so
 1. **Link chết trên `web/`**: `/organizations` (index — trang liệt kê tổ chức) và `/about` đều 404. Header trỏ tới nhưng route chưa dựng.
 2. **`web/lib/mock-data.ts`**: 8/11 export là code chết (không ai import) — `MOCK_JOBS`, `getJobById`, `getOrganizationById`, `getJobsByOrganization`, `MOCK_SPECIALTIES`, `MOCK_LOCATIONS`, `MOCK_EMPLOYMENT_TYPES`, `MOCK_APPLICATIONS`. Nên xóa khi dọn dẹp.
 3. **Route Handler tồn tại nhưng chưa có UI gọi** ở `web/`: sửa/xoá CCHN (`PUT`/`DELETE /api/candidates/me/licenses/{id}`), thêm chuyên khoa (`POST /api/candidates/me/specialties`) — hồ sơ ứng viên hiện không có cách sửa CCHN hay thêm chuyên khoa qua giao diện dù backend + proxy đã sẵn.
-4. **`jobsApi`/`applicationsApi` có hàm chưa được gọi** ở `web-admin/`: `update` (sửa tin), `close` (đóng tin), `renew` (gia hạn), `getById` (xem chi tiết đơn riêng), `addNote`, `score`, `getHistory` — tất cả đã có API thật và đã nối vào `lib/api.ts` nhưng chưa có UI/nút bấm nào gọi tới.
+4. **`applicationsApi` có hàm chưa được gọi** ở `web-admin/`: `getById` (xem chi tiết đơn riêng), `addNote`, `score`, `getHistory` — đã có API thật và đã nối vào `lib/api.ts` nhưng chưa có UI/nút bấm nào gọi tới (khác `jobsApi.update/close/renew` — đã nối UI ở `/jobs`, xem mục 5 ở trên).
 5. **Chuỗi tiếng Việt hardcode** ở `web/` thay vì qua `next-intl`, rải rác ở: `profile-form.tsx`, `profile/page.tsx`, `license-section.tsx`, `settings/page.tsx`, `delete-account-button.tsx`, `dashboard/page.tsx`, home `page.tsx`, `jobs/[id]/page.tsx` (hàm `formatSalary`). Vi phạm CLAUDE.md mục 4 quy tắc #10 — **chưa dọn ở đợt rút chuỗi `web-admin/`**, vẫn còn tồn đọng riêng cho `web/`. Ở `web-admin/`, sau [ADR-0010](../kien-truc/adr/0010-da-ngon-ngu-cho-web-admin.md), đã rút xong cả 7 namespace (`common`/`jobs`/`applications`/`credit`/`candidates`/`members`/`ops`) — không còn chuỗi hardcode nào trong `features/**/*.tsx` thuộc các trang nghiệp vụ chính (trừ `chats/`, `tasks/`, `apps/`, `settings/` cá nhân — tàn dư template, xem điểm 8).
 6. **`web-admin/` sidebar chưa tách theo role thật** — Admin (NTD) và Vận hành đang thấy chung 1 sidebar (có TODO comment xác nhận), chưa ẩn/hiện mục theo role JWT thật.
 7. **Vận hành thiếu 3 màn hình**: cộng Credit thủ công (đã có API, chưa có UI), quản lý người dùng hệ thống (chưa có cả API lẫn UI — khác "Thành viên tổ chức"), dashboard tổng quan nền tảng.

@@ -49,6 +49,11 @@ Chạy song song bằng 3 cửa sổ terminal riêng (mỗi app 1 cửa sổ, kh
 | **MinIO API (S3-compatible)** | `9000` | `blousehiding` | `blousehiding_dev` | ⚠️ Không phải mặc định `minioadmin`/`minioadmin` — đã override qua `MINIO_ROOT_USER`/`_PASSWORD` |
 | **MinIO Console** | http://localhost:9001 | `blousehiding` | `blousehiding_dev` | Cùng tài khoản API |
 
+Bucket `blousehiding-uploads` (ảnh CCHN, giấy phép tổ chức...) tự tạo bởi service `minio-init` trong
+`docker-compose.yml` khi lần đầu `docker compose up` — idempotent, không cần tạo tay. Policy public
+read (`mc anonymous set download`) — cần thiết để Vận hành xem ảnh trực tiếp qua URL khi duyệt CCHN/
+tổ chức, không qua presigned GET riêng.
+
 Khởi động: `docker compose up -d` ở repo root. Kiểm tra container khỏe mạnh:
 `docker compose ps` (cột `STATUS` phải là `healthy`).
 
