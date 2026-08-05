@@ -32,7 +32,7 @@
 | Refresh token | ✅ `POST /auth/refresh` | ✅ tự động qua `backendFetch` khi gặp 401 | ✅ tự động qua axios response interceptor (single-flight) |
 | Đăng xuất | ✅ `POST /auth/logout` | ✅ | ✅ |
 | Quên/đặt lại mật khẩu | ✅ `POST /auth/forgot-password`, `POST /auth/reset-password` | ✅ `/auth/forgot-password`, `/auth/reset-password` | — |
-| Đổi mật khẩu khi đã đăng nhập | ⬜ chưa có endpoint riêng | 🟨 `/settings` có form UI nhưng **không có `onSubmit`**, chỉ tĩnh | — |
+| Đổi mật khẩu khi đã đăng nhập | ✅ `PUT /users/me/password` (yêu cầu đúng mật khẩu hiện tại, khác luồng OTP của forgot/reset) | ✅ `/settings` → `ChangePasswordForm` | — (cố ý bỏ qua, `settings/` cá nhân là tàn dư template chưa đầu tư, xem điểm 8) |
 | Xem thông tin user hiện tại | ✅ `GET /users/me` | ✅ dùng để gate route + hiện email ở header | ✅ dùng để check role cho phép vào (`ALLOWED_ROLES`) |
 | Xóa tài khoản (soft-delete + anonymize) | ✅ `DELETE /users/me` | ✅ `/settings` → `DeleteAccountButton`, 2-click confirm | — (chưa có màn hình cho Vận hành khoá/xoá user khác) |
 | OAuth Google | ⬜ | 🟨 nút có trên `/auth/login` nhưng **không có logic**, chỉ UI tĩnh | — |
@@ -47,9 +47,10 @@
 |---|---|---|
 | Tạo tổ chức lần đầu (→ tạo owner member) | ✅ `POST /organizations` | ✅ (màn hình tạo tổ chức, luồng onboarding NTD) |
 | Xem tổ chức của tôi | ✅ `GET /organizations/mine` | ✅ `useMyOrganization()` hook dùng khắp mọi trang NTD |
+| Cập nhật thông tin tổ chức (description/logo/cover/address) | ✅ `PUT /organizations/{id}` (không cho sửa name/orgType/licenseNo) | ✅ `/organization` — `OrganizationInfoForm` (giới thiệu + địa chỉ) + `LogoSection` (đổi logo), 2 form riêng cùng gọi 1 endpoint, mỗi form giữ nguyên field của form khác khi lưu. Chưa có UI cho `coverUrl` (thứ yếu, ngoài phạm vi) |
 | Danh sách thành viên + lời mời đang chờ | ✅ `GET /organizations/{id}/members` | ✅ `/users` ("Thành viên") |
 | Mời thành viên (hr_manager/hr_member, kể cả email chưa có tài khoản) | ✅ `POST /organizations/{id}/members/invite` (driver gửi email **giả lập nội bộ**, log token) | ✅ dialog mời trong `/users` |
-| Chấp nhận lời mời | ✅ `POST /invitations/{token}/accept` | ⬜ **chưa có màn hình** — người được mời hiện phải tự dùng token qua API trực tiếp, không có UI |
+| Chấp nhận lời mời | ✅ `POST /invitations/{token}/accept` | ✅ `/accept-invitation` — màn hình nhập mã lời mời thủ công (chưa có email thật kèm link, xem log Giai đoạn 1) |
 | Xoá thành viên (không xoá được owner) | ✅ `DELETE /organizations/{id}/members/{memberId}` | ✅ dialog xác nhận trong `/users` |
 | Xem trước lời mời trước khi đăng nhập | ⬜ (đã ghi chú trong API-DESIGN.md là chưa làm, MVP chấp nhận UX kém hơn) | ⬜ |
 
@@ -60,12 +61,13 @@
 | Chức năng | Backend | `web/` |
 |---|---|---|
 | Xem hồ sơ của tôi (+ % hoàn thiện) | ✅ `GET /candidates/me` | ✅ `/dashboard`, `/profile` |
-| Cập nhật hồ sơ cơ bản (họ tên, headline, summary, dob, gender, địa chỉ) | ✅ `PUT /candidates/me` | ✅ `/profile` → `ProfileForm` — **có hardcode tiếng Việt** thay vì qua `next-intl` (label, thông báo lưu) |
+| Cập nhật hồ sơ cơ bản (họ tên, headline, summary, dob, gender, địa chỉ) | ✅ `PUT /candidates/me`, `GetMyProfileQuery` trả đủ `dob`/`gender`/`address` (trước đây chưa map ra DTO) | ✅ `/profile` → `ProfileForm` đủ input cho cả 6 field, qua `next-intl` đầy đủ — **bug đã sửa**: trước đây form chỉ có 2 input (fullName/headline), submit gửi cứng `dob/gender/address: null` khiến mỗi lần lưu xóa mất dữ liệu đã có nếu tồn tại từ trước |
 | Thêm CCHN | ✅ `POST /candidates/me/licenses` | ✅ `/profile` → `LicenseSection` |
-| Sửa CCHN | ✅ `PUT /candidates/me/licenses/{id}` | ⬜ Route Handler proxy đã có sẵn (`app/api/candidates/me/licenses/[licenseId]`) nhưng **chưa có UI nào gọi** |
-| Xoá CCHN | ✅ `DELETE /candidates/me/licenses/{id}` | ⬜ tương tự — route handler có, UI chưa gọi |
-| Thêm chuyên khoa + trình độ | ✅ `POST /candidates/me/specialties` | ⬜ Route Handler proxy có sẵn nhưng **chưa có UI nào gọi** — hồ sơ hiện không có cách thêm chuyên khoa qua giao diện |
-| Upload ảnh CCHN thật (MinIO) | ⬜ chưa nối `POST /uploads/presigned-url` | 🟨 `LicenseSection` gửi placeholder URL, ghi chú rõ "sẽ yêu cầu upload ở đợt sau" |
+| Sửa CCHN | ✅ `PUT /candidates/me/licenses/{id}` (chỉ khi `canEdit`, DTO trả kèm field này) | ✅ `/profile` → `LicenseSection` — nút Sửa (bút chì, ẩn khi đã Verified) mở form pre-fill |
+| Xoá CCHN | ✅ `DELETE /candidates/me/licenses/{id}` | ✅ `/profile` → `LicenseSection` — nút Xóa (có `window.confirm`), ẩn khi đã Verified |
+| Thêm chuyên khoa + trình độ | ✅ `POST /candidates/me/specialties` | ✅ `/profile` → `SpecialtySection` mới (dropdown chuyên khoa qua `getSpecialties`, ẩn chuyên khoa đã có) |
+| Upload ảnh CCHN thật (MinIO) | ✅ `POST /uploads/presigned-url` | ✅ `LicenseSection` dùng `lib/upload.ts` — input file thật, PUT thẳng MinIO |
+| Đổi ảnh đại diện | ✅ `PUT /candidates/me/avatar` (command riêng, tách khỏi `PUT /candidates/me`) | ✅ `AvatarSection` trong `/profile` — input file ẩn qua nút "Đổi ảnh đại diện" |
 | Học vấn / kinh nghiệm (`experiences`/`educations`) | ⬜ | ⬜ |
 | CV Builder + xuất PDF | ⬜ | 🟨 `/profile/cv` **100% mock** (`MOCK_CANDIDATE`, `MOCK_CV`), nút Lưu/Xuất PDF không có handler, nút Export bị `disabled` |
 | Xác thực SĐT | ⬜ (`phone_verified_at` field tồn tại nhưng không có luồng verify) | ⬜ |
@@ -109,14 +111,14 @@
 | Chức năng | Backend | `web/` | `web-admin/` |
 |---|---|---|---|
 | Ứng tuyển (CV nền tảng, chặn trùng + tin chưa published) | ✅ `POST /jobs/{id}/applications` | ✅ `ApplyButton` trên `/jobs/[id]` | — |
-| Ứng tuyển bằng CV upload riêng | ⬜ chỉ hỗ trợ `CandidateProfile`, không hỗ trợ file CV riêng | ⬜ | — |
+| Ứng tuyển bằng CV upload riêng | ✅ `applications.cv_file_url` — field `cvFileUrl` optional trong `POST .../applications`, không đụng bảng `cvs`/CV Builder (backlog riêng) | ✅ dialog ứng tuyển (`ApplyButton`) có input file tùy chọn | ✅ hiện link CV trong trang chi tiết ATS + icon báo trên Kanban card |
 | Xem đơn ứng tuyển của tôi (ứng viên) | ✅ `GET /candidates/me/applications` | ✅ `/dashboard` | — |
 | Danh sách ứng viên theo tin (ATS) | ✅ `GET /jobs/{id}/applications` | — | ✅ `/applications/$jobId` (Kanban kéo-thả) |
 | Chuyển giai đoạn ATS + lưu lịch sử | ✅ `PATCH /applications/{id}/stage` | — | ✅ kéo-thả trong Kanban |
-| Xem chi tiết 1 đơn | ✅ `GET /applications/{id}` | — | ⬜ **chưa có UI** gọi riêng (chỉ hiện trong Kanban card, không có trang chi tiết) |
-| Ghi chú nội bộ trên đơn | ✅ `POST /applications/{id}/notes` | — | ⬜ **chưa có UI** — `applicationsApi.addNote` tồn tại, chưa có form nào gọi |
-| Chấm điểm ghi đè thủ công | ✅ `PATCH /applications/{id}/score` | — | ⬜ **chưa có UI** — `applicationsApi.score` tồn tại, chưa gọi (điểm hiện chỉ auto-tính lúc nộp đơn) |
-| Xem lịch sử chuyển giai đoạn | ✅ `GET /applications/{id}/history` | — | ⬜ **chưa có UI** gọi endpoint này |
+| Xem chi tiết 1 đơn | ✅ `GET /applications/{id}` | — | ✅ `/applications/$jobId/$applicationId` (link từ Kanban card) |
+| Ghi chú nội bộ trên đơn | ✅ `POST /applications/{id}/notes`, `GET /applications/{id}/notes` (mới, danh sách kèm email tác giả) | — | ✅ trang chi tiết — thêm ghi chú + xem danh sách |
+| Chấm điểm ghi đè thủ công | ✅ `PATCH /applications/{id}/score` | — | ✅ trang chi tiết — form nhập điểm 0-100 |
+| Xem lịch sử chuyển giai đoạn | ✅ `GET /applications/{id}/history` | — | ✅ trang chi tiết — danh sách chuyển giai đoạn kèm thời gian |
 
 ---
 
@@ -127,6 +129,7 @@
 | Xem ví Credit + lịch sử giao dịch | ✅ `GET /organizations/{id}/credit-wallet`, `.../credit-transactions` | ✅ `/credit` |
 | Tìm ứng viên (ẩn liên hệ tới khi mở) | ✅ `GET /candidates/search` | ✅ `/candidates` |
 | Mở hồ sơ ứng viên (trừ Credit) | ✅ `POST /candidates/{id}/unlock` | ✅ nút "Mở hồ sơ" trong `/candidates` |
+| Xem chi tiết hồ sơ sau khi mở | ✅ `GET /candidates/{id}` (query `organizationId`, 403 nếu chưa unlock, trả `EmployerCandidateProfileDto`) | ✅ `/candidates/$candidateId` — tên/headline/summary/avatar/email/chuyên khoa/CCHN, link từ card đã mở trong `/candidates` |
 
 ---
 
@@ -164,12 +167,12 @@
 | Duyệt nội dung tin | ✅ `GET /ops/jobs`, `POST /ops/jobs/{id}/moderate` | ✅ `/ops/verification` (tab Tin tuyển dụng) |
 | Đối soát thanh toán | ✅ `GET/POST /ops/payments/*` | ✅ `/ops/payments` |
 | Quản lý danh mục/gói tin | ✅ `POST/PUT /ops/catalog/*`, `/ops/job-packages/*` | ✅ `/ops/catalog` |
-| Cộng Credit thủ công | ✅ `POST /ops/organizations/{id}/credit-bonus` | ⬜ chưa có UI |
-| Hoàn Credit khi tranh chấp | ⬜ backend chưa có | ⬜ |
-| Xử lý báo cáo vi phạm | ⬜ backend chưa có bounded context Report (`POST /reports`, `/ops/reports/{id}/resolve`) | 🟨 `/ops/reports` — **100% mock** (`MOCK_REPORT_QUEUE`), nút Bỏ qua/Nhắc nhở/Gỡ-Khóa không có `onClick` |
-| Quản lý người dùng hệ thống (khoá/mở khoá) | ⬜ backend chưa có | ⬜ **Chưa có màn hình nào** cho Vận hành quản lý user hệ thống — `/users` hiện có chỉ là "Thành viên tổ chức" (mục 2), khác mục đích |
-| Dashboard tổng quan Vận hành | ⬜ | ⬜ chưa dựng riêng — Vận hành dùng chung sidebar với Admin, chưa có dashboard số liệu nền tảng |
-| Sidebar tách theo role (Admin vs Vận hành) | — | 🟨 hiện hiển thị **chung 1 sidebar cho cả 2 vai trò** (comment TODO xác nhận "placeholder chung"), chưa ẩn/hiện theo role đăng nhập thật |
+| Cộng Credit thủ công | ✅ `POST /ops/organizations/{id}/credit-bonus` | ⬜ chưa có UI — chỉ gọi được qua API trực tiếp |
+| Hoàn Credit khi tranh chấp | ⬜ backend chưa có (`/ops/organizations/{id}/credit-refund`, khác `credit-bonus` — dùng khi tranh chấp cụ thể) | ⬜ |
+| Xử lý báo cáo vi phạm | ✅ `GET /ops/reports`, `POST /ops/reports/{id}/resolve` | ✅ `/ops/reports` — nối API thật, không còn mock |
+| Quản lý người dùng hệ thống (khoá/mở khoá) | ✅ `GET /ops/users`, `POST /ops/users/{id}/{suspend,unsuspend}` | ✅ `/ops/users` — tìm theo email + nút Khóa/Mở khóa |
+| Dashboard tổng quan Vận hành | ✅ `GET /ops/dashboard/stats` (đếm đơn giản, không có xu hướng theo thời gian) | ✅ `/ops/dashboard` |
+| Sidebar tách theo role (Admin vs Vận hành) | — | ✅ `getSidebarData(role)` — employer chỉ thấy `employerGroup`, admin/moderator chỉ thấy `opsGroup`. Chưa lọc nhóm `Pages`/`Other` (tàn dư template, ngoài phạm vi) |
 
 ---
 
@@ -177,7 +180,7 @@
 
 | Chức năng | Backend | `web/` | `web-admin/` |
 |---|---|---|---|
-| Thông báo trong ứng dụng | ⬜ | ⬜ | ⬜ |
+| Thông báo trong ứng dụng (`Channel = InApp`) | ✅ `GET /notifications` (`?unreadOnly`), `PATCH .../read`, `PATCH .../read-all` | ✅ `NotificationBell` (dropdown, poll 30s) + trang `/notifications` (lịch sử đầy đủ + đánh dấu tất cả đã đọc) | ✅ tương tự — `NotificationBell` + route `/notifications` |
 | Thông báo email | ⬜ | ⬜ | ⬜ |
 | Nhắn tin NTD ↔ ứng viên | ⬜ | ⬜ | ⬜ `/chats` chỉ đọc `data/convo.json` tĩnh (tàn dư template), không gọi API nào |
 | Trang `/tasks`, `/apps` (template mẫu Jira/App Store) | — | — | ⬜ tàn dư template shadcn-admin gốc, dùng `@faker-js/faker`, không thuộc nghiệp vụ — nên gỡ khỏi sidebar/điều hướng khi dọn dẹp |

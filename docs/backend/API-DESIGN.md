@@ -19,6 +19,11 @@
   ```json
   { "type": "validation_error", "title": "...", "status": 400, "errors": { "field": ["message"] } }
   ```
+  ⚠️ `ProblemDetailsExceptionHandler` (`src/Web/Infrastructure/`) phải gọi `WriteAsJsonAsync` với biến
+  khai kiểu **cụ thể** (`ValidationProblemDetails`, không ép về `ProblemDetails` base) — nếu không,
+  `System.Text.Json` chỉ serialize field của base class, mất hoàn toàn field `errors` (bug thật đã gặp,
+  không có test nào bắt được vì mọi test khác gọi thẳng `ISender`, không đi qua serialize HTTP thật —
+  xem `EndpointRoutingTests.ValidationError_Response_Should_Include_Errors_Field`).
 - **Phân quyền (RBAC)**: mỗi endpoint ghi rõ role được phép — `Candidate`, `Employer` (member của org,
   dùng trang **Admin**), `Admin`/`Moderator` (role backend của đội **Vận hành** nội bộ nền tảng — xem
   quy ước tên site ở [`../nghiep-vu/PHAN-TICH-NGHIEP-VU.md`](../nghiep-vu/PHAN-TICH-NGHIEP-VU.md) mục 2),
@@ -62,6 +67,7 @@
 | GET | `/users/me` | Owner | Thông tin tài khoản hiện tại (gồm `locale` hiện tại) |
 | PATCH | `/users/me` | Owner | Đổi email/SĐT (yêu cầu xác thực lại) |
 | PUT | `/users/me/locale` | Owner | Đổi ngôn ngữ giao diện đã lưu (`users.locale`) — đồng bộ lựa chọn giữa `web/` và `web-admin/` khi cùng 1 tài khoản, body `{ locale: "vi"\|"en"\|"ja"\|"zh"\|"ko"\|"es" }` |
+| PUT | `/users/me/password` | Owner | Đổi mật khẩu khi đã đăng nhập — body `{ currentPassword, newPassword }`, yêu cầu `currentPassword` đúng. Khác `POST /auth/forgot-password`→`POST /auth/reset-password` (dùng OTP, không cần đăng nhập, cho trường hợp quên mật khẩu) |
 | DELETE | `/users/me` | Owner | Yêu cầu xóa tài khoản (NĐ 13/2023 — soft delete + anonymize) |
 
 ---
@@ -72,8 +78,9 @@
 |---|---|---|---|
 | GET | `/candidates/me` | Candidate (Owner) | Xem hồ sơ của chính mình |
 | PUT | `/candidates/me` | Candidate (Owner) | Cập nhật thông tin chung |
-| GET | `/candidates/{id}` | Employer (đã unlock) / Vận hành | Xem hồ sơ ứng viên khác — 403 nếu chưa unlock (mục 7) |
-| GET | `/candidates/{id}/public-summary` | Public | Bản rút gọn ẩn danh (vd. sau khi NTD xem trong kết quả tìm kiếm chưa mở) |
+| PUT | `/candidates/me/avatar` | Candidate (Owner) | Cập nhật ảnh đại diện — tách riêng khỏi `PUT /candidates/me` để đổi ảnh không phải gửi kèm mọi field hồ sơ khác. Body `{ avatarUrl }` (đã upload qua `POST /uploads/presigned-url`, `purpose=avatar`) |
+| GET | `/candidates/{id}` | Employer (member, đã unlock) | Xem hồ sơ ứng viên khác — query param `organizationId` bắt buộc (dùng để check unlock đúng tổ chức, giống `/candidates/search`), 403 nếu chưa unlock (mục 7). Trả `EmployerCandidateProfileDto` (fullName/headline/summary/avatarUrl/contactEmail/specialties/licenses) — DTO riêng, không dùng chung với `GET /candidates/me` vì khác nhu cầu field theo role (CLAUDE.md mục 4 quy tắc #9). **Chưa hỗ trợ Vận hành xem qua endpoint này** — khác thiết kế gốc, chưa làm |
+| GET | `/candidates/{id}/public-summary` | Public | ⬜ **chưa implement** — bản rút gọn ẩn danh (vd. sau khi NTD xem trong kết quả tìm kiếm chưa mở) |
 | POST | `/candidates/me/licenses` | Candidate (Owner) | Thêm CCHN + upload document |
 | PUT | `/candidates/me/licenses/{licenseId}` | Candidate (Owner) | Sửa CCHN (chỉ khi `pending`/`rejected`) |
 | DELETE | `/candidates/me/licenses/{licenseId}` | Candidate (Owner) | Xóa CCHN chưa duyệt |
@@ -93,13 +100,30 @@
   "id": "uuid",
   "fullName": "Nguyễn Văn A",
   "headline": "Điều dưỡng ICU 5 năm kinh nghiệm",
+  "avatarUrl": null,
+  "dob": null,
+  "gender": null,
+  "address": null,
   "completionPct": 80,
   "specialties": [{ "code": "GAY_ME_HOI_SUC", "name": "Gây mê hồi sức", "level": "senior" }],
   "licenses": [
-    { "id": "uuid", "licenseNo": "CCHN-001234", "verifyStatus": "verified", "expiredAt": "2027-01-01" }
+    {
+      "id": "uuid",
+      "licenseNo": "CCHN-001234",
+      "issuedBy": "Sở Y tế TP.HCM",
+      "scope": null,
+      "issuedAt": "2020-01-01",
+      "verifyStatus": "verified",
+      "expiredAt": "2027-01-01",
+      "rejectReason": null,
+      "documentUrl": "https://...",
+      "canEdit": false
+    }
   ]
 }
 ```
+`canEdit` phản chiếu invariant `License.CanEdit` (Domain) — chỉ `true` khi `verifyStatus` là
+`pending`/`rejected`. Frontend dùng field này để ẩn nút Sửa/Xóa, không tự suy luận lại logic.
 
 ---
 
@@ -109,7 +133,7 @@
 |---|---|---|---|
 | POST | `/organizations` | Employer (đã đăng ký user) | Tạo hồ sơ tổ chức lần đầu → tạo `owner` member |
 | GET | `/organizations/{id}` | Public | Trang công khai của cơ sở y tế |
-| PUT | `/organizations/{id}` | Employer (owner/hr_manager) | Cập nhật thông tin |
+| PUT | `/organizations/{id}` | Employer (thành viên, không giới hạn chỉ owner — khớp quyền `POST .../documents` mục dưới) | Cập nhật `description`/`logoUrl`/`coverUrl`/`address`/`locationId`. **Không** cho sửa `name`/`orgType`/`licenseNo` qua endpoint này — thông tin định danh đã dùng để Vận hành xác thực tổ chức, sửa tự do sau khi `verified` rủi ro cho tính toàn vẹn xác thực |
 | GET | `/organizations/{id}/documents` | Public | Danh sách giấy phép đã upload — Vận hành xem qua `GET /ops/organizations` (đã lồng sẵn `documents` vào response, không gọi endpoint này riêng) |
 | POST | `/organizations/{id}/documents` | Employer (thành viên, không giới hạn chỉ owner) | Ghi nhận 1 document sau khi đã `PUT` file lên MinIO qua `POST /uploads/presigned-url` (`purpose=org_document`) — endpoint này chỉ lưu `fileUrl` trả về, không nhận file trực tiếp |
 | GET | `/organizations/{id}/members` | Employer (thành viên) | Danh sách thành viên + lời mời đang chờ (`PendingInvitations`) trong tổ chức |
@@ -168,7 +192,7 @@ Nếu từ chối (sai số tiền/không nhận được) → `POST /ops/paymen
 | GET | `/organizations/{id}/credit-wallet` | Employer (member) | Xem số dư |
 | GET | `/organizations/{id}/credit-transactions` | Employer (member) | Lịch sử giao dịch |
 | POST | `/payments/credit-topup` | Employer (member) | Tạo `payments` (`type=credit_topup`, `provider=manual_transfer`) như mục 6 — trả thông tin chuyển khoản + `reference_code`, **chưa cộng credit** cho tới khi Vận hành xác nhận. Quy đổi tạm thời MVP: 1 Credit = 1.000đ (chưa có bảng giá gói Credit riêng như `job_packages`). Chặn tạo giao dịch mới nếu tổ chức đã có `payments.type=credit_topup, status=pending` khác |
-| GET | `/candidates/search` | Employer (member) | Tìm ứng viên theo chuyên khoa/kinh nghiệm/khu vực — **kết quả ẩn liên hệ** |
+| GET | `/candidates/search` | Employer (member) | Tìm ứng viên theo chuyên khoa/khu vực — **kết quả ẩn liên hệ**. Query param: `organizationId` (Guid, **bắt buộc** — dùng để tính `isUnlocked` theo đúng tổ chức), `specialty` (Guid, optional), `location` (Guid, optional) — chú ý tên param **không** có hậu tố `Id` |
 | POST | `/candidates/{id}/unlock` | Employer (member) | Trừ Credit, tạo `profile_unlocks`, trả hồ sơ đầy đủ |
 
 **Xác nhận nạp Credit thủ công** (Vận hành): dùng chung `POST /ops/payments/{id}/confirm` (mục 6) —
@@ -177,12 +201,18 @@ tạo) vào `credit_wallets.balance` + ghi `credit_transactions` (`reason = purc
 bonus` của `POST /ops/organizations/{id}/credit-bonus` ở mục 11 — bonus là khuyến mãi/hỗ trợ thủ công,
 không qua Payment) trong cùng transaction.
 
+**Ví dụ gọi:** `GET /candidates/search?organizationId=<uuid>&specialty=<uuid>`
+
 **Response khi chưa unlock (`GET /candidates/search`):**
 ```json
-{ "id": "uuid", "headline": "Điều dưỡng ICU...", "specialty": "...", "yearsOfExperience": 5,
-  "isUnlocked": false, "unlockCost": 15 }
+[
+  { "id": "uuid", "headline": "Điều dưỡng ICU...", "isUnlocked": false, "unlockCost": 15,
+    "contactEmail": null }
+]
 ```
-**Sau `POST /candidates/{id}/unlock`:** trả full profile như mục 3, cộng `contactEmail`, `contactPhone`.
+**Sau khi unlock** (candidate đã có `profile_unlocks` cho đúng `organizationId` đang search):
+`isUnlocked: true`, `contactEmail` trả giá trị thật thay vì `null`. Trả về `List<>`, không phải object
+đơn — mỗi phần tử là 1 kết quả tìm kiếm.
 
 ---
 
@@ -190,11 +220,12 @@ không qua Payment) trong cùng transaction.
 
 | Method | Path | Quyền | Mô tả |
 |---|---|---|---|
-| POST | `/jobs/{jobId}/applications` | Candidate | Ứng tuyển (chọn `cvId`, `coverLetter`). Backend tự chụp `cv_snapshot` từ `cvId` tại thời điểm này và tính `score` ban đầu — cả hai **không đổi** dù ứng viên sửa CV/hồ sơ sau đó (xem ERD mục 4.8) |
+| POST | `/jobs/{jobId}/applications` | Candidate | Ứng tuyển — body `{ coverLetter, cvFileUrl }`, cả 2 optional. `cvFileUrl` là CV riêng đã upload qua `POST /uploads/presigned-url` (`purpose=cv`) — nếu bỏ trống, NTD chỉ xem `cvSnapshot` (chụp từ hồ sơ nền tảng). Backend tự chụp `cv_snapshot` từ `candidate_profiles` tại thời điểm này và tính `score` ban đầu — cả hai **không đổi** dù ứng viên sửa hồ sơ sau đó (xem ERD mục 4.8). Chưa hỗ trợ chọn CV Builder (`cvId`/bảng `cvs`) — backlog riêng chưa chốt thiết kế |
 | GET | `/candidates/me/applications` | Candidate (Owner) | Danh sách đơn đã nộp + trạng thái |
 | GET | `/applications/{id}` | Candidate (Owner) / Employer (org liên quan) | Chi tiết 1 đơn |
 | PATCH | `/applications/{id}/stage` | Employer (member) | Chuyển trạng thái pipeline (`stage`, `silent: bool`) |
 | POST | `/applications/{id}/notes` | Employer (member) | Thêm ghi chú nội bộ |
+| GET | `/applications/{id}/notes` | Employer (member) | Danh sách ghi chú nội bộ (kèm email tác giả), mới nhất trước — **không** cho Candidate xem (ghi chú nội bộ NTD) |
 | PATCH | `/applications/{id}/score` | Employer (member) | Chấm điểm hồ sơ |
 | GET | `/applications/{id}/history` | Employer (member) / Candidate (Owner) | Lịch sử chuyển trạng thái |
 
@@ -211,6 +242,7 @@ không qua Payment) trong cùng transaction.
 | WS | `/ws/conversations/{id}` | Owner | SignalR hub — realtime message + typing indicator |
 | GET | `/notifications` | Owner | Danh sách thông báo (`?unreadOnly=true`) |
 | PATCH | `/notifications/{id}/read` | Owner | Đánh dấu đã đọc |
+| PATCH | `/notifications/read-all` | Owner | Đánh dấu tất cả thông báo chưa đọc của user hiện tại thành đã đọc |
 
 ---
 

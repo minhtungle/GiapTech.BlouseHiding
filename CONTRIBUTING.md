@@ -10,6 +10,21 @@
 - Nhánh sửa lỗi: `fix/<mo-ta-ngan>`.
 - Không commit thẳng vào `main` — luôn qua Pull Request.
 
+## Thao tác xóa file/thư mục an toàn
+
+Áp dụng khi dọn file rác (vd file trùng `" 2"` do lỗi đồng bộ iCloud/macOS) hoặc bất kỳ lệnh xóa hàng
+loạt nào dựa trên `find`/glob:
+
+- **Không pipe trực tiếp `find ... | xargs rm -rf`** khi biểu thức `find` có `-o` (or) — luôn chạy
+  `find ...` một mình (không có `xargs rm`) để xem đúng danh sách sẽ bị xóa trước, đối chiếu bằng mắt
+  xem có path lạ nào không, rồi mới thêm `| xargs rm -rf`.
+- `-maxdepth N` là cờ toàn cục của `find`, không phải điều kiện lọc per-file như `-iname` — khi dùng
+  nhiều pattern với `-o`, đặt `-maxdepth N` một lần duy nhất ở đầu biểu thức (hoặc nhóm rõ bằng
+  `\( ... -o ... \)`), không lặp lại nó trong từng nhánh `-o` — lặp lại như vậy không đảm bảo giới hạn
+  độ sâu áp dụng đúng, có thể khiến `find` quét sâu hơn dự kiến và trả về cả file thật ngoài ý muốn.
+- Trước khi xóa trong 1 git repo: chạy `git status` trước, và sau khi xóa xong luôn `git status`/
+  `git diff --stat HEAD` lại để xác nhận không có file đã track nào bị ảnh hưởng ngoài dự kiến.
+
 ## Commit message
 
 Theo [Conventional Commits](https://www.conventionalcommits.org/):

@@ -544,8 +544,9 @@ set `accepted_at`. Không tạo `employer_members` với `user_id` rỗng ở b�
 | id | uuid | PK | |
 | job_id | uuid | FK → jobs | |
 | candidate_id | uuid | FK → candidate_profiles | |
-| cv_id | uuid | FK → cvs | trỏ tới CV gốc — chỉ để truy vết, **không dùng để hiển thị** (xem `cv_snapshot`) |
-| cv_snapshot | jsonb | NOT NULL | **Bản chụp CV tại thời điểm ứng tuyển** (nội dung CV Builder hoặc URL file lúc đó). NTD luôn xem bản này, không phải bản `cv_id` hiện tại — tránh việc ứng viên sửa CV sau khi nộp làm thay đổi ngược những gì NTD đã thấy/đánh giá |
+| cv_id | uuid | FK → cvs | ⬜ **chưa implement** — bảng `cvs` (CV Builder) là backlog riêng chưa chốt thiết kế, cột này chưa tồn tại trong migration thật |
+| cv_snapshot | jsonb | NOT NULL | **Bản chụp hồ sơ tại thời điểm ứng tuyển** (chụp từ `candidate_profiles` hiện có, không phải từ `cvs` vì CV Builder chưa làm). NTD luôn xem bản này — tránh việc ứng viên sửa hồ sơ sau khi nộp làm thay đổi ngược những gì NTD đã thấy/đánh giá |
+| cv_file_url | text | nullable | CV file ứng viên tự upload lúc ứng tuyển (khác `cv_snapshot`/`cv_id`) — cho phép nộp CV riêng thay vì chỉ dùng hồ sơ nền tảng, không đụng tới bảng `cvs`/CV Builder (phạm vi tách riêng đã xác nhận) |
 | cover_letter | text | nullable | |
 | stage | enum | NOT NULL DEFAULT `new` | `new`, `reviewing`, `shortlisted`, `interview`, `offer`, `hired`, `rejected` |
 | score | int | nullable | CV Scoring — tính **1 lần** ngay khi tạo `application` (dựa trên `cv_snapshot` + CCHN + chuyên khoa lúc đó), không tính lại khi hồ sơ gốc thay đổi sau này; HR có thể ghi đè thủ công |
