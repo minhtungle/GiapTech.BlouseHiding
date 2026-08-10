@@ -662,15 +662,21 @@ ra sai/trùng, lỗi hệ thống trừ nhầm). Không có luồng tự động
 | registered_at | timestamp |
 | attended | bool DEFAULT false |
 
-**`organization_reviews`**
+**`OrganizationReviews`** — đã triển khai (Giai đoạn 2)
 | Cột | Kiểu | Ghi chú |
 |---|---|---|
-| id | uuid PK | |
-| org_id | uuid FK | |
-| candidate_id | uuid FK | |
-| rating | int | 1–5 |
-| comment | text | |
-| status | enum | `pending`, `approved`, `rejected` — kiểm duyệt trước khi hiển thị |
+| Id | uuid PK | |
+| OrganizationId | uuid | Không khai báo FK constraint ở EF Core (giống style các bảng khác trong solution) — index thường |
+| CandidateUserId | uuid | |
+| Rating | int | 1–5, validate ở FluentValidation (`InclusiveBetween(1,5)`), không có CHECK constraint ở DB |
+| Comment | text | Bắt buộc, tối đa 2000 ký tự (validate ở Application layer) |
+| Status | int (enum `ReviewStatus`) | `Pending`(0)/`Approved`(1)/`Rejected`(2) — kiểm duyệt trước khi hiển thị công khai, xem mục 4 điểm 13 |
+| ModeratedBy | uuid nullable | Set khi Vận hành duyệt/từ chối |
+| CreatedAt | timestamptz | |
+
+Unique index `(OrganizationId, CandidateUserId)` — 1 candidate chỉ gửi được 1 review/tổ chức (enforce
+cả ở DB lẫn Application layer để trả lỗi thân thiện thay vì lỗi constraint thô). Index thường trên
+`OrganizationId` (lọc theo tổ chức) và `Status` (lọc hàng đợi `Pending` ở Ops).
 
 **`reports`**
 | Cột | Kiểu | Ghi chú |
@@ -684,16 +690,23 @@ ra sai/trùng, lỗi hệ thống trừ nhầm). Không có luồng tự động
 | resolution_action | enum nullable | `warned` (nhắc nhở, không đổi state entity), `content_removed` (gỡ/ẩn — kèm state change entity bị báo cáo cùng transaction, xem mục 4.10), `account_suspended` (dùng lại cơ chế rút xác thực tổ chức ở mục 4.6 nếu `target_type=organization`) — NULL khi `status=dismissed`. Giai đoạn 1 chỉ cần 3 giá trị này, không cần thêm mức độ nghiêm trọng phức tạp hơn |
 | resolved_by | uuid FK nullable | |
 
-**`audit_logs`** (tuân thủ NĐ 13/2023 — bất biến, không update/delete)
+**`AuditLogEntries`** (tuân thủ NĐ 13/2023 — bất biến, không update/delete) — đã triển khai (Giai đoạn 2)
 | Cột | Kiểu | Ghi chú |
 |---|---|---|
-| id | uuid PK | |
-| actor_user_id | uuid FK nullable | null nếu hệ thống tự động |
-| action | varchar(100) | vd. `license.verify`, `profile.delete` |
-| entity_type / entity_id | varchar / uuid | |
-| before_state / after_state | jsonb nullable | |
-| ip_address | inet | |
-| created_at | timestamp | |
+| Id | uuid PK | |
+| ActorUserId | uuid | Không nullable — mọi hành động ghi log đều có actor xác định (không có nhánh "hệ thống tự động" ở MVP) |
+| Action | varchar(100) | Chuỗi cố định khớp Command handler, vd `organization_verify_verify`, `license_verify_approve`, `report_resolve_dismiss`, `user_suspend`, `review_moderate_approve` — xem danh sách đầy đủ ở `docs/backend/API-DESIGN.md` mục 11 |
+| TargetLabel | varchar(500) | Chuỗi mô tả đối tượng bị tác động (tên tổ chức, số CCHN, email...) — không phải `entity_type`/`entity_id` tách riêng như thiết kế gốc, đơn giản hoá vì chỉ dùng để hiển thị, không dùng để truy vấn ngược lại entity |
+| CreatedAt | timestamptz | |
+
+Ghi **tường minh trong Command Handler** (không dùng EF Core interceptor tự động như
+`AuditableEntityInterceptor` đang dùng cho `CreatedAt`/`LastModified` — interceptor không phân biệt
+được "thao tác nhạy cảm cần audit" với sửa field thường). Hiện ghi log cho 4/5 hành động nhạy cảm: duyệt
+CCHN, duyệt/từ chối/rút xác thực tổ chức, xử lý báo cáo, khóa/mở khóa người dùng, duyệt/từ chối đánh giá
+cơ sở y tế. **Chưa ghi** xóa tài khoản — luồng này gọi `IIdentityService` trực tiếp, không đi qua
+Mediator Command, cần xử lý riêng (để lại Giai đoạn sau, đã xác nhận với chủ dự án). Không có
+`before_state`/`after_state`/`ip_address` như thiết kế gốc — cắt giảm phạm vi MVP, bổ sung khi có nhu
+cầu thực tế.
 
 ---
 
@@ -757,6 +770,11 @@ ra sai/trùng, lỗi hệ thống trừ nhầm). Không có luồng tự động
     [ADR-0006](../kien-truc/adr/0006-da-ngon-ngu.md)).
 12. Danh mục ít thay đổi (`specialties`, `locations`, `job_packages` + bản dịch) nên **cache theo
     locale** ở tầng Redis/Application — tránh JOIN bảng dịch lặp lại ở mọi request danh mục.
+13. `OrganizationReviews.Status = Pending` **không bao giờ** xuất hiện ở endpoint public
+    (`GET /organizations/{id}/reviews`) — chỉ `Approved` mới trả về, và response **không** kèm
+    `CandidateUserId` (ẩn danh người viết). Chỉ Vận hành (`GET /ops/organization-reviews`) mới xem được
+    hàng đợi `Pending`. Lý do: review sai/bôi xấu ảnh hưởng thật tới uy tín 1 cơ sở y tế — kiểm duyệt
+    chặt trước khi public, không như review sản phẩm thông thường tự động hiện ngay.
 
 ---
 

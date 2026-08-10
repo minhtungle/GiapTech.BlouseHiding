@@ -29,10 +29,15 @@
   (xem mục 0.2). Riêng `profile/cv` (CV Builder) vẫn giữ mock, chờ backend CV Builder
 - ✅ Dựng màn hình `web-admin/` phần Admin theo mục 2.3: dashboard NTD, đăng/sửa tin, danh sách tin,
   ATS Kanban, ví Credit, tìm ứng viên chủ động, thành viên tổ chức — nay đã nối API thật (mục 0.2)
-- 🟨 Dựng màn hình `web-admin/` phần Vận hành theo mục 2.4: dashboard tổng quan, 3 hàng đợi duyệt
-  (CCHN/doanh nghiệp/tin), đối soát thanh toán, quản lý danh mục/gói đã nối API thật; quản lý người
-  dùng (`features/users/` — nhầm lẫn tên với trang Thành viên tổ chức, cần trang riêng cho Vận hành
-  khoá/mở khoá user) và xử lý report chưa làm (chưa có bounded context Report)
+- ✅ Dựng màn hình `web-admin/` phần Vận hành theo mục 2.4: dashboard tổng quan, 3 hàng đợi duyệt
+  (CCHN/doanh nghiệp/tin), đối soát thanh toán, quản lý danh mục/gói, quản lý người dùng hệ thống
+  (`features/ops-users/` — tách riêng khỏi trang Thành viên tổ chức), xử lý report (`features/
+  ops-reports/`) đều đã nối API thật — dòng ghi "chưa làm" trước đây đã lỗi thời, đã xác nhận lại qua
+  code (2026-08-06)
+- ✅ Nhật ký kiểm toán (Audit log, mục 2.4 LUONG-NGHIEP-VU-MAN-HINH.md) — bounded context thật (bảng
+  `AuditLogEntries` + `GET /ops/audit-logs`), ghi tường minh trong 4/5 Command handler nhạy cảm (duyệt
+  CCHN/tổ chức, xử lý báo cáo, khóa/mở khóa user — xóa tài khoản để lại sau, không qua Mediator Command),
+  `features/ops-audit/` đã nối API thật thay mock (2026-08-06)
 - ⬜ Rà lại responsive + dark mode + contrast WCAG AA trên toàn bộ màn hình — chưa làm riêng thành 1
   đợt, mới rà thủ công từng màn hình lúc dựng
 
@@ -118,6 +123,12 @@
   của tổ chức sang `suspended` trong cùng transaction (ERD mục 4.6) — không thao tác riêng từng tin
 - ✅ Trang công khai cơ sở y tế — `GET /organizations/{id}` (Public, mới thêm khi nối `web/`, theo đúng
   API-DESIGN.md mục 4 đã thiết kế từ đầu nhưng chưa implement) + `web/organizations/[id]` nối API thật
+- ✅ Danh sách cơ sở y tế công khai — `GET /organizations?q=` (chỉ trả `Verified`, filter theo tên
+  optional) + `web/organizations` nối API thật thay suy diễn từ `getJobs()` (`deriveOrganizationsFromJobs`
+  vẫn giữ lại cho tương thích cũ, không xoá — trang chủ có thể còn dùng)
+- ✅ Ops tìm tổ chức theo tên (mọi trạng thái xác thực, khác endpoint public chỉ trả `Verified`) —
+  `GET /ops/organizations/search?q=`, dùng cho màn "Cộng Credit thủ công" (`features/ops-credit/`)
+  thay `MOCK_ORGANIZATIONS` cũ
 
 ### Tin tuyển dụng
 - ✅ Tạo/sửa tin (draft/rejected — `CanEdit` invariant), đóng tin sớm (`close`), gia hạn (`renew` — tạo
@@ -196,12 +207,32 @@
 ## Giai đoạn 2 — Hoàn thiện
 
 - ⬜ Chuyển tìm kiếm sang OpenSearch
-- ⬜ Gợi ý việc làm / matching ứng viên
+- 🟨 Gợi ý việc làm / matching ứng viên — cả 2 hướng đã làm, cùng độ đơn giản đã chốt (chỉ so chuyên
+  khoa trùng tên, không tính địa điểm/kinh nghiệm/lịch sử xem tin):
+  - `web/dashboard` hiện tối đa 4 tin "Việc phù hợp với bạn" (`lib/job-matching.ts`, so
+    `ApiJob.specialtyName` với `ApiProfileSpecialty.name`), loại tin đã ứng tuyển khỏi gợi ý.
+  - Hướng ngược lại: `web-admin/features/applications/suggested-candidates-sheet.tsx` — trang ATS 1
+    tin có nút "Ứng viên gợi ý" mở Sheet, gọi lại `GET /candidates/search` (không có API mới), tự tra
+    `specialtyId` từ `job.specialtyName` qua danh mục vì response `ApiJob` không có `specialtyId`,
+    loại ứng viên đã ứng tuyển tin đó, có unlock Credit ngay trong Sheet (2026-08-07)
 - ⬜ Chat realtime (SignalR)
 - ⬜ Mobile app (Flutter/React Native)
-- ⬜ Test đánh giá năng lực chuyên môn theo vị trí
-- ⬜ Công cụ tính phụ cấp trực/độc hại/thuế TNCN
-- ⬜ Đánh giá cơ sở y tế (review, có kiểm duyệt)
+- 🟨 Test đánh giá năng lực chuyên môn theo vị trí — UI đầy đủ (`web/` `/tools/competency-test`,
+  chọn chuyên khoa từ danh mục thật → làm 5 câu hỏi → kết quả), nhưng bộ câu hỏi hiện tại chỉ là
+  MINH HỌA dùng kiến thức an toàn/đạo đức nghề y tế chung — **chưa phải bộ đề chuyên môn lâm sàng
+  thật theo từng chuyên khoa** (dược lâm sàng/điều dưỡng/cấp cứu...) như tài liệu yêu cầu, vì cần
+  chuyên gia y tế soạn và kiểm định nội dung, ngoài khả năng tự viết đúng chuyên môn
+- 🟨 Công cụ tính phụ cấp trực/độc hại/thuế TNCN — `web/` `/tools/salary-calculator` tính thật
+  100% client-side (biểu thuế TNCN lũy tiến 7 bậc + giảm trừ gia cảnh theo luật hiện hành, không cần
+  backend vì đây là công thức pháp luật công khai), có disclaimer rõ "không thay thế tư vấn thuế
+  chính thức". Cả 2 công cụ (tính lương + test năng lực) gộp chung 1 trang hub `/tools` (nav header),
+  tránh header có quá nhiều link riêng lẻ
+- ✅ Đánh giá cơ sở y tế (review, có kiểm duyệt) — bounded context thật cả 2 chiều: bảng
+  `OrganizationReviews` (`status` Pending/Approved/Rejected, unique 1 review/candidate/tổ chức) +
+  `GET/POST /organizations/{id}/reviews` (candidate gửi, `web/organizations/[id]` đã nối API thật thay
+  mock) + `GET /ops/organization-reviews` + `POST .../moderate` (Vận hành duyệt/từ chối, UI mới
+  `web-admin/features/ops-reviews/`, chưa từng có kể cả dạng mock trước đây) — review "Pending" không
+  bao giờ lộ ra endpoint public, review đã duyệt ẩn danh người viết (2026-08-06)
 
 ## Giai đoạn 3 — Mở rộng
 

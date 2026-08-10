@@ -131,8 +131,9 @@
 
 | Method | Path | Quyền | Mô tả |
 |---|---|---|---|
+| GET | `/organizations?q=` | Public | Danh sách tổ chức **CÔNG KHAI** — chỉ `verifyStatus=Verified` (không lộ tổ chức `pending`/`rejected`/`suspended`). `q` filter theo tên (contains, không phân biệt hoa/thường), optional |
 | POST | `/organizations` | Employer (đã đăng ký user) | Tạo hồ sơ tổ chức lần đầu → tạo `owner` member |
-| GET | `/organizations/{id}` | Public | Trang công khai của cơ sở y tế |
+| GET | `/organizations/{id}` | Public | Trang công khai của cơ sở y tế. Response gồm cả `rejectReason` (nullable, chỉ có giá trị khi `verifyStatus = Rejected`) để NTD biết lý do bị từ chối xác thực — trước đây field này tồn tại ở entity nhưng chưa map ra DTO |
 | PUT | `/organizations/{id}` | Employer (thành viên, không giới hạn chỉ owner — khớp quyền `POST .../documents` mục dưới) | Cập nhật `description`/`logoUrl`/`coverUrl`/`address`/`locationId`. **Không** cho sửa `name`/`orgType`/`licenseNo` qua endpoint này — thông tin định danh đã dùng để Vận hành xác thực tổ chức, sửa tự do sau khi `verified` rủi ro cho tính toàn vẹn xác thực |
 | GET | `/organizations/{id}/documents` | Public | Danh sách giấy phép đã upload — Vận hành xem qua `GET /ops/organizations` (đã lồng sẵn `documents` vào response, không gọi endpoint này riêng) |
 | POST | `/organizations/{id}/documents` | Employer (thành viên, không giới hạn chỉ owner) | Ghi nhận 1 document sau khi đã `PUT` file lên MinIO qua `POST /uploads/presigned-url` (`purpose=org_document`) — endpoint này chỉ lưu `fileUrl` trả về, không nhận file trực tiếp |
@@ -140,8 +141,8 @@
 | POST | `/organizations/{id}/members/invite` | Employer (thành viên) | Tạo `organization_invitations` (role `hr_manager`/`hr_member`, không mời thêm `owner`), gửi email chứa link token — hoạt động **kể cả khi email chưa có tài khoản** (driver hiện là giả lập nội bộ log token, giống OTP — xem `docs/nghiep-vu/TIEN-DO-DU-AN.md`) |
 | POST | `/invitations/{token}/accept` | Đã đăng nhập, email khớp lời mời | Chấp nhận → tạo `employer_members` thật, set `accepted_at`. **Chưa làm** endpoint xem trước lời mời trước khi đăng nhập (`GET .../invitations/{token}`) — MVP yêu cầu đăng nhập/đăng ký trước rồi mới biết được lời mời hợp lệ hay không |
 | DELETE | `/organizations/{id}/members/{memberId}` | Employer (thành viên, không tự xoá owner) | Xóa thành viên |
-| GET | `/organizations/{id}/reviews` | Public | Đánh giá đã duyệt (Giai đoạn 2) |
-| POST | `/organizations/{id}/reviews` | Candidate | Gửi đánh giá (vào hàng đợi kiểm duyệt) |
+| GET | `/organizations/{id}/reviews` | Public | Đánh giá đã duyệt (`status=Approved`) — response **không** lộ `candidateUserId` (ẩn danh người viết) |
+| POST | `/organizations/{id}/reviews` | Candidate | Gửi đánh giá `{ rating: 1-5, comment }` → tạo với `status=Pending`, chưa hiển thị công khai cho tới khi Vận hành duyệt (mục 11). Chặn gửi lần 2 cho cùng 1 tổ chức (unique index `organizationId+candidateUserId`, kiểm tra thêm ở Application layer để trả lỗi rõ ràng thay vì lỗi DB thô) |
 
 ---
 
@@ -192,7 +193,7 @@ Nếu từ chối (sai số tiền/không nhận được) → `POST /ops/paymen
 | GET | `/organizations/{id}/credit-wallet` | Employer (member) | Xem số dư |
 | GET | `/organizations/{id}/credit-transactions` | Employer (member) | Lịch sử giao dịch |
 | POST | `/payments/credit-topup` | Employer (member) | Tạo `payments` (`type=credit_topup`, `provider=manual_transfer`) như mục 6 — trả thông tin chuyển khoản + `reference_code`, **chưa cộng credit** cho tới khi Vận hành xác nhận. Quy đổi tạm thời MVP: 1 Credit = 1.000đ (chưa có bảng giá gói Credit riêng như `job_packages`). Chặn tạo giao dịch mới nếu tổ chức đã có `payments.type=credit_topup, status=pending` khác |
-| GET | `/candidates/search` | Employer (member) | Tìm ứng viên theo chuyên khoa/khu vực — **kết quả ẩn liên hệ**. Query param: `organizationId` (Guid, **bắt buộc** — dùng để tính `isUnlocked` theo đúng tổ chức), `specialty` (Guid, optional), `location` (Guid, optional) — chú ý tên param **không** có hậu tố `Id` |
+| GET | `/candidates/search` | Employer (member) | Tìm ứng viên theo chuyên khoa/khu vực — **kết quả ẩn liên hệ**. Query param: `organizationId` (Guid, **bắt buộc** — dùng để tính `isUnlocked` theo đúng tổ chức), `specialty` (Guid, optional), `location` (Guid, optional) — chú ý tên param **không** có hậu tố `Id`. Dùng lại cho "Ứng viên gợi ý" ở trang ATS 1 tin (`web-admin/features/applications/`, mục Giai đoạn 2) — frontend tự tra `specialtyId` từ `job.specialtyName` qua danh mục `catalog/specialties` (response `ApiJob` không có `specialtyId`) rồi gọi endpoint này, lọc client-side bỏ ứng viên đã có `applications` cho tin đó |
 | POST | `/candidates/{id}/unlock` | Employer (member) | Trừ Credit, tạo `profile_unlocks`, trả hồ sơ đầy đủ |
 
 **Xác nhận nạp Credit thủ công** (Vận hành): dùng chung `POST /ops/payments/{id}/confirm` (mục 6) —
@@ -282,7 +283,10 @@ không qua Payment) trong cùng transaction.
 | POST | `/ops/users/{id}/unsuspend` | Admin | Mở khóa tài khoản (`status: suspended→active`) — bổ sung ngoài thiết kế gốc, cần thiết để đảo ngược `suspend` |
 | CRUD | `/ops/catalog/specialties`, `/ops/catalog/locations` | Admin | Quản lý danh mục |
 | CRUD | `/ops/job-packages` | Admin | Cấu hình gói tin/giá |
-| GET | `/ops/audit-logs` | Admin | Tra cứu nhật ký kiểm toán |
+| GET | `/ops/audit-logs?action=` | Admin/Moderator | Tra cứu nhật ký kiểm toán — ghi tường minh trong Command Handler (không dùng EF interceptor tự động, không phân biệt được "thao tác nhạy cảm" với sửa field thường) cho 4/5 hành động nhạy cảm: duyệt/từ chối/rút xác thực tổ chức, duyệt/từ chối CCHN, xử lý báo cáo, khóa/mở khóa người dùng. **Chưa ghi** xóa tài khoản (đi qua `IIdentityService` trực tiếp, không qua Mediator Command — cần xử lý riêng, để lại Giai đoạn sau). `action` filter optional, khớp đúng chuỗi backend ghi (vd `organization_verify_verify`, `license_verify_approve`) |
+| GET | `/ops/organizations/search?q=` | Admin/Moderator | Tìm tổ chức theo tên — **mọi trạng thái xác thực** (khác `GET /organizations` mục 4, chỉ trả `Verified`), kèm `creditBalance`, dùng cho màn "Cộng Credit thủ công". `q` rỗng → trả `[]`, không trả toàn bộ danh sách. Giới hạn 20 kết quả |
+| GET | `/ops/organization-reviews` | Admin/Moderator | Hàng đợi đánh giá cơ sở y tế chờ duyệt (`status=Pending`), kèm tên tổ chức |
+| POST | `/ops/organization-reviews/{id}/moderate` | Admin/Moderator | Body: `{ approved: bool }` — duyệt (`status→Approved`, hiển thị công khai) hoặc từ chối (`status→Rejected`, không bao giờ public). Ghi `audit_log_entries` (`review_moderate_approve`/`review_moderate_reject`) |
 | GET | `/ops/dashboard/stats` | Admin/Moderator | Số liệu đếm tổng quan — tổng ứng viên/NTD theo role, tin theo `status`, tổ chức theo `verify_status`, số báo cáo/thanh toán đang chờ xử lý |
 
 ---

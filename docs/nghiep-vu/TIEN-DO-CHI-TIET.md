@@ -13,7 +13,7 @@
 > - File này — bản đồ *chi tiết nhất*, tra theo module, dùng để biết *chính xác cái gì đã nối, cái gì
 >   còn mock, cái gì hoàn toàn chưa có*.
 >
-> **Cập nhật lần cuối:** 2026-08-03, dựa trên khảo sát trực tiếp mã nguồn (không dựa vào docs khác) —
+> **Cập nhật lần cuối:** 2026-08-06, dựa trên khảo sát trực tiếp mã nguồn (không dựa vào docs khác) —
 > đọc toàn bộ `src/Web/Endpoints/*.cs`, `web/app/[locale]/**`, `web-admin/src/{routes,features,lib}/**`.
 > Khi thêm/sửa chức năng, cập nhật ngay dòng tương ứng trong file này — đừng để lệch khỏi code thật.
 >
@@ -35,8 +35,8 @@
 | Đổi mật khẩu khi đã đăng nhập | ✅ `PUT /users/me/password` (yêu cầu đúng mật khẩu hiện tại, khác luồng OTP của forgot/reset) | ✅ `/settings` → `ChangePasswordForm` | — (cố ý bỏ qua, `settings/` cá nhân là tàn dư template chưa đầu tư, xem điểm 8) |
 | Xem thông tin user hiện tại | ✅ `GET /users/me` | ✅ dùng để gate route + hiện email ở header | ✅ dùng để check role cho phép vào (`ALLOWED_ROLES`) |
 | Xóa tài khoản (soft-delete + anonymize) | ✅ `DELETE /users/me` | ✅ `/settings` → `DeleteAccountButton`, 2-click confirm | — (chưa có màn hình cho Vận hành khoá/xoá user khác) |
-| OAuth Google | ⬜ | 🟨 nút có trên `/auth/login` nhưng **không có logic**, chỉ UI tĩnh | — |
-| OAuth Zalo | ⬜ | 🟨 tương tự Google, chỉ UI tĩnh | — |
+| OAuth Google | ⬜ | 🟨 nút trên `/auth/login` có loading state + thông báo "sắp ra mắt" (`OAuthButtons`), **vẫn chưa có logic OAuth thật** — chỉ polish UI theo quyết định "UI trước, API sau" | — |
+| OAuth Zalo | ⬜ | 🟨 tương tự Google, chỉ UI polish | — |
 | Chọn/ghi nhớ ngôn ngữ giao diện (lưu `users.locale`) | ⬜ | 🟨 `LanguageSwitcher` đổi route theo `next-intl` (hoạt động), nhưng **không lưu** lựa chọn vào user profile — mất khi đăng nhập máy khác | ✅ `LanguageSwitcher` (dropdown Globe ở Header, `react-i18next`) — toàn bộ 7 namespace (`common`/`jobs`/`applications`/`credit`/`candidates`/`members`/`ops`) đã rút chuỗi khỏi component, verify thật bằng Playwright trên cả 9 route chính. `vi`/`en` dịch tay thật, `ja`/`zh`/`ko`/`es` tạm placeholder tiếng Việt chờ dịch thuật (xem ADR-0010). Không lưu vào `users.locale`, chỉ `localStorage` |
 
 ---
@@ -69,7 +69,7 @@
 | Upload ảnh CCHN thật (MinIO) | ✅ `POST /uploads/presigned-url` | ✅ `LicenseSection` dùng `lib/upload.ts` — input file thật, PUT thẳng MinIO |
 | Đổi ảnh đại diện | ✅ `PUT /candidates/me/avatar` (command riêng, tách khỏi `PUT /candidates/me`) | ✅ `AvatarSection` trong `/profile` — input file ẩn qua nút "Đổi ảnh đại diện" |
 | Học vấn / kinh nghiệm (`experiences`/`educations`) | ⬜ | ⬜ |
-| CV Builder + xuất PDF | ⬜ | 🟨 `/profile/cv` **100% mock** (`MOCK_CANDIDATE`, `MOCK_CV`), nút Lưu/Xuất PDF không có handler, nút Export bị `disabled` |
+| CV Builder + xuất PDF | ⬜ | 🟨 `/profile/cv` → `CvBuilderForm` (Client Component) — Thêm/Sửa/Xóa học vấn, kinh nghiệm, kỹ năng có state thật + xem trước realtime, nút Lưu chỉ giữ state tạm ở client (chưa có API lưu CV thật). Xuất PDF vẫn `disabled` — chưa làm |
 | Xác thực SĐT | ⬜ (`phone_verified_at` field tồn tại nhưng không có luồng verify) | ⬜ |
 | Hàng đợi duyệt CCHN (Vận hành) | ✅ `GET /ops/licenses`, `POST /ops/licenses/{id}/verify` | (xem mục Vận hành) |
 
@@ -80,12 +80,15 @@
 | Chức năng | Backend | `web/` | `web-admin/` |
 |---|---|---|---|
 | Trang công khai 1 tổ chức | ✅ `GET /organizations/{id}` | ✅ `/organizations/[id]` | — |
-| Danh sách tổ chức công khai (list) | ⬜ chưa có endpoint | ⛔ **`/organizations` (index) không tồn tại** — link "Cơ sở y tế" trên header trỏ vào route 404 | — |
-| Trang chủ hiện tổ chức nổi bật | — | 🟨 dùng `MOCK_ORGANIZATIONS` (mock-data.ts) vì chưa có API list | — |
+| Danh sách tổ chức công khai (list) | ✅ `GET /organizations?q=` (chỉ `Verified`, filter tên optional) — thêm 2026-08-06 | ✅ `/organizations` nối API thật, không còn suy ra từ `getJobs()` — hiện được cả tổ chức chưa có tin nào | — |
+| Trang chủ hiện tổ chức nổi bật | — | ✅ vẫn suy ra từ `getJobs()` (dedupe theo `organizationId`, sắp theo số tin đang có) — khác trang `/organizations` đã dùng API list riêng, trang chủ giữ cách cũ vì mục đích khác (nổi bật theo hoạt động, không phải danh sách đầy đủ) | — |
+| Ops tìm tổ chức theo tên (mọi trạng thái) | ✅ `GET /ops/organizations/search?q=` — thêm 2026-08-06, khác endpoint public (trả cả `pending`/`rejected`/`suspended`, kèm `creditBalance`) | — | ✅ `/ops/credit` dùng để tìm tổ chức trước khi cộng Credit |
 | Upload giấy phép hoạt động | ⬜ | — | ⬜ chưa nối MinIO |
 | Duyệt tổ chức (Verify/Reject/Suspend) | ✅ `POST /ops/organizations/{id}/verify` — Suspend tự động ẩn mọi tin `published` cùng transaction | — | ✅ `/ops/verification` (tab Tổ chức) |
-| Cộng Credit thủ công (khuyến mãi/hỗ trợ) | ✅ `POST /ops/organizations/{id}/credit-bonus` | — | ⬜ **chưa có UI** — chỉ dùng qua API trực tiếp lúc test, không có màn hình cho Vận hành |
+| Cộng Credit thủ công (khuyến mãi/hỗ trợ) | ✅ `POST /ops/organizations/{id}/credit-bonus` | — | ✅ `/ops/credit` (`features/ops-credit/`) — nối API thật (tìm tổ chức + cộng Credit), không còn `MOCK_ORGANIZATIONS` |
 | Hoàn Credit thủ công khi tranh chấp | ⬜ `/ops/organizations/{id}/credit-refund` chưa làm | — | ⬜ |
+| Đánh giá cơ sở y tế (review, có kiểm duyệt) | ✅ bảng `OrganizationReviews` + `GET/POST /organizations/{id}/reviews` (candidate) + `GET /ops/organization-reviews` + `POST .../moderate` (Vận hành) — thêm 2026-08-06 | ✅ `/organizations/[id]` — xem đánh giá đã duyệt (ẩn danh người viết) + form gửi đánh giá mới, nối API thật thay `MOCK_APPROVED_REVIEWS`/`localStorage` | ✅ `/ops/reviews` (`features/ops-reviews/`) — hàng đợi duyệt/từ chối, **UI mới hoàn toàn**, chưa từng có kể cả dạng mock |
+| Nhật ký kiểm toán (Audit log) | ✅ bảng `AuditLogEntries` + `GET /ops/audit-logs?action=` — ghi tường minh 4/5 hành động nhạy cảm (duyệt CCHN/tổ chức, xử lý báo cáo, khóa/mở khóa user; xóa tài khoản để lại sau) — thêm 2026-08-06 | — | ✅ `/ops/audit` (`features/ops-audit/`) — nối API thật thay mock, filter theo loại thao tác |
 
 ---
 
@@ -93,8 +96,9 @@
 
 | Chức năng | Backend | `web/` | `web-admin/` |
 |---|---|---|---|
-| Tìm kiếm/lọc tin công khai | ✅ `GET /jobs` (LINQ/EF Core, chưa chuyển Postgres full-text) | ✅ `/jobs` — filter qua URL query, giữ SSR | — |
+| Tìm kiếm/lọc tin công khai | ✅ `GET /jobs` (LINQ/EF Core, chưa chuyển Postgres full-text) | ✅ `/jobs` — filter qua URL query, giữ SSR + form tìm theo từ khóa (`keyword`, đã có sẵn ở backend/`getJobs`, trước đây chỉ thiếu UI); form tìm nhanh ở trang chủ (`HeroSearchForm`) điều hướng thẳng sang `/jobs?keyword=...` | — |
 | Xem chi tiết tin | ✅ `GET /jobs/{id}` | ✅ `/jobs/[id]` | ✅ (trong danh sách tin của tổ chức) |
+| Lưu tin quan tâm (bookmark) | ⬜ chưa có bounded context/API | ✅ `SaveJobButton` trên `/jobs/[id]` + trang `/dashboard/saved-jobs` — lưu tạm ở `localStorage` phía client (chưa có API, xem TODO trong `lib/saved-jobs.ts`) | — |
 | Tạo tin (draft) | ✅ `POST /jobs` | — | ✅ `/jobs/new` |
 | Sửa tin (chỉ draft/rejected) | ✅ `PUT /jobs/{id}` | — | ✅ `/jobs/$jobId/edit` — nút bút chì chỉ hiện khi `Draft`/`Rejected` |
 | Nộp duyệt (gói Free/Eco/Pro/Max) | ✅ `POST /jobs/{id}/submit` | — | ✅ `/jobs/new` (Free thẳng pending; trả phí → tạo Payment) |
@@ -130,6 +134,7 @@
 | Tìm ứng viên (ẩn liên hệ tới khi mở) | ✅ `GET /candidates/search` | ✅ `/candidates` |
 | Mở hồ sơ ứng viên (trừ Credit) | ✅ `POST /candidates/{id}/unlock` | ✅ nút "Mở hồ sơ" trong `/candidates` |
 | Xem chi tiết hồ sơ sau khi mở | ✅ `GET /candidates/{id}` (query `organizationId`, 403 nếu chưa unlock, trả `EmployerCandidateProfileDto`) | ✅ `/candidates/$candidateId` — tên/headline/summary/avatar/email/chuyên khoa/CCHN, link từ card đã mở trong `/candidates` |
+| Gợi ý ứng viên cho 1 tin (chuyên khoa trùng) | ✅ dùng lại `GET /candidates/search` (không có endpoint mới) — thêm 2026-08-07 | ✅ nút "Ứng viên gợi ý" ở trang ATS 1 tin (`/applications/$jobId`), mở Sheet, tự tra `specialtyId` qua danh mục vì `ApiJob` không có field này, loại ứng viên đã ứng tuyển, unlock ngay trong Sheet |
 
 ---
 
@@ -167,7 +172,7 @@
 | Duyệt nội dung tin | ✅ `GET /ops/jobs`, `POST /ops/jobs/{id}/moderate` | ✅ `/ops/verification` (tab Tin tuyển dụng) |
 | Đối soát thanh toán | ✅ `GET/POST /ops/payments/*` | ✅ `/ops/payments` |
 | Quản lý danh mục/gói tin | ✅ `POST/PUT /ops/catalog/*`, `/ops/job-packages/*` | ✅ `/ops/catalog` |
-| Cộng Credit thủ công | ✅ `POST /ops/organizations/{id}/credit-bonus` | ⬜ chưa có UI — chỉ gọi được qua API trực tiếp |
+| Cộng Credit thủ công | ✅ `POST /ops/organizations/{id}/credit-bonus` (role `admin`, không phải `moderator`) | ✅ `/ops/credit` — **tìm tổ chức dùng mock tạm** (chưa có API tìm/liệt kê tất cả tổ chức cho Vận hành), form cộng Credit gọi API thật |
 | Hoàn Credit khi tranh chấp | ⬜ backend chưa có (`/ops/organizations/{id}/credit-refund`, khác `credit-bonus` — dùng khi tranh chấp cụ thể) | ⬜ |
 | Xử lý báo cáo vi phạm | ✅ `GET /ops/reports`, `POST /ops/reports/{id}/resolve` | ✅ `/ops/reports` — nối API thật, không còn mock |
 | Quản lý người dùng hệ thống (khoá/mở khoá) | ✅ `GET /ops/users`, `POST /ops/users/{id}/{suspend,unsuspend}` | ✅ `/ops/users` — tìm theo email + nút Khóa/Mở khóa |
@@ -185,7 +190,8 @@
 | Nhắn tin NTD ↔ ứng viên | ⬜ | ⬜ | ⬜ `/chats` chỉ đọc `data/convo.json` tĩnh (tàn dư template), không gọi API nào |
 | Trang `/tasks`, `/apps` (template mẫu Jira/App Store) | — | — | ⬜ tàn dư template shadcn-admin gốc, dùng `@faker-js/faker`, không thuộc nghiệp vụ — nên gỡ khỏi sidebar/điều hướng khi dọn dẹp |
 | Trang Settings cá nhân (account/appearance/display/notifications) | — | (xem mục 1) | ⬜ tàn dư template, chưa nối API cập nhật user thật |
-| Link `/about` | — | ⛔ route không tồn tại, link chết trên header | — |
+| Link `/about` (giới thiệu nền tảng) | — | ✅ trang tĩnh `/about` — 3 giá trị cốt lõi (tin cậy lâm sàng/đúng chuyên khoa/cộng đồng y tế), không gọi API | — |
+| Help Center (FAQ + hướng dẫn liên hệ hỗ trợ) | — | — | ✅ `/help-center` — nội dung tĩnh (4 câu hỏi thường gặp: xác thực tổ chức, mời thành viên, Credit, sửa tin), thay `<ComingSoon />` cũ. Không gọi API |
 
 ---
 
@@ -193,14 +199,19 @@
 
 Những mục này **không nằm trong checklist cũ**, phát hiện khi rà soát code thật — cần dọn hoặc quyết định rõ ràng (làm tiếp hay bỏ):
 
-1. **Link chết trên `web/`**: `/organizations` (index — trang liệt kê tổ chức) và `/about` đều 404. Header trỏ tới nhưng route chưa dựng.
-2. **`web/lib/mock-data.ts`**: 8/11 export là code chết (không ai import) — `MOCK_JOBS`, `getJobById`, `getOrganizationById`, `getJobsByOrganization`, `MOCK_SPECIALTIES`, `MOCK_LOCATIONS`, `MOCK_EMPLOYMENT_TYPES`, `MOCK_APPLICATIONS`. Nên xóa khi dọn dẹp.
-3. **Route Handler tồn tại nhưng chưa có UI gọi** ở `web/`: sửa/xoá CCHN (`PUT`/`DELETE /api/candidates/me/licenses/{id}`), thêm chuyên khoa (`POST /api/candidates/me/specialties`) — hồ sơ ứng viên hiện không có cách sửa CCHN hay thêm chuyên khoa qua giao diện dù backend + proxy đã sẵn.
-4. **`applicationsApi` có hàm chưa được gọi** ở `web-admin/`: `getById` (xem chi tiết đơn riêng), `addNote`, `score`, `getHistory` — đã có API thật và đã nối vào `lib/api.ts` nhưng chưa có UI/nút bấm nào gọi tới (khác `jobsApi.update/close/renew` — đã nối UI ở `/jobs`, xem mục 5 ở trên).
-5. **Chuỗi tiếng Việt hardcode** ở `web/` thay vì qua `next-intl`, rải rác ở: `profile-form.tsx`, `profile/page.tsx`, `license-section.tsx`, `settings/page.tsx`, `delete-account-button.tsx`, `dashboard/page.tsx`, home `page.tsx`, `jobs/[id]/page.tsx` (hàm `formatSalary`). Vi phạm CLAUDE.md mục 4 quy tắc #10 — **chưa dọn ở đợt rút chuỗi `web-admin/`**, vẫn còn tồn đọng riêng cho `web/`. Ở `web-admin/`, sau [ADR-0010](../kien-truc/adr/0010-da-ngon-ngu-cho-web-admin.md), đã rút xong cả 7 namespace (`common`/`jobs`/`applications`/`credit`/`candidates`/`members`/`ops`) — không còn chuỗi hardcode nào trong `features/**/*.tsx` thuộc các trang nghiệp vụ chính (trừ `chats/`, `tasks/`, `apps/`, `settings/` cá nhân — tàn dư template, xem điểm 8).
-6. **`web-admin/` sidebar chưa tách theo role thật** — Admin (NTD) và Vận hành đang thấy chung 1 sidebar (có TODO comment xác nhận), chưa ẩn/hiện mục theo role JWT thật.
-7. **Vận hành thiếu 3 màn hình**: cộng Credit thủ công (đã có API, chưa có UI), quản lý người dùng hệ thống (chưa có cả API lẫn UI — khác "Thành viên tổ chức"), dashboard tổng quan nền tảng.
-8. **`/tasks`, `/apps`, `/chats`, trang Settings cá nhân** ở `web-admin/` là tàn dư template shadcn-admin gốc, không thuộc nghiệp vụ — cân nhắc gỡ khỏi điều hướng để tránh gây nhầm lẫn "đây có phải tính năng thật không".
+> **Lưu ý:** mục này dễ lỗi thời nhất trong toàn file — mỗi lần rà lại (2026-08-06 xác nhận qua Explore
+> agent đọc trực tiếp code, không dựa vào bản ghi cũ) đã phát hiện phần lớn các dòng dưới đây **đã được
+> sửa từ các đợt làm việc trước nhưng chưa gạch bỏ ở đây**. Trước khi bắt tay làm 1 mục trong danh sách
+> này, luôn verify lại bằng code thật — đừng tin danh sách này.
+
+1. ~~**Link chết trên `web/`**: `/organizations` và `/about` 404~~ — **đã sửa** (2026-08-06): cả 2 route đã có nội dung thật, không còn 404.
+2. ~~**`web/lib/mock-data.ts` có 8/11 export chết**~~ — **đã sửa** (2026-08-06): xóa `MOCK_JOBS`, `getJobById`, `getOrganizationById`, `getJobsByOrganization`, `MOCK_SPECIALTIES`, `MOCK_LOCATIONS`, `MOCK_EMPLOYMENT_TYPES`, `MOCK_APPLICATIONS`. Chỉ còn `MOCK_CANDIDATE`/`MOCK_CV` (đang dùng thật ở CV Builder).
+3. ~~**Route Handler tồn tại nhưng chưa có UI gọi ở `web/`: sửa/xoá CCHN, thêm chuyên khoa**~~ — **lỗi thời, đã có UI từ trước** (xác nhận 2026-08-06): `license-section.tsx` có đủ nút Sửa/Xóa gọi đúng `PUT`/`DELETE`; `specialty-section.tsx` có form thêm chuyên khoa gọi đúng `POST`. Xem mục 3 "Hồ sơ ứng viên" ở trên — đã ghi ✅ từ trước, dòng này trong "Tổng hợp nhanh" chỉ là bản ghi cũ chưa xóa.
+4. ~~**`applicationsApi` có hàm chưa được UI gọi ở `web-admin/`: `getById`/`addNote`/`score`/`getHistory`**~~ — **lỗi thời, đã có UI từ trước** (xác nhận 2026-08-06): `features/applications/detail.tsx` gọi đủ cả 4 hàm, có input điểm số + nút thêm ghi chú thật. Xem mục 6 "Ứng tuyển & ATS" ở trên — đã ghi ✅ từ trước.
+5. ~~**Chuỗi tiếng Việt hardcode ở `web/`**~~ — **lỗi thời, đã dọn từ trước** (xác nhận 2026-08-06, quét cả 8 file được nêu bằng regex Unicode tiếng Việt): không còn chuỗi hardcode hiển thị UI nào trong `profile-form.tsx`/`profile/page.tsx`/`license-section.tsx`/`settings/page.tsx`/`delete-account-button.tsx`/`dashboard/page.tsx`/home `page.tsx`/`jobs/[id]/page.tsx`. `formatSalary` đã dùng `t("salaryNegotiable")`/`t("million")` qua tham số.
+6. **`web-admin/` sidebar tách theo role** — đã làm ở đợt trước (`getSidebarData(role)`, xem mục 10 Vận hành và log tương ứng trong `TIEN-DO-DU-AN.md`) — dòng này trong danh sách cũ đã lỗi thời, cần xóa hẳn ở lần dọn tiếp theo.
+7. **Vận hành — cộng Credit thủ công**: đã có UI (`/ops/credit`, dùng mock tìm tổ chức — xem mục 4 "Cơ sở y tế" ở trên). Quản lý người dùng hệ thống + dashboard tổng quan: cần verify lại trực tiếp, danh sách cũ có thể đã lỗi thời như các mục trên.
+8. **`/tasks`, `/apps`, `/chats`, trang Settings cá nhân** ở `web-admin/` là tàn dư template shadcn-admin gốc, không thuộc nghiệp vụ, không nằm trong sidebar chức năng thật (`employerGroup`/`opsGroup`) nên người dùng thực tế không vô tình vào được qua điều hướng chuẩn — quyết định giữ nguyên, không gỡ (rủi ro đụng vào code không cần thiết), chỉ cần biết đây không phải gap thật.
 
 ---
 
