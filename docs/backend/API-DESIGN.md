@@ -107,16 +107,14 @@ mọi hàng đợi `/ops/*` (xử lý xong là hết).
 | GET | `/candidates/me` | Candidate (Owner) | Xem hồ sơ của chính mình |
 | PUT | `/candidates/me` | Candidate (Owner) | Cập nhật thông tin chung |
 | PUT | `/candidates/me/avatar` | Candidate (Owner) | Cập nhật ảnh đại diện — tách riêng khỏi `PUT /candidates/me` để đổi ảnh không phải gửi kèm mọi field hồ sơ khác. Body `{ avatarUrl }` (đã upload qua `POST /uploads/presigned-url`, `purpose=avatar`) |
-| GET | `/candidates/{id}` | Employer (member, đã unlock) | Xem hồ sơ ứng viên khác — query param `organizationId` bắt buộc (dùng để check unlock đúng tổ chức, giống `/candidates/search`), 403 nếu chưa unlock (mục 7). Trả `EmployerCandidateProfileDto` (fullName/headline/summary/avatarUrl/contactEmail/specialties/licenses) — DTO riêng, không dùng chung với `GET /candidates/me` vì khác nhu cầu field theo role (CLAUDE.md mục 4 quy tắc #9). **Chưa hỗ trợ Vận hành xem qua endpoint này** — khác thiết kế gốc, chưa làm |
+| GET | `/candidates/{id}` | Employer (member, đã unlock) | Xem hồ sơ ứng viên khác — query param `organizationId` bắt buộc (dùng để check unlock đúng tổ chức, giống `/candidates/search`), 403 nếu chưa unlock (mục 7). Trả `EmployerCandidateProfileDto` (fullName/headline/summary/avatarUrl/contactEmail/specialties/licenses + **experiences/educations** — 2 khối sau thêm 2026-08-10, trước đó NTD trả 15 Credit mở hồ sơ mà không thấy học vấn lẫn kinh nghiệm) — DTO riêng, không dùng chung với `GET /candidates/me` vì khác nhu cầu field theo role (CLAUDE.md mục 4 quy tắc #9). **Chưa hỗ trợ Vận hành xem qua endpoint này** — khác thiết kế gốc, chưa làm |
 | GET | `/candidates/{id}/public-summary` | Public | ⬜ **chưa implement** — bản rút gọn ẩn danh (vd. sau khi NTD xem trong kết quả tìm kiếm chưa mở) |
 | POST | `/candidates/me/licenses` | Candidate (Owner) | Thêm CCHN + upload document |
 | PUT | `/candidates/me/licenses/{licenseId}` | Candidate (Owner) | Sửa CCHN (chỉ khi `pending`/`rejected`) |
 | DELETE | `/candidates/me/licenses/{licenseId}` | Candidate (Owner) | Xóa CCHN chưa duyệt |
 | POST | `/candidates/me/specialties` | Candidate (Owner) | Gắn chuyên khoa + trình độ |
-| POST | `/candidates/me/experiences` | Candidate (Owner) | Thêm kinh nghiệm làm việc |
-| PUT/DELETE | `/candidates/me/experiences/{id}` | Candidate (Owner) | Sửa/xóa |
-| POST | `/candidates/me/educations` | Candidate (Owner) | Thêm học vấn |
-| POST | `/candidates/me/certificates` | Candidate (Owner) | Thêm chứng chỉ CME |
+| PUT | `/candidates/me/history` | Candidate (Owner) | ✅ Lưu **toàn bộ** kinh nghiệm làm việc + học vấn trong 1 request. Body `{ experiences: [{ organizationName, position, tier?, fromDate, toDate?, description? }], educations: [{ schoolName, degree?, major?, fromYear, toYear? }] }`. **Ngữ nghĩa replace-all**: xóa hết bản ghi cũ rồi ghi lại danh sách gửi lên — thay cho 3 endpoint POST/PUT/DELETE từng dòng ở thiết kế gốc, vì UI là 1 form nhiều dòng bấm Lưu 1 lần; tách 3 loại request thì client phải tự theo dõi dòng nào mới/sửa/xóa và dễ lệch trạng thái nếu 1 request lỗi giữa chừng. `tier` là enum `FacilityTier` (`TrungUong`/`Tinh`/`Huyen`/`TuNhan`), `toDate`/`toYear` = `null` nghĩa là **đang làm/đang học**. Học vấn + kinh nghiệm cũng trả về trong `GET /candidates/me` và `GET /candidates/{id}` (sau unlock) |
+| POST | `/candidates/me/certificates` | Candidate (Owner) | ⬜ **chưa implement** — thêm chứng chỉ CME |
 | GET | `/candidates/me/cvs` | Candidate (Owner) | Danh sách CV (builder + upload) |
 | POST | `/candidates/me/cvs` | Candidate (Owner) | Tạo CV mới (từ template hoặc upload) |
 | PUT | `/candidates/me/cvs/{cvId}` | Candidate (Owner) | Sửa nội dung CV Builder |
