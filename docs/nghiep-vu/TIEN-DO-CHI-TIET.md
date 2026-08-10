@@ -32,7 +32,7 @@
 | Refresh token | ✅ `POST /auth/refresh` | ✅ tự động qua `backendFetch` khi gặp 401 | ✅ tự động qua axios response interceptor (single-flight) |
 | Đăng xuất | ✅ `POST /auth/logout` | ✅ | ✅ |
 | Quên/đặt lại mật khẩu | ✅ `POST /auth/forgot-password`, `POST /auth/reset-password` | ✅ `/auth/forgot-password`, `/auth/reset-password` | — |
-| Đổi mật khẩu khi đã đăng nhập | ✅ `PUT /users/me/password` (yêu cầu đúng mật khẩu hiện tại, khác luồng OTP của forgot/reset) | ✅ `/settings` → `ChangePasswordForm` | — (cố ý bỏ qua, `settings/` cá nhân ở `web-admin/` vẫn là giao diện template chưa nối API, xem điểm 8) |
+| Đổi mật khẩu khi đã đăng nhập | ✅ `PUT /users/me/password` (yêu cầu đúng mật khẩu hiện tại, khác luồng OTP của forgot/reset) | ✅ `/settings` → `ChangePasswordForm` | ✅ `/settings/account` — nối thật 2026-08-10, lỗi "mật khẩu hiện tại không đúng" từ backend gắn vào đúng field |
 | Xem thông tin user hiện tại | ✅ `GET /users/me` | ✅ dùng để gate route + hiện email ở header | ✅ dùng để check role cho phép vào (`ALLOWED_ROLES`) |
 | Xóa tài khoản (soft-delete + anonymize) | ✅ `DELETE /users/me` | ✅ `/settings` → `DeleteAccountButton`, 2-click confirm | — (chưa có màn hình cho Vận hành khoá/xoá user khác) |
 | OAuth Google | ⬜ | 🟨 nút trên `/auth/login` có loading state + thông báo "sắp ra mắt" (`OAuthButtons`), **vẫn chưa có logic OAuth thật** — chỉ polish UI theo quyết định "UI trước, API sau" | — |
@@ -193,7 +193,7 @@
 | Thông báo email | ⬜ | ⬜ | ⬜ |
 | Nhắn tin NTD ↔ ứng viên | ⬜ | ⬜ | ⬜ chưa làm — trang `/chats` template (đọc `data/convo.json` tĩnh) đã gỡ 2026-08-10 cùng mục "Tin nhắn" trong sidebar (mục đó có badge "3" tin nhắn giả, dễ nhầm là tính năng thật) |
 | Trang `/tasks`, `/apps` (template mẫu Jira/App Store) | — | — | ✅ đã gỡ hẳn 2026-08-10 cùng dependency `@faker-js/faker` |
-| Trang Settings cá nhân (account/appearance/display/notifications) | — | (xem mục 1) | ⬜ giao diện template, chưa nối API cập nhật user thật — GIỮ LẠI (khác `/tasks`,`/apps`) vì "Cài đặt tài khoản" là màn hình có thật trong `LUONG-NGHIEP-VU-MAN-HINH.md` mục 2.2, cần làm thật sau chứ không phải rác cần xóa |
+| Trang Settings cá nhân | — | (xem mục 1) | ✅ **làm thật 2026-08-10**. Còn 3 màn: **Hồ sơ** (email/vai trò/trạng thái/xác thực email từ `GET /users/me` + tên tổ chức — chỉ đọc vì `AuthUserDto` không có username/bio/avatar để sửa), **Tài khoản** (đổi mật khẩu thật), **Giao diện** (theme/font — thật, lưu localStorage). **Đã xóa 2 màn**: `notifications` (chưa có provider email/SMS nào nên chỉ là công tắc không nối gì) và `display` (demo chọn thư mục macOS Finder) |
 | Link `/about` (giới thiệu nền tảng) | — | ✅ trang tĩnh `/about` — 3 giá trị cốt lõi (tin cậy lâm sàng/đúng chuyên khoa/cộng đồng y tế), không gọi API | — |
 | Help Center (FAQ + hướng dẫn liên hệ hỗ trợ) | — | — | ✅ `/help-center` — nội dung tĩnh (4 câu hỏi thường gặp: xác thực tổ chức, mời thành viên, Credit, sửa tin), thay `<ComingSoon />` cũ. Không gọi API |
 
@@ -215,8 +215,31 @@ Những mục này **không nằm trong checklist cũ**, phát hiện khi rà so
 5. ~~**Chuỗi tiếng Việt hardcode ở `web/`**~~ — **lỗi thời, đã dọn từ trước** (xác nhận 2026-08-06, quét cả 8 file được nêu bằng regex Unicode tiếng Việt): không còn chuỗi hardcode hiển thị UI nào trong `profile-form.tsx`/`profile/page.tsx`/`license-section.tsx`/`settings/page.tsx`/`delete-account-button.tsx`/`dashboard/page.tsx`/home `page.tsx`/`jobs/[id]/page.tsx`. `formatSalary` đã dùng `t("salaryNegotiable")`/`t("million")` qua tham số.
 6. **`web-admin/` sidebar tách theo role** — đã làm ở đợt trước (`getSidebarData(role)`, xem mục 10 Vận hành và log tương ứng trong `TIEN-DO-DU-AN.md`) — dòng này trong danh sách cũ đã lỗi thời, cần xóa hẳn ở lần dọn tiếp theo.
 7. **Vận hành — cộng Credit thủ công**: đã có UI (`/ops/credit`, dùng mock tìm tổ chức — xem mục 4 "Cơ sở y tế" ở trên). Quản lý người dùng hệ thống + dashboard tổng quan: cần verify lại trực tiếp, danh sách cũ có thể đã lỗi thời như các mục trên.
-8. ~~**`/tasks`, `/apps`, `/chats`, trang Settings cá nhân** là tàn dư template, không nằm trong sidebar chức năng thật nên người dùng không vô tình vào được — giữ nguyên, không gỡ.~~ **Đánh giá này SAI và đã xử lý (2026-08-10).** Kiểm tra lại code cho thấy: `/chats` **có** nằm trong sidebar nghiệp vụ (`employerGroup`, mục `nav.chats` kèm badge "3" tin nhắn giả), và nhóm `Pages` (Auth demo + Errors demo) hiện với **mọi** role vì `getSidebarData` chỉ lọc `employerGroup`/`opsGroup`. Tức là NTD/Vận hành thật đăng nhập vào đều thấy menu "Tasks", "Apps", "Tin nhắn", "Sign In (2 Col)", "401/403/404" — rất lộ là template chưa dọn. Đã gỡ hẳn `/tasks`, `/apps`, `/chats`, các route auth trùng lặp (`sign-in-2`/`sign-up`/`forgot-password`/`otp` — đăng ký/quên mật khẩu thật đã có ở `web/`), route demo trang lỗi, `coming-soon.tsx` và dependency `@faker-js/faker`. **Giữ lại** `features/errors/*` (dùng thật làm `errorComponent` ở `__root.tsx`) và trang Settings cá nhân (là màn hình có thật trong tài liệu, cần làm thật sau).
+8. ~~**`/tasks`, `/apps`, `/chats`, trang Settings cá nhân** là tàn dư template, không nằm trong sidebar chức năng thật nên người dùng không vô tình vào được — giữ nguyên, không gỡ.~~ **Đánh giá này SAI và đã xử lý (2026-08-10).** Kiểm tra lại code cho thấy: `/chats` **có** nằm trong sidebar nghiệp vụ (`employerGroup`, mục `nav.chats` kèm badge "3" tin nhắn giả), và nhóm `Pages` (Auth demo + Errors demo) hiện với **mọi** role vì `getSidebarData` chỉ lọc `employerGroup`/`opsGroup`. Tức là NTD/Vận hành thật đăng nhập vào đều thấy menu "Tasks", "Apps", "Tin nhắn", "Sign In (2 Col)", "401/403/404" — rất lộ là template chưa dọn. Đã gỡ hẳn `/tasks`, `/apps`, `/chats`, các route auth trùng lặp (`sign-in-2`/`sign-up`/`forgot-password`/`otp` — đăng ký/quên mật khẩu thật đã có ở `web/`), route demo trang lỗi, `coming-soon.tsx` và dependency `@faker-js/faker`. **Giữ lại** `features/errors/*` (dùng thật làm `errorComponent` ở `__root.tsx`) và trang Settings cá nhân (là màn hình có thật trong tài liệu). Trang Settings **đã làm thật cùng ngày** — xem điểm 10.
 9. **Trạng thái đang tải / lỗi ở `web-admin/`** (2026-08-10): trước đây phần lớn màn chỉ xử lý trạng thái RỖNG, không có loading/error — API chậm hoặc lỗi thì người dùng thấy màn hình trắng trơn, hoặc thấy y hệt "không có dữ liệu" nên không phân biệt được "chưa có gì" với "gọi API hỏng". Đã bổ sung cho 6 màn còn thiếu (Dashboard NTD, Ops Dashboard, Đối soát thanh toán, Duyệt đánh giá, Quản lý người dùng, Xử lý báo cáo) qua component dùng chung `components/query-state.tsx`; 2 dashboard dùng skeleton dạng thẻ để giữ layout lưới. Các màn đã có sẵn từ trước: `jobs`, `candidates`, `credit`, `users` (Thành viên), `ops-audit`.
+10. **Trang Cài đặt cá nhân `web-admin/` làm thật** (2026-08-10): 5 màn Settings đều là template
+    shadcn-admin — tiếng Anh, submit chỉ gọi `showSubmittedData` (hiện toast JSON, không lưu gì),
+    email giả `m@example.com`, mục "friend requests/follows", chọn 9 ngôn ngữ không khớp 6 ngôn ngữ
+    của dự án. **Xóa 2 màn** (`notifications` — chưa có provider email/SMS nào nên là hứa hẹn tính
+    năng không tồn tại; `display` — demo chọn thư mục macOS Finder), **viết lại 3 màn** bằng dữ liệu
+    thật.
+
+    Rà kèm phát hiện **5 lỗi ảnh hưởng MỌI trang**, đều đã sửa cùng lượt:
+    - `auth.user` chỉ set lúc đăng nhập, **không bao giờ restore** → sau F5 chỉ còn token, `user`
+      là `null`, `app-sidebar` mất `role` nên hiện **cả nhóm Vận hành cho Nhà tuyển dụng**
+      (`getSidebarData(undefined)` trả cả 2 nhóm). Thêm hook `useCurrentUser`.
+    - `lib/http.ts` cố định `Accept-Language: 'vi'` (comment dẫn ADR-0008 mục 5 — **đã lỗi thời**,
+      ADR-0010 đảo lại thành 6 ngôn ngữ) → mọi thông báo lỗi từ backend về tiếng Việt dù UI đang
+      tiếng Anh.
+    - Chân sidebar hiện `Người dùng demo / demo@blousehiding.vn`, `ProfileDropdown` hiện
+      `satnaing / satnaingdev@gmail.com` kèm mục `Billing`/`New Team` không tồn tại.
+    - `TeamSwitcher` có dropdown đổi team + "Add team" — hệ thống **không có** khái niệm nhiều team
+      (mỗi NTD thuộc đúng 1 tổ chức). Thay bằng `AppBrand` hiện tên tổ chức thật.
+    - Nút tìm kiếm + command palette (⌘K) còn tiếng Anh: `Search`, `Type a command or search...`,
+      `No results found.`, `Theme/Light/Dark/System`.
+
+    Test 84 → 94, thêm `src/i18n.test.ts` kiểm **mọi** namespace có đủ khóa ở cả 6 ngôn ngữ (quy tắc
+    #10 CLAUDE.md) — thiếu khóa thì i18next lặng lẽ lùi về `fallbackLng`, không ai thấy.
 
 ---
 

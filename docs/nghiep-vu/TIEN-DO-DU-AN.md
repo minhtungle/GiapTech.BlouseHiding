@@ -2228,6 +2228,66 @@ unlock hồ sơ → **thấy đủ học vấn + kinh nghiệm kèm tuyến đã
 > text — đổi sang đọc `inputValue()` thì đúng. Bài học: khi kết quả tự động mâu thuẫn với dữ liệu thật,
 > kiểm chứng bằng nguồn khác trước khi kết luận có bug.
 
+**Trang Cài đặt cá nhân `web-admin/` — làm thật thay template** — chọn mục này vì đây là khu vực UI
+duy nhất còn hiển thị **dữ liệu giả cho người dùng thật**: cả 5 màn Settings là template shadcn-admin
+nguyên bản (tiếng Anh, email mẫu `m@example.com`, mục "friend requests/follows", chọn 9 ngôn ngữ không
+khớp 6 ngôn ngữ dự án), và mọi nút Lưu đều gọi `showSubmittedData` — chỉ hiện toast JSON, **không lưu gì
+cả**. Người dùng bấm Lưu, thấy toast, tưởng đã lưu.
+
+**Xóa 2 màn thay vì làm cho có**: `notifications` (công tắc bật/tắt email — hệ thống chưa có provider
+email/SMS nào, giữ lại là hứa hẹn tính năng không tồn tại) và `display` (chọn hiện thư mục
+Recents/Home/Desktop/Downloads — demo macOS Finder, không liên quan nghiệp vụ tuyển dụng). Xóa đúng hơn
+là để đó rồi ghi "sẽ làm sau".
+
+**3 màn còn lại làm thật**, và mấu chốt là **chỉ làm những gì backend có dữ liệu**: `AuthUserDto` chỉ có
+`id/email/role/status/emailVerified/locale` — không có username/bio/URLs/ngày sinh/avatar. Nên màn Hồ sơ
+là **chỉ đọc** (email, vai trò, trạng thái, xác thực email, tên tổ chức + link sang trang Tổ chức) chứ
+không dựng form sửa những field backend không lưu. Màn Tài khoản nối `PUT /users/me/password` — endpoint
+này **có sẵn từ trước nhưng chưa ai nối UI**. Màn Giao diện giữ nguyên vì theme/font là thật
+(localStorage), chỉ i18n hóa và bỏ `showSubmittedData`.
+
+Bỏ luôn phần chọn ngôn ngữ mà template có: `LanguageSwitcher` ở header **đã** lưu `users.locale` thật
+rồi, thêm nữa chỉ là 2 chỗ làm cùng 1 việc.
+
+**Rà kèm phát hiện 5 lỗi ảnh hưởng mọi trang, không chỉ Settings** — đáng kể nhất là lỗi thứ nhất:
+
+1. `auth.user` **chỉ được set đúng 1 lần lúc đăng nhập** và không bao giờ dựng lại. Token lưu cookie
+   nhưng user thì không, nên **sau khi tải lại trang (F5), `user` là `null`** → `app-sidebar` mất `role`
+   → `getSidebarData(undefined)` trả **cả 2 nhóm** (nhóm này cố ý trả cả 2 khi chưa biết role, để tránh
+   chớp menu) → **Nhà tuyển dụng thấy toàn bộ menu Vận hành nền tảng**. Không phải lỗ hổng phân quyền
+   (backend vẫn chặn 403) nhưng là lỗi hiển thị nghiêm trọng, và chỉ cần F5 là gặp. Sửa bằng hook
+   `useCurrentUser` gọi lại `GET /users/me`.
+2. `lib/http.ts` cố định `Accept-Language: 'vi'`, comment dẫn "ADR-0008 mục 5 — app này chỉ tiếng Việt".
+   Nhưng **ADR-0010 đã đảo lại** thành 6 ngôn ngữ, comment và code đều lỗi thời → mọi thông báo lỗi
+   validation từ backend về tiếng Việt dù UI đang tiếng Anh/Nhật.
+3. Chân sidebar hiện `Người dùng demo / demo@blousehiding.vn` **trên mọi trang**; `ProfileDropdown` góc
+   trên phải hiện `satnaing / satnaingdev@gmail.com` kèm mục `Billing` và `New Team` không tồn tại.
+4. `TeamSwitcher` có dropdown đổi team + mục "Add team" — hệ thống **không có** khái niệm nhiều team
+   (mỗi tài khoản NTD thuộc đúng 1 tổ chức, Vận hành không thuộc tổ chức nào). Thay bằng `AppBrand`
+   hiện thương hiệu + tên tổ chức thật. Xóa luôn `AppTitle` (cũng template: "Shadcn-Admin / Vite +
+   ShadcnUI").
+5. Nút tìm kiếm và command palette (⌘K) còn tiếng Anh: `Search`, `Type a command or search...`,
+   `No results found.`, `Theme/Light/Dark/System`. Không sửa `components/ui/sidebar.tsx` ("Toggle
+   Sidebar") vì đó là primitive shadcn copy-code, sửa sẽ lệch upstream, và chuỗi đó chỉ `sr-only`.
+
+**Thêm test chặn tái diễn**: `src/i18n.test.ts` so khóa của **cả 8 namespace** giữa 6 ngôn ngữ — thiếu
+khóa ở 1 ngôn ngữ thì i18next lặng lẽ lùi về `fallbackLng`, không ai phát hiện; đây đúng là loại lỗi
+quy tắc #10 CLAUDE.md muốn chặn nhưng trước giờ không có gì kiểm tự động. Test này cũng xác nhận 7
+namespace cũ không có khóa nào lệch. Thêm test sidebar không còn trỏ tới route đã xóa (bấm vào sẽ ra
+trang không tìm thấy). Test 84 → 94.
+
+`search-provider.test.tsx` **vỡ 7 test** khi tôi i18n hóa palette vì nó ghim chuỗi
+`'Type a command or search...'` — sửa để đọc từ file dịch, đổi bản dịch sẽ không làm vỡ test nữa.
+
+Verify UI thật (Playwright + backend + tài khoản/tổ chức thật): 31 kiểm tra đạt, gồm **đổi mật khẩu rồi
+đăng nhập lại bằng mật khẩu MỚI (HTTP 200) và mật khẩu cũ bị vô hiệu (HTTP 401)** — bằng chứng đã ghi
+DB, không chỉ là hiện toast; và **sau F5 sidebar không còn hiện nhóm Vận hành**.
+
+> Ghi chú quá trình verify: script báo 1 lỗi "sidebar header không hiện tên tổ chức", nhưng ảnh chụp
+> cho thấy hiện **đúng** — script đọc DOM trước khi `GET /organizations/mine` trả về. Đã thêm
+> `waitForFunction` chờ dữ liệu. Ảnh chụp lại giúp phát hiện **2 lỗi thật mà test không bắt** (nút
+> "Search" và palette còn tiếng Anh) — nên vẫn nên xem ảnh, không chỉ đọc số PASS/FAIL.
+
 ### Giai đoạn 2 — Hoàn thiện
 
 *(Chưa bắt đầu)*
