@@ -61,8 +61,10 @@
   viên (core)**: đăng ký/OTP/đăng nhập/quên-đặt lại mật khẩu (`app/api/auth/*` proxy route → httpOnly
   cookie), tìm/xem tin + ứng tuyển thật, dashboard/hồ sơ/CCHN thật (`GET/PUT /candidates/me`,
   `POST /candidates/me/licenses`), xóa tài khoản. `SiteHeader` tự nhận diện đăng nhập qua cookie,
-  route `dashboard/profile/settings` redirect login nếu chưa đăng nhập. **Chưa nối**: `profile/cv`
-  (CV Builder — giữ mock, chờ backend), OAuth Google/Zalo, đổi mật khẩu (chưa có endpoint riêng).
+  route `dashboard/profile/settings` redirect login nếu chưa đăng nhập. **Chưa nối**: OAuth Google/Zalo.
+  (Dòng cũ ghi `profile/cv` "giữ mock, chờ backend" và "đổi mật khẩu chưa có endpoint riêng" — **đã
+  lỗi thời**: CV Builder nối `GET/POST /candidates/me/cvs` thật, đổi mật khẩu nối
+  `PUT /users/me/password` thật; xác nhận lại qua code 2026-08-10.)
   `web-admin/` (Vận hành/Admin) đã nối **đăng nhập + route protection (Zustand + cookie thường +
   axios interceptor tự refresh), đăng tin/danh sách tin, ATS Kanban theo tin (kéo-thả đổi giai đoạn
   thật), dashboard NTD, ví Credit (số dư + lịch sử), hàng đợi duyệt Vận hành (CCHN/tổ chức/tin, có
@@ -107,7 +109,7 @@
   CCHN thật qua MinIO (`POST /uploads/presigned-url` + `PUT` thẳng lên MinIO, `web/` đã nối UI thật).
   Sửa/xóa CCHN qua UI (Route Handler proxy đã có sẵn) — chưa nối
 - ✅ Gắn chuyên khoa + trình độ (`profile_specialties`, không trùng chuyên khoa)
-- ⬜ CV Builder (mẫu dựng sẵn) + upload PDF
+- ✅ CV Builder (mẫu dựng sẵn) + upload PDF — builder lưu `Cvs.data_json` (upsert 1 bản), CV file lưu `Cvs.file_url` (nhiều bản, đặt CV chính/xóa được), xuất PDF qua hộp thoại in trình duyệt (2026-08-10)
 - ✅ Hàng đợi duyệt CCHN (Vận hành) — `GET /ops/licenses`, `POST /ops/licenses/{id}/verify` (duyệt/từ
   chối kèm lý do bắt buộc khi từ chối)
 

@@ -118,7 +118,10 @@ mọi hàng đợi `/ops/*` (xử lý xong là hết).
 | GET | `/candidates/me/cvs` | Candidate (Owner) | Danh sách CV (builder + upload) |
 | POST | `/candidates/me/cvs` | Candidate (Owner) | Tạo CV mới (từ template hoặc upload) |
 | PUT | `/candidates/me/cvs/{cvId}` | Candidate (Owner) | Sửa nội dung CV Builder |
-| POST | `/candidates/me/cvs/{cvId}/export` | Candidate (Owner) | Xuất PDF |
+| POST | `/candidates/me/cvs/file` | Candidate (Owner) | ✅ Lưu CV dạng **file** vào bảng `Cvs` để tái dùng nhiều lần ứng tuyển — thêm 2026-08-10. Body `{ title, fileUrl }` (file đã upload sẵn qua `POST /uploads/presigned-url`, `purpose=cv`). Là **INSERT**, khác `PUT .../cvs/builder` (upsert đúng 1 CV builder): ứng viên được có nhiều CV file (bản tiếng Việt/tiếng Anh, bản theo chuyên khoa). CV đầu tiên tự thành CV chính |
+| POST | `/candidates/me/cvs/{cvId}/primary` | Candidate (Owner) | ✅ Đặt CV này làm CV chính (mặc định khi ứng tuyển) — thêm 2026-08-10. Bỏ cờ ở CV cũ + bật ở CV mới trong **cùng 1** transaction, tránh trạng thái 0 hoặc 2 CV chính |
+| DELETE | `/candidates/me/cvs/{cvId}` | Candidate (Owner) | ✅ Xóa 1 CV — thêm 2026-08-10. Xóa **cứng** (CV là dữ liệu ứng viên tự tạo, không thuộc nhóm phải giữ vĩnh viễn như CCHN/audit log). Xóa CV chính thì tự chuyển cờ sang CV còn lại mới nhất. Đơn đã nộp **không** bị ảnh hưởng vì `applications.cv_file_url` giữ bản sao URL riêng |
+| ~~POST~~ | ~~`/candidates/me/cvs/{cvId}/export`~~ | — | ⬜ **không làm** — xuất PDF chuyển sang render phía client bằng hộp thoại in của trình duyệt (`window.print()` + `@media print` ở `web/app/globals.css`), không cần endpoint. Lý do: backend render (QuestPDF) phải dựng lại layout CV lần 2 + nhúng font tiếng Việt, còn `jspdf`/`html2canvas` biến chữ thành ảnh (mờ khi in, không copy được text, tiếng Việt có dấu dễ lỗi) |
 
 **Ví dụ response `GET /candidates/me`:**
 ```json

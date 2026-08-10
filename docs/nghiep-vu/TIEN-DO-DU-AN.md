@@ -2288,6 +2288,65 @@ DB, không chỉ là hiện toast; và **sau F5 sidebar không còn hiện nhóm
 > `waitForFunction` chờ dữ liệu. Ảnh chụp lại giúp phát hiện **2 lỗi thật mà test không bắt** (nút
 > "Search" và palette còn tiếng Anh) — nên vẫn nên xem ảnh, không chỉ đọc số PASS/FAIL.
 
+**Nhóm CV: xuất PDF + CV dạng file** — chọn nhóm này vì đây là 2 việc còn lại nằm đúng trong luồng
+"ứng viên đăng tải thông tin cá nhân, CV" mà người dùng đã chốt phạm vi.
+
+**Xuất PDF** — nút vốn `disabled` với nhãn "Xuất PDF (sắp ra mắt)". Có 3 cách và đã hỏi để chốt:
+`window.print()` + CSS `@media print` (chọn), `jspdf`+`html2canvas`, hay backend render QuestPDF như
+thiết kế gốc ghi ở `API-DESIGN.md` (`POST /candidates/me/cvs/{cvId}/export`). Chọn cách in trình duyệt
+vì `html2canvas` chụp khối xem trước thành **ảnh** — chữ bị rasterize (mờ khi in/zoom, không copy được
+text) và **tiếng Việt có dấu dễ lỗi font**, lại thêm ~1MB bundle; còn backend render phải dựng lại
+layout CV lần 2 ở backend + nhúng font tiếng Việt. Endpoint `export` trong tài liệu đã đánh dấu **không
+làm**, kèm lý do.
+
+Chi tiết CSS đáng ghi lại: dùng `visibility: hidden` cho `body *` chứ **không** `display: none`.
+`display: none` trên phần tử cha thì con không thể hiện lại được, còn `visibility: hidden` thì con đặt
+`visible` vẫn hiện — nhờ vậy không phải liệt kê từng tầng DOM giữa `body` và `#cv-print`.
+
+**Rà kèm phát hiện khối xem trước CV thiếu nhiều thứ**: không có email liên hệ, địa chỉ, tiểu sử,
+chuyên khoa, **và CCHN**. Trên web thì NTD đã thấy email qua luồng mở hồ sơ nên không cần, nhưng bản in
+là file **rời khỏi hệ thống** — CV không có cách liên hệ thì NTD đọc xong không gọi được, và CV ngành y
+thiếu CCHN thì không đánh giá được (đúng điểm khác biệt cốt lõi của nền tảng). Đã bổ sung cả 5 khối.
+**Chỉ in CCHN đã Verified**: CCHN đang chờ duyệt/bị từ chối mà in ra sẽ gây nhầm lẫn vì trên giấy NTD
+không thấy được trạng thái duyệt.
+
+**CV dạng file** — trước đây CV file lúc ứng tuyển chỉ lưu ở `applications.cv_file_url`, gắn chặt vào 1
+đơn, nên lần ứng tuyển sau ứng viên phải upload lại đúng file đó; chỉ CV Builder được ghi vào bảng
+`Cvs`. Thêm 3 command: upload (là **INSERT** chứ không upsert như builder — ứng viên được có nhiều CV
+file: bản tiếng Việt/tiếng Anh, bản theo chuyên khoa), đặt CV chính, xóa.
+
+`SetPrimaryCv` đọc **hết** CV của ứng viên rồi gán trong **1** `SaveChanges` thay vì 2 lệnh riêng (bỏ cờ
+cũ / bật cờ mới) — tách ra mà lệnh sau lỗi thì hồ sơ rơi vào trạng thái có 0 hoặc 2 CV chính. `DeleteCv`
+xóa **cứng** (CV là dữ liệu ứng viên tự tạo, không thuộc nhóm phải giữ vĩnh viễn như CCHN/audit log —
+CLAUDE.md mục 4 quy tắc #4) và tự chuyển cờ "chính" sang CV còn lại mới nhất.
+
+**LỖ HỔNG phát hiện khi làm, đáng kể**: chọn CV dạng file đã lưu khi ứng tuyển thì
+`applications.cv_file_url` vẫn `null` — mà **NTD xem CV của đơn qua `ApplicationDto.CvFileUrl`, không
+đọc bảng `cvs`**. Tức là đơn nộp bằng CV đã lưu hiện ra **không có link CV nào** dù ứng viên đã gắn CV.
+Sửa bằng cách sao chép `FileUrl` sang đơn lúc nộp. Sao chép (thay vì join lúc đọc) cũng đúng về nghiệp
+vụ: đơn giữ đúng bản CV **tại thời điểm nộp**, ứng viên sửa/xóa CV sau đó không làm đổi hồ sơ NTD đã
+nhận. Test cũ chỉ kiểm `applicationId != Empty` nên không bắt được — test mới kiểm qua
+`GetApplicationByIdQuery` với **vai NTD**.
+
+Cả `DeleteCv` và `SetPrimaryCv` lọc theo `ProfileId` **ngay trong truy vấn** thay vì tìm theo `CvId` rồi
+so chủ sở hữu sau — để "không tồn tại" và "không phải của mình" đều trả NotFound, không lộ CV nào có thật.
+
+Test 135 → 145 (+10). Verify UI thật: 18/18 cho xuất PDF (gồm **bản in gọn trong 1 trang A4**,
+header/nút bấm không lên giấy, CCHN chưa duyệt **không** bị in) và 6/6 cho CV file (upload 2 bản lên
+MinIO thật, đổi CV chính, đúng 1 CV chính). Cuối cùng kiểm đầu-cuối bằng API với vai NTD là thành viên
+tổ chức: `GET /applications/{id}` trả đúng link `cv-b.pdf` — chính là lỗ hổng vừa bịt.
+
+> Ghi chú quá trình verify (3 lần script báo sai, sản phẩm đúng):
+> 1. `getComputedStyle(nút).display` trả `'flex'` khiến tôi tưởng nút vẫn lên giấy — computed style trả
+>    `display` **khai báo của chính phần tử**, không phản ánh việc phần tử cha đã `display: none`. Phải
+>    kiểm bằng `getClientRects().length`.
+> 2. Regex `/CV chính/` khớp cả **nhãn nút** "Đặt làm CV chính" nên báo sai số CV chính. Phải đếm badge.
+> 3. Script báo không tìm thấy nút "Ứng tuyển" — vì lần chạy trước đã nộp đơn nên nút đổi thành "Bạn đã
+>    ứng tuyển tin này rồi".
+>
+> Cả 3 lần đều xác minh lại bằng nguồn khác (ảnh chụp UI, truy vấn DB) trước khi kết luận — tiếp tục
+> đúng bài học đã ghi ở đợt học vấn/kinh nghiệm.
+
 ### Giai đoạn 2 — Hoàn thiện
 
 *(Chưa bắt đầu)*
