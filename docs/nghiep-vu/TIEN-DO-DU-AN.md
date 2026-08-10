@@ -1953,6 +1953,35 @@ Ghi nhận 1 vấn đề **không sửa trong đợt này** (ngoài phạm vi d�
 Validator đúng cho người dùng thật; vấn đề nằm ở dữ liệu seed. Cần đổi email seed thành dạng hợp lệ
 (vd `admin@blousehiding.local`) hoặc nới validator ở môi trường dev.
 
+**Thêm trạng thái đang tải / lỗi cho 6 màn `web-admin/` còn thiếu** — bước 2 của kế hoạch hoàn thiện
+giao diện. Trước đây các màn này chỉ xử lý trạng thái RỖNG: API chậm thì màn hình trắng trơn, API lỗi
+thì hiển thị y hệt "không có dữ liệu" nên người dùng không phân biệt được "chưa có gì" với "gọi API
+hỏng". Màn đã sửa: Dashboard NTD, Ops Dashboard, Đối soát thanh toán, Duyệt đánh giá, Quản lý người
+dùng, Xử lý báo cáo.
+
+Viết component dùng chung `components/query-state.tsx` gom cả 3 trạng thái (đang tải/lỗi/rỗng) thay vì
+lặp cùng 1 đoạn JSX ở 6 chỗ; trả `null` khi query xong và có dữ liệu để chỗ gọi cứ render tiếp danh sách
+như cũ. Riêng 2 dashboard dùng skeleton dạng thẻ (giữ nguyên layout lưới) thay vì spinner giữa trang, vì
+đó là số liệu chứ không phải danh sách.
+
+2 vấn đề phát hiện thêm trong lúc làm, sửa luôn:
+1. **Dashboard NTD là màn DUY NHẤT không dùng i18n** — toàn bộ text hardcode tiếng Việt ("Tin đang
+   tuyển", "Số dư Credit", "Đăng tin mới"...) kèm bảng `STATUS_LABEL` riêng, trong khi namespace `jobs`
+   đã có sẵn `status.*` dùng chung với các màn khác. Chuyển hết sang i18n, bỏ `STATUS_LABEL` trùng lặp,
+   thêm khối `jobs.dashboard` cho 6 locale.
+2. **Ops Dashboard render key enum thô** từ backend (`Published`, `Verified`...) chưa dịch. Thêm prop
+   `labelFor` cho `BreakdownCard`: trạng thái tin dùng lại `jobs.status.*`, trạng thái xác thực tổ chức
+   thêm khóa mới `ops.dashboard.verifyStatus.*`.
+
+Lưu ý kỹ thuật ở Dashboard NTD: 2 query bị chặn bởi `enabled: !!organization`, trong lúc chờ biết user
+thuộc tổ chức nào thì `isLoading` của react-query vẫn `false` — nếu chỉ dựa vào `isLoading` thì thẻ số
+liệu chớp số 0 rồi mới nhảy sang số thật. Phải tự gộp thêm điều kiện `!organization`.
+
+Verify: `tsc -b` + lint + build sạch, 84/84 test pass. Verify trạng thái **lỗi** bằng UI thật
+(Playwright) — thứ trước giờ chưa bao giờ test được: đăng nhập xong dùng `page.route()` chặn toàn bộ
+request tới `/api/v1/**` để giả lập API sập, xác nhận cả 6 màn đều hiện thông báo lỗi rõ ràng kèm icon
+cảnh báo thay vì màn hình trắng.
+
 ### Giai đoạn 2 — Hoàn thiện
 
 *(Chưa bắt đầu)*
