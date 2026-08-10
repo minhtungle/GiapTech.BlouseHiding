@@ -11,10 +11,11 @@
 
 - **Base URL**: `/api/v1`
 - **Auth**: header `Authorization: Bearer <access_token>`. Endpoint không cần đăng nhập ghi rõ `Public`.
-- **Phân trang**: query `?page=1&pageSize=20`, response bọc trong:
-  ```json
-  { "data": [...], "meta": { "page": 1, "pageSize": 20, "total": 134 } }
-  ```
+- **Phân trang**: query `?page=1&pageSize=20` — xem mục "Phân trang" ngay dưới bảng quy ước này để
+  biết định dạng response thật và danh sách endpoint đã áp dụng.
+  > ⚠️ Thiết kế gốc dự kiến bọc `{ "data": [...], "meta": {...} }` nhưng **code thật dùng
+  > `{ "items": [...], "pageNumber", "pageSize", "totalCount", "totalPages", "hasPreviousPage",
+  > "hasNextPage" }`** (phẳng, không có `meta`). Đừng làm theo định dạng cũ.
 - **Lỗi**: theo RFC 7807 (Problem Details):
   ```json
   { "type": "validation_error", "title": "...", "status": 400, "errors": { "field": ["message"] } }
