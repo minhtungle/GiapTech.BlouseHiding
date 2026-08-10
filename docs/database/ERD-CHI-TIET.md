@@ -390,15 +390,27 @@ erDiagram
 | issued_at / expired_at | date |
 | document_url | text |
 
-**`cvs`**
+**`Cvs`** — đã triển khai (2026-08-10)
 | Cột | Kiểu | Ghi chú |
 |---|---|---|
-| id | uuid | PK |
-| profile_id | uuid | FK |
-| template_id | varchar(50) | nullable nếu upload |
-| is_primary | bool | DEFAULT false |
-| file_url | text | nullable |
-| data_json | jsonb | nullable, dữ liệu CV Builder |
+| Id | uuid | PK |
+| ProfileId | uuid FK → CandidateProfiles | ON DELETE CASCADE, có index |
+| Title | varchar(255) NOT NULL | Tên CV để ứng viên phân biệt khi có nhiều bản — **thêm ngoài thiết kế gốc**, không có tên thì danh sách chọn CV lúc ứng tuyển vô nghĩa |
+| TemplateId | varchar(50) nullable | Mẫu CV — chưa dùng, giữ chỗ cho tính năng chọn mẫu |
+| IsPrimary | bool | CV mặc định khi ứng tuyển. CV Builder đầu tiên tự thành CV chính |
+| FileUrl | text nullable | Có giá trị với CV upload file |
+| DataJson | jsonb nullable | Có giá trị với CV Builder (education/experience/skills) |
+
+Hai dạng CV dùng chung 1 bảng: CV Builder (`DataJson` có giá trị, `FileUrl` null) và CV upload file
+(ngược lại). Lưu `jsonb` thay vì tách bảng con vì đây là dữ liệu ứng viên tự do nhập, chỉ đọc/ghi
+nguyên khối, không query theo từng mục.
+
+> ⚠️ **Postgres chuẩn hoá `jsonb`** — sắp xếp lại thứ tự key và chèn khoảng trắng khi lưu. Dữ liệu
+> không đổi nhưng chuỗi đọc ra khác chuỗi ghi vào, nên **không so sánh `DataJson` bằng `==` chuỗi**
+> (test phải so theo ngữ nghĩa JSON, xem `CvTests.ShouldBeEquivalentJson`).
+
+**Luồng CV upload file chưa làm** — hiện chỉ có CV Builder ghi vào bảng này. Ứng viên vẫn upload được
+CV riêng lúc ứng tuyển nhưng lưu ở `applications.cv_file_url`, không tạo dòng trong `Cvs`.
 
 ### 2.3 Cơ sở y tế (Employer)
 
@@ -544,7 +556,7 @@ set `accepted_at`. Không tạo `employer_members` với `user_id` rỗng ở b�
 | id | uuid | PK | |
 | job_id | uuid | FK → jobs | |
 | candidate_id | uuid | FK → candidate_profiles | |
-| cv_id | uuid | FK → cvs | ⬜ **chưa implement** — bảng `cvs` (CV Builder) là backlog riêng chưa chốt thiết kế, cột này chưa tồn tại trong migration thật |
+| cv_id | uuid nullable | FK → cvs | ✅ đã implement 2026-08-10 — CV đã lưu mà ứng viên CHỌN khi ứng tuyển. Null nếu upload file riêng hoặc chỉ dùng hồ sơ nền tảng. Chỉ giữ tham chiếu, không copy nội dung (vì `cv_snapshot` đã là bản chụp bất biến) — `cv_id` chỉ để NTD biết ứng viên nộp bằng CV nào. Application layer kiểm tra CV phải thuộc về chính ứng viên đang nộp |
 | cv_snapshot | jsonb | NOT NULL | **Bản chụp hồ sơ tại thời điểm ứng tuyển** (chụp từ `candidate_profiles` hiện có, không phải từ `cvs` vì CV Builder chưa làm). NTD luôn xem bản này — tránh việc ứng viên sửa hồ sơ sau khi nộp làm thay đổi ngược những gì NTD đã thấy/đánh giá |
 | cv_file_url | text | nullable | CV file ứng viên tự upload lúc ứng tuyển (khác `cv_snapshot`/`cv_id`) — cho phép nộp CV riêng thay vì chỉ dùng hồ sơ nền tảng, không đụng tới bảng `cvs`/CV Builder (phạm vi tách riêng đã xác nhận) |
 | cover_letter | text | nullable | |

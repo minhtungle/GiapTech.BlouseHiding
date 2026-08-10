@@ -69,7 +69,10 @@
 | Upload ảnh CCHN thật (MinIO) | ✅ `POST /uploads/presigned-url` | ✅ `LicenseSection` dùng `lib/upload.ts` — input file thật, PUT thẳng MinIO |
 | Đổi ảnh đại diện | ✅ `PUT /candidates/me/avatar` (command riêng, tách khỏi `PUT /candidates/me`) | ✅ `AvatarSection` trong `/profile` — input file ẩn qua nút "Đổi ảnh đại diện" |
 | Học vấn / kinh nghiệm (`experiences`/`educations`) | ⬜ | ⬜ |
-| CV Builder + xuất PDF | ⬜ | 🟨 `/profile/cv` → `CvBuilderForm` (Client Component) — Thêm/Sửa/Xóa học vấn, kinh nghiệm, kỹ năng có state thật + xem trước realtime, nút Lưu chỉ giữ state tạm ở client (chưa có API lưu CV thật). Xuất PDF vẫn `disabled` — chưa làm |
+| CV Builder | ✅ bảng `Cvs` + `PUT /candidates/me/cvs/builder` (upsert) + `GET /candidates/me/cvs` — thêm 2026-08-10 | ✅ `/profile/cv` lưu thật, tải lại trang dữ liệu vẫn còn, preview dùng tên/headline thật từ hồ sơ (trước đây `MOCK_CANDIDATE`). Trang đã gate đăng nhập |
+| Xuất CV ra PDF | — | ⬜ nút vẫn `disabled` — cần thư viện render PDF, tách thành việc riêng |
+| Chọn CV đã lưu khi ứng tuyển | ✅ cột `applications.cv_id` + kiểm tra CV thuộc về chính ứng viên — thêm 2026-08-10 | ✅ dialog ứng tuyển có ô "Dùng CV đã lưu" bên cạnh upload file riêng. Trước đây phải upload lại file MỖI LẦN ứng tuyển vì không có CV nào lưu thật |
+| CV upload file (lưu vào bảng `Cvs`) | ⬜ chỉ CV Builder ghi vào `Cvs`; CV riêng lúc ứng tuyển vẫn lưu ở `applications.cv_file_url` | ⬜ |
 | Xác thực SĐT | ⬜ (`phone_verified_at` field tồn tại nhưng không có luồng verify) | ⬜ |
 | Hàng đợi duyệt CCHN (Vận hành) | ✅ `GET /ops/licenses`, `POST /ops/licenses/{id}/verify` | (xem mục Vận hành) |
 

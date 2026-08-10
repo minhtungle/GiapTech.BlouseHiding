@@ -2047,6 +2047,42 @@ Verify: backend 109/109 + 3/3 test pass, 2 frontend tsc + lint sạch. Verify UI
 `vite dev` **không truyền biến môi trường** để chứng minh mặc định đã đúng, đăng nhập bằng tài khoản
 admin seed mới thành công (trước đây bị chặn ngay ở client), Ops Dashboard tải được dữ liệu thật.
 
+**Làm bounded context CV** — gap cuối trong luồng cốt lõi ứng viên. CV Builder trước đây dùng 100%
+mock: nút "Lưu" chỉ `setSaved(true)` hiển thị "Đã lưu thay đổi" nhưng **không gọi API nào** — người
+dùng thật mất sạch công sức khi tải lại trang mà vẫn tưởng đã lưu. Tệ hơn cả việc không có nút, vì báo
+thành công sai sự thật.
+
+Làm theo đúng thiết kế **đã có sẵn** trong `ERD-CHI-TIET.md` mục 2.2 (bảng `cvs`) và mục 2.6 (cột
+`applications.cv_id`) — cả hai đều thiết kế từ đầu nhưng đánh dấu "chưa implement", không tự nghĩ lại
+schema. Chỉ thêm 1 cột ngoài thiết kế gốc: `Title` — không có tên CV thì danh sách chọn CV lúc ứng
+tuyển vô nghĩa.
+
+Backend: entity `Cv` (2 dạng dùng chung 1 bảng — CV Builder có `DataJson` jsonb, CV upload file có
+`FileUrl`), `PUT /candidates/me/cvs/builder` là **upsert** chứ không tạo bản mới mỗi lần bấm Lưu (nếu
+không, sửa 1 chữ rồi lưu vài lần là hồ sơ đầy CV rác), `GET /candidates/me/cvs`. Thêm cột
+`applications.cv_id` kèm **kiểm tra CV thuộc về chính ứng viên đang nộp** — không có bước này thì ai
+biết Id CV người khác đều gắn được vào đơn của mình. 7 test mới, suite 109 → 116.
+
+Frontend: nối API thật qua route proxy (Client Component không đọc được cookie httpOnly), preview dùng
+tên/headline thật thay tên mock "Nguyễn Thị Thu Hà", trang gate đăng nhập (trước đây ai vào cũng được),
+dialog ứng tuyển thêm ô "Dùng CV đã lưu". Xóa `lib/mock-data.ts` — sau thay đổi này không còn ai dùng.
+
+2 vấn đề phát hiện trong lúc làm:
+1. **Postgres chuẩn hoá `jsonb`** — sắp xếp lại thứ tự key và chèn khoảng trắng khi lưu, nên chuỗi đọc
+   ra khác chuỗi ghi vào. 2 test đầu fail oan vì so `==` chuỗi; sửa thành so theo ngữ nghĩa JSON qua
+   `JsonNode.DeepEquals`. Đã ghi cảnh báo này vào ERD để người sau không vấp lại.
+2. **6 route handler `app/api/auth/*` vẫn hardcode cổng 5100** — đợt sửa cổng trước chỉ quét trong
+   `lib/` nên bỏ sót, nghĩa là toàn bộ luồng đăng nhập/đăng ký/quên mật khẩu ở `web/` vẫn hỏng với cấu
+   hình mặc định. Phát hiện đúng lúc verify UI: login thất bại với `ECONNREFUSED` dù backend đang chạy.
+   Bài học: sửa giá trị hardcode phải grep toàn bộ thư mục, không chỉ chỗ "có vẻ liên quan".
+
+Verify: backend 116/116 + 3/3 test, `web/` tsc + lint + build sạch. Verify UI thật (Playwright) đúng
+kịch bản người dùng gặp phải: nhập học vấn → bấm Lưu CV → **tải lại trang** → dữ liệu vẫn còn cả trong
+form lẫn preview. Dialog ứng tuyển hiện đúng CV vừa lưu kèm nhãn "CV chính".
+
+Còn lại: xuất CV ra PDF (nút vẫn `disabled`, cần thư viện render PDF) và luồng upload CV file vào bảng
+`Cvs` (hiện CV riêng lúc ứng tuyển vẫn lưu ở `applications.cv_file_url`, không tạo dòng trong `Cvs`).
+
 ### Giai đoạn 2 — Hoàn thiện
 
 *(Chưa bắt đầu)*
