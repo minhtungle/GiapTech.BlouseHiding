@@ -53,6 +53,33 @@
 
 ---
 
+### Phân trang (từ 2026-08-10)
+
+Các endpoint danh sách **có thể phình to** trả về `PaginatedList<T>` thay vì mảng thuần:
+
+```json
+{ "items": [...], "pageNumber": 1, "pageSize": 20, "totalCount": 137,
+  "totalPages": 7, "hasPreviousPage": false, "hasNextPage": true }
+```
+
+Query param: `?page=N&pageSize=M`. `pageSize` mặc định 20, **chặn cứng ở 100** — truyền lớn hơn
+sẽ bị kẹp lại, không thể lách để tải toàn bộ bảng. `page < 1` tự về 1.
+
+Đã áp dụng: `GET /jobs`, `GET /candidates/search`, `GET /notifications`,
+`GET /jobs/{id}/applications`, `GET /organizations`, `GET /candidates/me/applications`,
+`GET /candidates/me/saved-jobs`, `GET /organizations/{id}/jobs`.
+
+**Cố ý KHÔNG phân trang** (danh sách nhỏ theo bản chất, thêm phân trang chỉ làm phức tạp):
+`/catalog/*` (danh mục cố định), `/candidates/me/cvs`, `/organizations/mine`,
+`/organizations/{id}/documents`, `/applications/{id}/notes`, `/applications/{id}/history`,
+mọi hàng đợi `/ops/*` (xử lý xong là hết).
+
+> ⚠️ Mọi query phân trang đều phải có **khóa sắp xếp phụ** (`ThenBy(Id)`). Sắp theo
+> `PublishedAt`/`AppliedAt` đơn thuần không đủ: nhiều bản ghi cùng thời điểm (vd Vận hành duyệt
+> hàng loạt) cho thứ tự bất định, khiến 1 bản ghi xuất hiện ở 2 trang hoặc biến mất.
+
+---
+
 ## 2. Identity — `/auth`, `/users`
 
 | Method | Path | Quyền | Mô tả |

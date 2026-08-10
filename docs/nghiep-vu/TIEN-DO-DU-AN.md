@@ -2149,6 +2149,44 @@ nào có `Skip`, chỉ 2 chỗ có `Take`) — nặng nhất là `SearchJobs` (t
 (thêm nữa là **không có `OrderBy`** nên thứ tự ngẫu nhiên giữa các lần gọi). `web/` cũng chưa có
 `loading.tsx`/`error.tsx` nào nên API lỗi sẽ ra trang trắng.
 
+**Phân trang danh sách** — nhóm còn lại của yêu cầu "tập trung hiển thị danh sách + luồng nộp hồ sơ".
+Trước đợt này **không một query nào có phân trang**: không chỗ nào dùng `Skip()`, chỉ 2/38 query có
+`Take()`. Mọi danh sách `ToListAsync()` trên toàn bộ tập kết quả.
+
+Chốt phạm vi với chủ dự án: làm **8 danh sách có thể phình to**, cố ý bỏ qua danh mục cố định
+(chuyên khoa/địa điểm/gói tin), danh sách vài-dòng-mỗi-user (CV, tổ chức của tôi), danh sách theo-1-bản-ghi
+(ghi chú/lịch sử đơn) và hàng đợi Vận hành — thêm phân trang cho chúng chỉ làm phức tạp mà không có lợi.
+
+Hạ tầng: `PaginatedList<T>` (trả kèm `TotalCount`/`TotalPages` để client dựng được số trang — chỉ có cờ
+`hasNext` thì không hiện được), `PagedQuery` với `PageSize` **chặn cứng ở 100** (nếu không, client truyền
+`pageSize=999999` là quay lại đúng vấn đề phân trang sinh ra để tránh — có test), extension
+`ToPaginatedListAsync`.
+
+**2 lỗi sắp xếp phát hiện khi làm** — nếu không sửa thì phân trang cho kết quả sai:
+1. `SearchCandidates` **không có `OrderBy` nào** — Postgres trả thứ tự tuỳ ý, cùng 1 ứng viên có thể
+   xuất hiện ở 2 trang hoặc biến mất. Thêm `OrderBy(FullName)`.
+2. Mọi query đều thiếu **khóa sắp xếp phụ**. Sắp theo `PublishedAt`/`AppliedAt` đơn thuần không đủ:
+   nhiều bản ghi cùng thời điểm (Vận hành duyệt hàng loạt) vẫn bất định. Thêm `ThenBy(Id)` cho tất cả,
+   kèm test khẳng định các trang không lặp/không bỏ sót.
+
+Frontend `web/`: component `PaginationNav` dùng **Link đổi URL `?page=N`** chứ không phải nút bấm — trang
+giữ được khi tải lại/chia sẻ link và hoạt động cả khi chưa có JS; bộ lọc hiện tại được giữ khi chuyển
+trang. Thêm `loading.tsx` (trước đây không có loading boundary nào nên trang chậm trông như treo). Bỏ dòng
+"N tin phù hợp" vì đó là số tin **trên trang**, dễ nhầm với tổng — tổng đã hiện ở thanh phân trang.
+
+Frontend `web-admin/`: `usePagination` trước đây chỉ `slice` **phía client** (comment trong chính file thừa
+nhận backend không hỗ trợ) — vẫn tải toàn bộ bảng rồi mới cắt, không giảm tải mạng. Giờ `page` nằm trong
+`queryKey`. Hai chi tiết dễ sai đã xử lý: đổi bộ lọc phải quay về trang 1 (không thì đang ở trang 5 mà lọc
+lại sẽ thấy trang rỗng), và `invalidateQueries` phải quét mọi trang (không thì đóng tin ở trang 2 xong các
+trang khác vẫn giữ dữ liệu cũ). Xóa hook `use-pagination`.
+
+Verify: backend 129/129 (từ 124) + 3/3, `web-admin/` 84/84, cả 2 frontend tsc + lint + build sạch. Verify
+UI thật: seed 23 tin published, xác nhận "Trang 1/2 — 23 kết quả", bấm "Sau" đổi URL thành `?page=2` và
+sang đúng trang 2, nút Trước/Sau mờ đúng ở đầu/cuối. Kiểm tra thêm bằng API: 19 tin với `pageSize=10` cho
+trang 2 có 9 tin và `hasNextPage=false`.
+
+**Với đợt này, cả 2 nhóm chủ dự án yêu cầu đã xong** — luồng nộp hồ sơ và hiển thị danh sách.
+
 ### Giai đoạn 2 — Hoàn thiện
 
 *(Chưa bắt đầu)*
