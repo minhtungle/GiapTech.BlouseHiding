@@ -2013,6 +2013,40 @@ bằng employer không sở hữu tin đó → backend trả 403 như mong đợ
 còn thiếu). Màn hình còn thiếu so với tài liệu chỉ còn: Tin nhắn (đã loại khỏi phạm vi từ đầu phiên) và
 Góc nghề y (Giai đoạn 3).
 
+**Sửa 2 vấn đề tồn đọng** — đều đã ghi nhận trong nhật ký các đợt trước nhưng để lại chưa xử lý.
+
+**1. Tài khoản Vận hành seed sẵn không đăng nhập được qua UI.** Email seed là `admin@localhost` — tạo
+được ở DB nhưng form đăng nhập `web-admin/` validate bằng `z.email()`, mà `localhost` không có TLD nên
+bị từ chối ngay ở client. Hệ quả: người mới clone repo về **không có cách nào vào được khu vực Vận hành**
+(role `admin`/`moderator` không tự đăng ký được qua UI công khai, chỉ chọn được candidate/employer). Đổi
+sang `admin@blousehiding.local`. Lưu ý seed chỉ tạo khi user chưa tồn tại, **không** tự đổi email tài
+khoản cũ — DB dev tạo trước thay đổi này vẫn giữ `admin@localhost`.
+
+Nhân tiện sửa `MOI-TRUONG-DEV-CUC-BO.md` mục 4 vốn ghi **sai**: "Không có tài khoản seed sẵn nào trong
+migration hoặc fixture" — thực tế có admin seed từ `ApplicationDbContextInitialiser.TrySeedAsync`.
+
+**2. Cổng API mặc định của 2 frontend không khớp backend.** `NEXT_PUBLIC_API_BASE_URL` và
+`VITE_API_BASE_URL` mặc định trỏ `5100` trong khi `dotnet run --project src/Web` chạy ở `5256` (theo
+`launchSettings.json`). Tài liệu có ghi gap này nhưng bắt người dùng tự chọn 1 trong 2 cách xử lý mỗi
+lần chạy — chính tôi cũng vấp lỗi này nhiều lần trong các đợt làm việc trước khi verify UI. Sửa tận gốc:
+thống nhất `5256` ở cả 4 file code hardcode fallback (`web/lib/{api,backend-fetch,session}.ts`,
+`web-admin/src/lib/http.ts`) lẫn 2 file `.env.example`, rồi cập nhật lại mục 3 của tài liệu.
+
+**3. N+1 query ở `SearchCandidatesQueryHandler`** (phát hiện lúc rà 8 luồng cơ bản). Handler gọi
+`IIdentityService.FindByIdAsync` **trong vòng lặp** — mỗi ứng viên đã unlock là 1 round-trip DB, càng
+unlock nhiều càng chậm. Thêm `FindByIdsAsync` (1 truy vấn cho nhiều ID) vào `IIdentityService`, map qua
+Dictionary. Chỉ query user của ứng viên **đã unlock** — ứng viên chưa unlock không được lộ email (ERD
+mục 7) nên không cần lấy. Đổi luôn `unlockedCandidateIds` từ `List` sang `HashSet` (`Contains()` trong
+vòng lặp trước đó là O(n) mỗi lần).
+
+Thêm test `SearchCandidates_With_Multiple_Unlocked_Should_Map_Correct_Email_To_Each`: unlock 2 trong 3
+ứng viên, xác nhận từng người nhận đúng email của mình và người chưa unlock vẫn bị ẩn — chỗ map qua
+Dictionary dễ map nhầm email sang sai ứng viên nếu viết ẩu. Suite 108 → 109 test, toàn bộ pass.
+
+Verify: backend 109/109 + 3/3 test pass, 2 frontend tsc + lint sạch. Verify UI thật (Playwright): chạy
+`vite dev` **không truyền biến môi trường** để chứng minh mặc định đã đúng, đăng nhập bằng tài khoản
+admin seed mới thành công (trước đây bị chặn ngay ở client), Ops Dashboard tải được dữ liệu thật.
+
 ### Giai đoạn 2 — Hoàn thiện
 
 *(Chưa bắt đầu)*

@@ -32,7 +32,7 @@ tương ứng trước khi chạy `dotnet run`/`npm run dev`.
 
 | Ứng dụng | Lệnh chạy | URL | Ghi chú |
 |---|---|---|---|
-| Backend API (.NET) | `cd api && dotnet run --project src/Web` | http://localhost:5256 (theo `launchSettings.json`) | ⚠️ **Không khớp** biến `NEXT_PUBLIC_API_BASE_URL`/`VITE_API_BASE_URL` mặc định của 2 frontend (đang trỏ `5100`, xem mục 3) — chạy `ASPNETCORE_URLS=http://localhost:5100 dotnet run --project src/Web --no-launch-profile` để khớp, hoặc sửa `.env` của frontend trỏ đúng `5256`. Xem [`scalar`](http://localhost:5256/scalar) để có UI thử API (OpenAPI/Scalar tự bật ở Development) |
+| Backend API (.NET) | `cd api && dotnet run --project src/Web` | http://localhost:5256 (theo `launchSettings.json`) | Khớp sẵn với mặc định của 2 frontend (xem mục 3) — không cần cấu hình gì. Xem [`scalar`](http://localhost:5256/scalar) để có UI thử API (OpenAPI/Scalar tự bật ở Development) |
 | `web/` — Client (Next.js) | `cd web && npm run dev` | http://localhost:3000 | Next.js mặc định, redirect `/vi` |
 | `web-admin/` — Admin (NTD) + Vận hành (Vite) | `cd web-admin && npm run dev` | http://localhost:5173 | Vite mặc định |
 
@@ -59,31 +59,50 @@ Khởi động: `docker compose up -d` ở repo root. Kiểm tra container khỏ
 
 ## 3. Cổng backend mà 2 frontend đang trỏ tới
 
-| File | Biến | Giá trị hiện tại |
+| File | Biến | Giá trị mặc định |
 |---|---|---|
-| `web/.env` (hoặc `.env.local`) | `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:5100/api/v1` |
-| `web-admin/.env` | `VITE_API_BASE_URL` | `http://localhost:5100/api/v1` |
+| `web/.env` (hoặc `.env.local`) | `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:5256/api/v1` |
+| `web-admin/.env` | `VITE_API_BASE_URL` | `http://localhost:5256/api/v1` |
 
-Cả 2 đều trỏ **`5100`**, trong khi `dotnet run --project src/Web` (chạy từ trong `api/`) mặc định chạy
-ở **`5256`** (theo `api/src/Web/Properties/launchSettings.json`). Đây là gap có sẵn trong repo, chưa
-được thống nhất — chọn 1 trong 2 cách khi chạy backend cho khớp:
-- Ép backend chạy đúng `5100` (từ trong `api/`): `ASPNETCORE_URLS=http://localhost:5100 dotnet run --project src/Web --no-launch-profile`
-  (cờ `--no-launch-profile` bỏ qua `applicationUrl` trong `launchSettings.json`, nhưng cũng bỏ qua
-  `ASPNETCORE_ENVIRONMENT=Development` — log vẫn hiện OTP giả lập bình thường, không ảnh hưởng test).
-- Hoặc sửa `.env`/`.env.local` của 2 frontend trỏ về `5256` rồi chạy backend bình thường qua
-  `dotnet run --project src/Web` (từ trong `api/`).
+Cả 2 khớp sẵn với `dotnet run --project src/Web` (chạy từ trong `api/`) — **không cần cấu hình gì thêm**,
+cũng không cần tạo file `.env` nếu chạy mặc định (giá trị fallback hardcode trong `web/lib/api.ts`,
+`web/lib/backend-fetch.ts`, `web/lib/session.ts`, `web-admin/src/lib/http.ts` đã là `5256`).
+
+> **Sửa 2026-08-10:** trước đây mặc định của cả 2 frontend là `5100` trong khi backend chạy `5256`
+> (theo `api/src/Web/Properties/launchSettings.json`) — ai chạy lần đầu cũng vấp lỗi không gọi được API
+> và phải tự dò. Đã thống nhất về `5256` ở cả code lẫn `.env.example`.
+
+Nếu cần chạy backend ở cổng khác (vd tránh xung đột), đặt biến môi trường tương ứng cho frontend:
+```bash
+# ví dụ chạy backend ở 5100
+cd api && ASPNETCORE_URLS=http://localhost:5100 dotnet run --project src/Web --no-launch-profile
+cd web && NEXT_PUBLIC_API_BASE_URL=http://localhost:5100/api/v1 npm run dev
+cd web-admin && VITE_API_BASE_URL=http://localhost:5100/api/v1 npm run dev
+```
 
 ## 4. Tài khoản đăng nhập
 
-**Không có tài khoản seed sẵn nào trong migration hoặc fixture** — mọi tài khoản (candidate/employer/
-admin/moderator) đều phải tự tạo qua `POST /api/v1/auth/register` rồi xác thực OTP. OTP dùng driver
-**giả lập nội bộ** (không gửi email/SMS thật) — mã 6 số được ghi ra log console/terminal của backend,
-tìm theo dòng `OTP giả lập (...) cho <email>: <mã>`.
+**Có sẵn 1 tài khoản Vận hành (role `admin`)** được seed tự động khi chạy ở môi trường Development
+(`ApplicationDbContextInitialiser.TrySeedAsync`):
+
+| Email | Mật khẩu | Role |
+|---|---|---|
+| `admin@blousehiding.local` | `Administrator1!` | `admin` (Vận hành) |
+
+> Trước đây email seed là `admin@localhost` — tạo được ở DB nhưng **không đăng nhập nổi qua UI**
+> `web-admin/` vì form validate bằng `z.email()`, mà `localhost` không có TLD nên bị từ chối ngay ở
+> client. Đã đổi 2026-08-10. Nếu DB dev của bạn tạo trước ngày đó, tài khoản cũ vẫn còn — seed chỉ
+> tạo mới khi chưa tồn tại, không tự đổi email tài khoản cũ.
+
+Các role còn lại (candidate/employer/moderator) **không có seed** — phải tự tạo qua
+`POST /api/v1/auth/register` rồi xác thực OTP. OTP dùng driver **giả lập nội bộ** (không gửi email/SMS
+thật) — mã 6 số được ghi ra log console/terminal của backend, tìm theo dòng
+`OTP giả lập (...) cho <email>: <mã>`.
 
 Tạo tài khoản test nhanh qua curl:
 ```bash
 # 1. Đăng ký (role: candidate hoặc employer)
-curl -X POST http://localhost:5100/api/v1/auth/register \
+curl -X POST http://localhost:5256/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email":"demo@test.local","password":"Testing1234!","role":"employer"}'
 
@@ -91,7 +110,7 @@ curl -X POST http://localhost:5100/api/v1/auth/register \
 #    dòng dạng: "OTP giả lập (Register) cho demo@test.local: 123456"
 
 # 3. Xác thực OTP để kích hoạt tài khoản
-curl -X POST http://localhost:5100/api/v1/auth/verify-otp \
+curl -X POST http://localhost:5256/api/v1/auth/verify-otp \
   -H "Content-Type: application/json" \
   -d '{"email":"demo@test.local","code":"123456"}'
 ```
@@ -116,7 +135,7 @@ trước khi các trang Dashboard/Jobs/Credit/Members ở `web-admin/` có dữ 
 
 ```bash
 docker compose ps                                                    # 4 container "healthy"
-curl -s http://localhost:5100/api/v1/catalog/specialties -o /dev/null -w "%{http_code}\n"  # 200
+curl -s http://localhost:5256/api/v1/catalog/specialties -o /dev/null -w "%{http_code}\n"  # 200
 curl -s http://localhost:3000 -o /dev/null -w "%{http_code}\n"        # 200 (web/)
 curl -s http://localhost:5173 -o /dev/null -w "%{http_code}\n"        # 200 (web-admin/)
 ```
