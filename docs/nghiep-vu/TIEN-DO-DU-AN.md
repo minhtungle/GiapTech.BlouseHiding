@@ -2110,6 +2110,45 @@ gặp: bấm "Lưu việc này" → nhãn đổi ngay thành "Đã lưu" → **t
 **không tự hoàn tất được** — cần Client ID/Secret thật từ Google Cloud và Zalo Developers do chủ dự án
 đăng ký, code xong cũng không test được đầu-cuối nếu thiếu credential.
 
+**Hoàn thiện luồng nộp hồ sơ** — theo yêu cầu tập trung vào "hiển thị danh sách" và "luồng nộp hồ sơ",
+bỏ qua email/SMS, OAuth Zalo, bộ đề y tế. Rà bằng agent + kiểm tra tay, phát hiện 1 **tính năng chết**
+và vài lỗ hổng.
+
+**"Lý do từ chối" là tính năng chết** — nghiêm trọng nhất. Backend có cột `rejected_reason`, trả ra cho
+ứng viên xem, và tôi vừa làm UI hiển thị nó ở `/dashboard/applications` đợt trước — nhưng **NTD không có
+đường nào nhập**. Nguyên nhân 2 tầng: `constants.ts` cố ý loại `Rejected` khỏi `APPLICATION_STAGES` với
+comment "từ chối xử lý qua hành động riêng", nhưng **hành động riêng đó chưa từng được làm**; và kể cả
+nếu có cột thì kéo-thả cũng không hỏi được lý do. Sửa: thêm nút "Từ chối" trên từng thẻ Kanban mở dialog
+nhập lý do. Giữ nguyên quyết định không thêm cột `Rejected` vào bảng nhưng sửa comment cho khớp thực tế.
+
+**Nuốt thông báo lỗi khi ứng tuyển** — backend trả lỗi cụ thể ("Bạn đã ứng tuyển tin này rồi", "Cần hoàn
+thiện hồ sơ trước khi ứng tuyển"), route proxy truyền đúng body lỗi, nhưng UI vứt hết chỉ hiện 1 câu
+chung. Giờ đọc đúng message. Kèm: nộp xong `router.refresh()` + kiểm tra `alreadyApplied` ở Server
+Component (trước đây tải lại trang thấy nút "Ứng tuyển" như chưa nộp), tách lỗi upload CV khỏi lỗi nộp
+đơn.
+
+**NTD không được báo khi có đơn mới** — `SubmitApplication` không gửi notification nào, NTD phải tự vào
+ATS kiểm tra. Giờ báo cho mọi thành viên tổ chức.
+
+**Rút đơn ứng tuyển** — chưa từng có. Hai quyết định: (1) **XÓA hẳn** dòng application thay vì thêm stage
+"Withdrawn", vì `UNIQUE(job_id, candidate_id)` khiến giữ dòng cũ sẽ chặn nộp lại tin đó sau này — mà rút
+rồi nộp lại là nhu cầu hợp lệ (có test khẳng định); (2) chỉ cho rút ở `New`/`Reviewing`/`Shortlisted` —
+từ `Interview` trở đi NTD đã thực sự xử lý, tự ý rút làm họ mất dấu vết. Kiểm tra chủ sở hữu đơn để
+không ai rút đơn người khác.
+
+Kèm: Kanban trước đây dùng `applications ?? []` nên lúc đang tải trông y hệt lúc rỗng — thêm `QueryState`.
+
+Verify: backend 124/124 (từ 120) + 3/3, `web-admin/` 84/84, cả 2 frontend tsc + lint + build sạch. Verify
+UI thật với dữ liệu thật (dựng employer + candidate + tổ chức verified + tin published + đơn qua API):
+xác nhận NTD nhận notification `application_received`, bấm "Từ chối" → nhập lý do → **kiểm tra lại qua
+API thấy ứng viên nhận đúng lý do** (trước đây luôn `null`), nút "Rút đơn" hiện đúng, trang tin chặn nộp
+lại với thông báo rõ ràng.
+
+**Còn lại nhóm "hiển thị danh sách"**: 26/38 query backend trả toàn bộ bảng không giới hạn (không query
+nào có `Skip`, chỉ 2 chỗ có `Take`) — nặng nhất là `SearchJobs` (trang chính) và `SearchCandidates`
+(thêm nữa là **không có `OrderBy`** nên thứ tự ngẫu nhiên giữa các lần gọi). `web/` cũng chưa có
+`loading.tsx`/`error.tsx` nào nên API lỗi sẽ ra trang trắng.
+
 ### Giai đoạn 2 — Hoàn thiện
 
 *(Chưa bắt đầu)*
