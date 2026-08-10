@@ -1900,6 +1900,59 @@ quyết định kiến trúc lớn hơn (OpenSearch, chat realtime, mobile app) 
 năng tự viết (bộ đề y tế thật theo từng chuyên khoa), không còn gap nào tự làm được thêm bằng cách viết
 UI/logic thuần.
 
+**Rà lại toàn bộ màn hình theo yêu cầu "ưu tiên hoàn thiện giao diện trước tính năng"** — đối chiếu
+`LUONG-NGHIEP-VU-MAN-HINH.md` mục 2 (Screen Inventory) với route/feature thật trong code. Kết quả: Vận
+hành đủ 10/10 màn; thiếu hẳn Mua gói tin (bảng so sánh Eco/Pro/Max — hiện gói chọn ngay trong form tạo
+tin), trang "Việc đã ứng tuyển" riêng (đang nhúng trong dashboard), tra cứu giao dịch thanh toán, Tin
+nhắn (đã loại khỏi phạm vi từ đầu), Góc nghề y (Giai đoạn 3); 7 màn thiếu trạng thái loading/error.
+Nhưng vấn đề lớn nhất phát hiện được là **tàn dư template shadcn-admin vẫn hiện với người dùng thật** —
+chọn xử lý việc này trước.
+
+**Dọn tàn dư template shadcn-admin (`web-admin/`)** — điểm 8 mục "Ghi chú" của `TIEN-DO-CHI-TIET.md`
+trước đây kết luận các trang template "không nằm trong sidebar chức năng thật nên người dùng không vô
+tình vào được → giữ nguyên, không gỡ". **Kết luận đó sai**, kiểm tra lại code cho thấy: `/chats` CÓ nằm
+trong `employerGroup` (mục `nav.chats`, kèm badge "3" tin nhắn giả — dễ tưởng là tính năng thật), và
+nhóm `Pages` (Auth demo: Sign In 2 Col/Sign Up/OTP; Errors demo: 401/403/404/500/503) hiện với **mọi**
+role vì `getSidebarData` chỉ lọc `employerGroup`/`opsGroup`. Tức NTD/Vận hành thật đăng nhập vào đều
+thấy menu "Tasks", "Apps", "Tin nhắn", "Sign In (2 Col)", "401/403/404" — rất lộ là template chưa dọn,
+bấm vào đều ra màn hình giả.
+
+Gỡ 49 file: `features/tasks`, `features/apps`, `features/chats` + route; route auth trùng lặp
+(`sign-in-2`/`sign-up`/`forgot-password`/`otp` — đều là bản template tĩnh không gọi API, trong khi đăng
+ký/quên mật khẩu THẬT cho cả ứng viên lẫn NTD đã có đủ ở `web/`); route demo trang lỗi;
+`coming-soon.tsx`; ảnh assets của `sign-in-2`; dependency `@faker-js/faker`. **Giữ lại** `features/errors/*`
+vì `__root.tsx` dùng thật làm `errorComponent`/`notFoundComponent` — chỉ route demo để xem trước các
+trang lỗi mới là rác. **Giữ lại** trang Settings cá nhân: tuy vẫn là giao diện template chưa nối API,
+"Cài đặt tài khoản" là màn hình có thật trong tài liệu (mục 2.2), cần làm thật sau chứ không phải rác.
+
+3 lỗi phát hiện thêm trong lúc dọn, sửa luôn:
+1. **Command palette render thẳng `navItem.title`** — mà `title` là KEY dịch (xem comment đầu
+   `sidebar-data.ts`), nên palette hiện chuỗi thô `nav.dashboard`, `nav.jobs`... trong khi sidebar gọi
+   `t()` đúng. Sửa dùng `t()`, `value` tìm kiếm cũng dùng text đã dịch để gõ tiếng Việt tìm ra đúng mục.
+2. **Trang đăng nhập có 3 link chết**: "Sign Up" trỏ tới trang template vừa gỡ, `/terms` và `/privacy`
+   không tồn tại ở bất kỳ đâu (đã grep cả `web/` lẫn `web-admin/`). Gỡ cả 3, chuyển text sang i18n
+   (trước đây hardcode tiếng Anh dù app hỗ trợ 6 ngôn ngữ theo ADR-0010).
+3. **`main.tsx` điều hướng sang route `/500`** khi API trả lỗi 500 — route đó là trang lỗi demo vừa gỡ.
+   Bỏ điều hướng, chỉ hiện toast: lỗi 1 query không nên đá người dùng khỏi màn hình đang làm việc, còn
+   lỗi khiến cả trang không render được đã có `errorComponent` ở `__root.tsx` lo.
+
+Test: `sidebar-data.test.ts` có 1 test khẳng định "không lọc nhóm Pages/Other" — hành vi đó nay không
+còn đúng, thay bằng 3 test mới (không còn nhóm `Pages`; `otherGroup` hiện với mọi role; mọi group title
+đều là khóa i18n). `search-provider.test.tsx` vốn **fail sẵn từ trước phiên này** do phụ thuộc nav item
+"Tasks" của template — nay import `@/i18n` và ép ngôn ngữ `vi` trong `beforeEach` để test không phụ
+thuộc ngôn ngữ trình duyệt chạy test (trước đó i18n không được init trong môi trường test nên `t()` trả
+khóa thô, chụp màn hình lúc debug xác nhận điều này).
+
+Verify: `tsc -b` sạch, lint sạch, build sạch, **84/84 test pass** (trước đợt này: 83 pass 1 fail), thời
+gian chạy test giảm từ ~40s còn ~12s do bỏ bundle `tasks-*.js` 499 kB chứa faker. Verify thêm bằng UI
+thật (Playwright): sidebar chỉ còn 8 mục nghiệp vụ + nhóm "Khác", command palette hiện text tiếng Việt
+đã dịch thay vì khóa thô, trang đăng nhập không còn link chết.
+
+Ghi nhận 1 vấn đề **không sửa trong đợt này** (ngoài phạm vi dọn template): tài khoản Vận hành seed sẵn
+`admin@localhost` **không đăng nhập được qua UI** vì `z.email()` ở form từ chối email không có TLD.
+Validator đúng cho người dùng thật; vấn đề nằm ở dữ liệu seed. Cần đổi email seed thành dạng hợp lệ
+(vd `admin@blousehiding.local`) hoặc nới validator ở môi trường dev.
+
 ### Giai đoạn 2 — Hoàn thiện
 
 *(Chưa bắt đầu)*

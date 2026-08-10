@@ -32,7 +32,7 @@
 | Refresh token | ✅ `POST /auth/refresh` | ✅ tự động qua `backendFetch` khi gặp 401 | ✅ tự động qua axios response interceptor (single-flight) |
 | Đăng xuất | ✅ `POST /auth/logout` | ✅ | ✅ |
 | Quên/đặt lại mật khẩu | ✅ `POST /auth/forgot-password`, `POST /auth/reset-password` | ✅ `/auth/forgot-password`, `/auth/reset-password` | — |
-| Đổi mật khẩu khi đã đăng nhập | ✅ `PUT /users/me/password` (yêu cầu đúng mật khẩu hiện tại, khác luồng OTP của forgot/reset) | ✅ `/settings` → `ChangePasswordForm` | — (cố ý bỏ qua, `settings/` cá nhân là tàn dư template chưa đầu tư, xem điểm 8) |
+| Đổi mật khẩu khi đã đăng nhập | ✅ `PUT /users/me/password` (yêu cầu đúng mật khẩu hiện tại, khác luồng OTP của forgot/reset) | ✅ `/settings` → `ChangePasswordForm` | — (cố ý bỏ qua, `settings/` cá nhân ở `web-admin/` vẫn là giao diện template chưa nối API, xem điểm 8) |
 | Xem thông tin user hiện tại | ✅ `GET /users/me` | ✅ dùng để gate route + hiện email ở header | ✅ dùng để check role cho phép vào (`ALLOWED_ROLES`) |
 | Xóa tài khoản (soft-delete + anonymize) | ✅ `DELETE /users/me` | ✅ `/settings` → `DeleteAccountButton`, 2-click confirm | — (chưa có màn hình cho Vận hành khoá/xoá user khác) |
 | OAuth Google | ⬜ | 🟨 nút trên `/auth/login` có loading state + thông báo "sắp ra mắt" (`OAuthButtons`), **vẫn chưa có logic OAuth thật** — chỉ polish UI theo quyết định "UI trước, API sau" | — |
@@ -177,7 +177,7 @@
 | Xử lý báo cáo vi phạm | ✅ `GET /ops/reports`, `POST /ops/reports/{id}/resolve` | ✅ `/ops/reports` — nối API thật, không còn mock |
 | Quản lý người dùng hệ thống (khoá/mở khoá) | ✅ `GET /ops/users`, `POST /ops/users/{id}/{suspend,unsuspend}` | ✅ `/ops/users` — tìm theo email + nút Khóa/Mở khóa |
 | Dashboard tổng quan Vận hành | ✅ `GET /ops/dashboard/stats` (đếm đơn giản, không có xu hướng theo thời gian) | ✅ `/ops/dashboard` |
-| Sidebar tách theo role (Admin vs Vận hành) | — | ✅ `getSidebarData(role)` — employer chỉ thấy `employerGroup`, admin/moderator chỉ thấy `opsGroup`. Chưa lọc nhóm `Pages`/`Other` (tàn dư template, ngoài phạm vi) |
+| Sidebar tách theo role (Admin vs Vận hành) | — | ✅ `getSidebarData(role)` — employer chỉ thấy `employerGroup`, admin/moderator chỉ thấy `opsGroup`. Nhóm `Pages` (Auth/Errors demo của template) đã gỡ hẳn 2026-08-10; nhóm `Other` (Cài đặt, Trợ giúp) giữ lại cho mọi role và đã chuyển sang khóa i18n |
 
 ---
 
@@ -187,9 +187,9 @@
 |---|---|---|---|
 | Thông báo trong ứng dụng (`Channel = InApp`) | ✅ `GET /notifications` (`?unreadOnly`), `PATCH .../read`, `PATCH .../read-all` | ✅ `NotificationBell` (dropdown, poll 30s) + trang `/notifications` (lịch sử đầy đủ + đánh dấu tất cả đã đọc) | ✅ tương tự — `NotificationBell` + route `/notifications` |
 | Thông báo email | ⬜ | ⬜ | ⬜ |
-| Nhắn tin NTD ↔ ứng viên | ⬜ | ⬜ | ⬜ `/chats` chỉ đọc `data/convo.json` tĩnh (tàn dư template), không gọi API nào |
-| Trang `/tasks`, `/apps` (template mẫu Jira/App Store) | — | — | ⬜ tàn dư template shadcn-admin gốc, dùng `@faker-js/faker`, không thuộc nghiệp vụ — nên gỡ khỏi sidebar/điều hướng khi dọn dẹp |
-| Trang Settings cá nhân (account/appearance/display/notifications) | — | (xem mục 1) | ⬜ tàn dư template, chưa nối API cập nhật user thật |
+| Nhắn tin NTD ↔ ứng viên | ⬜ | ⬜ | ⬜ chưa làm — trang `/chats` template (đọc `data/convo.json` tĩnh) đã gỡ 2026-08-10 cùng mục "Tin nhắn" trong sidebar (mục đó có badge "3" tin nhắn giả, dễ nhầm là tính năng thật) |
+| Trang `/tasks`, `/apps` (template mẫu Jira/App Store) | — | — | ✅ đã gỡ hẳn 2026-08-10 cùng dependency `@faker-js/faker` |
+| Trang Settings cá nhân (account/appearance/display/notifications) | — | (xem mục 1) | ⬜ giao diện template, chưa nối API cập nhật user thật — GIỮ LẠI (khác `/tasks`,`/apps`) vì "Cài đặt tài khoản" là màn hình có thật trong `LUONG-NGHIEP-VU-MAN-HINH.md` mục 2.2, cần làm thật sau chứ không phải rác cần xóa |
 | Link `/about` (giới thiệu nền tảng) | — | ✅ trang tĩnh `/about` — 3 giá trị cốt lõi (tin cậy lâm sàng/đúng chuyên khoa/cộng đồng y tế), không gọi API | — |
 | Help Center (FAQ + hướng dẫn liên hệ hỗ trợ) | — | — | ✅ `/help-center` — nội dung tĩnh (4 câu hỏi thường gặp: xác thực tổ chức, mời thành viên, Credit, sửa tin), thay `<ComingSoon />` cũ. Không gọi API |
 
@@ -211,7 +211,7 @@ Những mục này **không nằm trong checklist cũ**, phát hiện khi rà so
 5. ~~**Chuỗi tiếng Việt hardcode ở `web/`**~~ — **lỗi thời, đã dọn từ trước** (xác nhận 2026-08-06, quét cả 8 file được nêu bằng regex Unicode tiếng Việt): không còn chuỗi hardcode hiển thị UI nào trong `profile-form.tsx`/`profile/page.tsx`/`license-section.tsx`/`settings/page.tsx`/`delete-account-button.tsx`/`dashboard/page.tsx`/home `page.tsx`/`jobs/[id]/page.tsx`. `formatSalary` đã dùng `t("salaryNegotiable")`/`t("million")` qua tham số.
 6. **`web-admin/` sidebar tách theo role** — đã làm ở đợt trước (`getSidebarData(role)`, xem mục 10 Vận hành và log tương ứng trong `TIEN-DO-DU-AN.md`) — dòng này trong danh sách cũ đã lỗi thời, cần xóa hẳn ở lần dọn tiếp theo.
 7. **Vận hành — cộng Credit thủ công**: đã có UI (`/ops/credit`, dùng mock tìm tổ chức — xem mục 4 "Cơ sở y tế" ở trên). Quản lý người dùng hệ thống + dashboard tổng quan: cần verify lại trực tiếp, danh sách cũ có thể đã lỗi thời như các mục trên.
-8. **`/tasks`, `/apps`, `/chats`, trang Settings cá nhân** ở `web-admin/` là tàn dư template shadcn-admin gốc, không thuộc nghiệp vụ, không nằm trong sidebar chức năng thật (`employerGroup`/`opsGroup`) nên người dùng thực tế không vô tình vào được qua điều hướng chuẩn — quyết định giữ nguyên, không gỡ (rủi ro đụng vào code không cần thiết), chỉ cần biết đây không phải gap thật.
+8. ~~**`/tasks`, `/apps`, `/chats`, trang Settings cá nhân** là tàn dư template, không nằm trong sidebar chức năng thật nên người dùng không vô tình vào được — giữ nguyên, không gỡ.~~ **Đánh giá này SAI và đã xử lý (2026-08-10).** Kiểm tra lại code cho thấy: `/chats` **có** nằm trong sidebar nghiệp vụ (`employerGroup`, mục `nav.chats` kèm badge "3" tin nhắn giả), và nhóm `Pages` (Auth demo + Errors demo) hiện với **mọi** role vì `getSidebarData` chỉ lọc `employerGroup`/`opsGroup`. Tức là NTD/Vận hành thật đăng nhập vào đều thấy menu "Tasks", "Apps", "Tin nhắn", "Sign In (2 Col)", "401/403/404" — rất lộ là template chưa dọn. Đã gỡ hẳn `/tasks`, `/apps`, `/chats`, các route auth trùng lặp (`sign-in-2`/`sign-up`/`forgot-password`/`otp` — đăng ký/quên mật khẩu thật đã có ở `web/`), route demo trang lỗi, `coming-soon.tsx` và dependency `@faker-js/faker`. **Giữ lại** `features/errors/*` (dùng thật làm `errorComponent` ở `__root.tsx`) và trang Settings cá nhân (là màn hình có thật trong tài liệu, cần làm thật sau).
 
 ---
 
