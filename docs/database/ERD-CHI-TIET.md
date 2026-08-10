@@ -690,6 +690,21 @@ Unique index `(OrganizationId, CandidateUserId)` — 1 candidate chỉ gửi đ�
 cả ở DB lẫn Application layer để trả lỗi thân thiện thay vì lỗi constraint thô). Index thường trên
 `OrganizationId` (lọc theo tổ chức) và `Status` (lọc hàng đợi `Pending` ở Ops).
 
+**`SavedJobs`** — đã triển khai (2026-08-10), **không có trong thiết kế ERD gốc**
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| Id | uuid | PK |
+| CandidateId | uuid FK → CandidateProfiles | Gắn với profile (không phải `UserId`) cho nhất quán với licenses/specialties/cvs |
+| JobId | uuid FK → Jobs | |
+| SavedAt | timestamptz | Dùng để sắp xếp — tin lưu gần nhất lên đầu |
+
+UNIQUE `(CandidateId, JobId)` — bấm lưu nhiều lần không tạo dòng trùng. API dùng **1 endpoint toggle**
+(`POST /candidates/me/saved-jobs/{jobId}/toggle`) thay vì tách POST + DELETE, vì UI chỉ có 1 nút bật/tắt;
+tách 2 endpoint thì client phải tự biết trạng thái hiện tại trước khi gọi, dễ lệch khi mở 2 tab.
+
+`GET /candidates/me/saved-jobs` **không lọc theo `jobs.status`** — tin đã lưu sau đó bị đóng/hết hạn vẫn
+hiện trong danh sách kèm trạng thái thật; ẩn đi thì ứng viên tưởng mình chưa từng lưu tin đó.
+
 **`reports`**
 | Cột | Kiểu | Ghi chú |
 |---|---|---|

@@ -2083,6 +2083,33 @@ form lẫn preview. Dialog ứng tuyển hiện đúng CV vừa lưu kèm nhãn 
 Còn lại: xuất CV ra PDF (nút vẫn `disabled`, cần thư viện render PDF) và luồng upload CV file vào bảng
 `Cvs` (hiện CV riêng lúc ứng tuyển vẫn lưu ở `applications.cv_file_url`, không tạo dòng trong `Cvs`).
 
+**Làm bounded context "việc đã lưu"** — chỗ dùng dữ liệu giả áp chót. Tin đã lưu trước đây chỉ nằm ở
+`localStorage` phía client: ứng viên lưu tin trên điện thoại rồi mở máy tính là trắng, xóa cache cũng
+mất sạch.
+
+Khác bảng `cvs` (đã thiết kế sẵn trong ERD), bảng này **không có trong thiết kế gốc** — tự thiết kế và
+bổ sung vào ERD kèm ghi chú rõ là phát sinh sau.
+
+Backend: entity `SavedJob` gắn với `CandidateProfile` (không phải `UserId`) cho nhất quán với các bảng
+khác của ứng viên, UNIQUE `(CandidateId, JobId)` chặn dòng trùng. Dùng **1 endpoint toggle** thay vì
+tách POST + DELETE vì UI chỉ có 1 nút bật/tắt — tách 2 endpoint thì client phải tự biết trạng thái hiện
+tại trước khi gọi, dễ lệch khi mở 2 tab. `GET /candidates/me/saved-jobs` **không lọc theo `jobs.status`**:
+tin đã lưu rồi bị đóng/hết hạn vẫn phải hiện kèm trạng thái thật, ẩn đi thì ứng viên tưởng mình chưa
+từng lưu. 4 test, suite 116 → 120.
+
+Frontend: bỏ toàn bộ `localStorage`. `SaveJobButton` nhận trạng thái ban đầu từ server, cập nhật
+optimistic (đổi UI ngay rồi mới chờ server, lỗi thì trả về trạng thái cũ) vì bấm lưu tin phải phản hồi
+tức thì. `SavedJobsList` chuyển từ Client sang **Server Component** — backend trả sẵn đủ `JobDto` nên
+không cần gọi `getJobById` cho từng ID rồi hiện skeleton như trước (N+1 phía client).
+
+Verify: backend 120/120 + 3/3, `web/` tsc + lint + build sạch. Verify UI thật đúng kịch bản người dùng
+gặp: bấm "Lưu việc này" → nhãn đổi ngay thành "Đã lưu" → **tải lại trang** → vẫn giữ "Đã lưu" → tin hiện
+đúng trong `/dashboard/saved-jobs` với đầy đủ thông tin.
+
+**Còn lại 1 chỗ dùng dữ liệu giả:** OAuth Google/Zalo (nút hiện "sắp ra mắt"). Khác 2 chỗ trước, mục này
+**không tự hoàn tất được** — cần Client ID/Secret thật từ Google Cloud và Zalo Developers do chủ dự án
+đăng ký, code xong cũng không test được đầu-cuối nếu thiếu credential.
+
 ### Giai đoạn 2 — Hoàn thiện
 
 *(Chưa bắt đầu)*

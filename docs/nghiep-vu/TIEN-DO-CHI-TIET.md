@@ -119,6 +119,7 @@
 |---|---|---|---|
 | Ứng tuyển (CV nền tảng, chặn trùng + tin chưa published) | ✅ `POST /jobs/{id}/applications` | ✅ `ApplyButton` trên `/jobs/[id]` | — |
 | Ứng tuyển bằng CV upload riêng | ✅ `applications.cv_file_url` — field `cvFileUrl` optional trong `POST .../applications`, không đụng bảng `cvs`/CV Builder (backlog riêng) | ✅ dialog ứng tuyển (`ApplyButton`) có input file tùy chọn | ✅ hiện link CV trong trang chi tiết ATS + icon báo trên Kanban card |
+| Lưu tin / bỏ lưu (bookmark) | ✅ bảng `SavedJobs` + `POST /candidates/me/saved-jobs/{jobId}/toggle` + `GET /candidates/me/saved-jobs` — thêm 2026-08-10, **không có trong ERD gốc** | ✅ nút "Lưu việc này" ở trang tin (optimistic update) + trang `/dashboard/saved-jobs`. Trước đây lưu ở `localStorage` nên mất khi đổi máy/xóa cache; danh sách phải gọi `getJobById` từng ID, giờ backend trả sẵn đủ thông tin | — |
 | Xem đơn ứng tuyển của tôi (ứng viên) | ✅ `GET /candidates/me/applications` | ✅ `/dashboard/applications` — trang riêng, tách nhóm "Đang xử lý" / "Đã kết thúc" kèm số đếm, hiện ngày nộp + lý do từ chối (`rejectedReason` có sẵn trong DTO nhưng trước đây chưa dùng ở đâu). Thêm 2026-08-10; `/dashboard` giữ 5 đơn gần nhất + link "Xem tất cả" | — |
 | Danh sách ứng viên theo tin (ATS) | ✅ `GET /jobs/{id}/applications` | — | ✅ `/applications/$jobId` (Kanban kéo-thả) |
 | Chuyển giai đoạn ATS + lưu lịch sử | ✅ `PATCH /applications/{id}/stage` | — | ✅ kéo-thả trong Kanban |
