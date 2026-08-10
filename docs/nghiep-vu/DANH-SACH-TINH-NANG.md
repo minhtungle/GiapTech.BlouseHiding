@@ -83,6 +83,11 @@
 
 ## Giai đoạn 1 — MVP
 
+> ✅ **Đã chốt 2026-08-11** — chạy đủ 8 bước checklist ở
+> [`TIEN-DO-DU-AN.md`](./TIEN-DO-DU-AN.md) mục 1 (build 0 warning, 255 test pass, smoke test 45/45 trên
+> dữ liệu mới, đối chiếu 103 endpoint với tài liệu, rà + bịt 1 lỗ hổng bảo mật). 5 mục ⬜/🟨 dưới đây
+> đều có lý do dời rõ ràng, xem log chốt giai đoạn.
+
 ### Tài khoản & định danh
 - ✅ Đăng ký/đăng nhập email, OTP — OTP hiện là **driver giả lập nội bộ** (log thay vì gửi email/SMS
   thật, xem docs/nghiep-vu/TIEN-DO-DU-AN.md), chưa chốt nhà cung cấp SMTP/SMS thật. Xác thực SĐT
