@@ -116,7 +116,7 @@
 |---|---|---|---|
 | Ứng tuyển (CV nền tảng, chặn trùng + tin chưa published) | ✅ `POST /jobs/{id}/applications` | ✅ `ApplyButton` trên `/jobs/[id]` | — |
 | Ứng tuyển bằng CV upload riêng | ✅ `applications.cv_file_url` — field `cvFileUrl` optional trong `POST .../applications`, không đụng bảng `cvs`/CV Builder (backlog riêng) | ✅ dialog ứng tuyển (`ApplyButton`) có input file tùy chọn | ✅ hiện link CV trong trang chi tiết ATS + icon báo trên Kanban card |
-| Xem đơn ứng tuyển của tôi (ứng viên) | ✅ `GET /candidates/me/applications` | ✅ `/dashboard` | — |
+| Xem đơn ứng tuyển của tôi (ứng viên) | ✅ `GET /candidates/me/applications` | ✅ `/dashboard/applications` — trang riêng, tách nhóm "Đang xử lý" / "Đã kết thúc" kèm số đếm, hiện ngày nộp + lý do từ chối (`rejectedReason` có sẵn trong DTO nhưng trước đây chưa dùng ở đâu). Thêm 2026-08-10; `/dashboard` giữ 5 đơn gần nhất + link "Xem tất cả" | — |
 | Danh sách ứng viên theo tin (ATS) | ✅ `GET /jobs/{id}/applications` | — | ✅ `/applications/$jobId` (Kanban kéo-thả) |
 | Chuyển giai đoạn ATS + lưu lịch sử | ✅ `PATCH /applications/{id}/stage` | — | ✅ kéo-thả trong Kanban |
 | Xem chi tiết 1 đơn | ✅ `GET /applications/{id}` | — | ✅ `/applications/$jobId/$applicationId` (link từ Kanban card) |
@@ -144,7 +144,8 @@
 |---|---|---|
 | Tạo giao dịch mua gói tin (job-package) | ✅ `POST /payments/job-package` — chặn trùng nếu tin đã có giao dịch pending | ✅ `/jobs/new` — dialog hiện mã tham chiếu sau khi chọn gói trả phí |
 | Tạo giao dịch nạp Credit | ✅ `POST /payments/credit-topup` (quy đổi tạm 1 Credit = 1.000đ) — chặn trùng theo tổ chức | ✅ `/credit` — dialog "Nạp thêm Credit" |
-| Xem trạng thái 1 giao dịch | ✅ `GET /payments/{id}` | ⬜ **chưa có UI** tra cứu riêng — chỉ dùng nội bộ ngay sau khi tạo |
+| Xem trạng thái 1 giao dịch | ✅ `GET /payments/{id}` | ✅ `/job-packages` — ô tra cứu theo mã giao dịch, hiện loại/số tiền/mã tham chiếu/trạng thái đối soát (thêm 2026-08-10, trước đó endpoint có sẵn nhưng không UI nào gọi) |
+| So sánh gói đăng tin (Eco/Pro/Max) | ✅ `GET /catalog/job-packages` (trả kèm `perks`, `maxActiveJobs`) | ✅ `/job-packages` — bảng so sánh đủ giá/thời hạn/số tin tối đa/từng quyền lợi dạng ✓/— (thêm 2026-08-10). Trước đó gói chỉ hiện dạng radio list gọn trong form tạo tin, không hiện `perks` lẫn `maxActiveJobs` nên NTD không so sánh được. **Không có nút "Mua" rời** — `POST /jobs/{id}/submit` cần `jobId` nên gói chỉ chọn được trong luồng đăng tin |
 | Hàng đợi đối soát (Vận hành) | ✅ `GET /ops/payments` | ✅ `/ops/payments` |
 | Xác nhận/từ chối giao dịch (Vận hành) | ✅ `POST /ops/payments/{id}/confirm`, `.../reject` | ✅ nút Xác nhận/Không khớp trong `/ops/payments` |
 | Cổng thanh toán tự động (VNPay/Momo/ZaloPay) | ⬜ hoãn theo ADR-0003, chỉ có `manual_transfer` | ⬜ |

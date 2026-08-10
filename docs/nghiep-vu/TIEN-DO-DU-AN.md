@@ -1982,6 +1982,37 @@ Verify: `tsc -b` + lint + build sạch, 84/84 test pass. Verify trạng thái **
 request tới `/api/v1/**` để giả lập API sập, xác nhận cả 6 màn đều hiện thông báo lỗi rõ ràng kèm icon
 cảnh báo thay vì màn hình trắng.
 
+**Làm 3 màn hình còn thiếu** — bước 3 (cuối) của kế hoạch hoàn thiện giao diện. Cả 3 đều đã có endpoint
+backend sẵn, không cần thêm gì ở `api/`.
+
+**Gói tin & giao dịch (`web-admin/`, `/job-packages`)** — gộp 2 màn trong tài liệu (mục 2.3 "Mua gói tin"
+và tra cứu giao dịch) vào 1 trang vì cùng chủ đề thanh toán:
+- Bảng so sánh Free/Eco/Pro/Max hiện đủ giá, thời hạn, `maxActiveJobs` và từng quyền lợi (`pin_top`,
+  `highlight`) dạng ✓/—. Trước đây gói chỉ hiện dạng radio list gọn trong form tạo tin, **không** hiện
+  `perks` lẫn `maxActiveJobs`, nên NTD không có cách nào biết trả thêm tiền thì được gì.
+- Ô tra cứu giao dịch gọi `GET /payments/{id}` — endpoint này có sẵn từ lâu nhưng **chưa UI nào gọi**
+  (`TIEN-DO-CHI-TIET.md` mục 8 ghi rõ "chưa có UI"). NTD giờ tự tra được trạng thái đối soát thay vì
+  phải hỏi đội Vận hành.
+- Cố ý **không có nút "Mua"**: `POST /jobs/{id}/submit` cần `jobId` nên gói chỉ chọn được trong luồng
+  đăng tin, không mua rời — trang này để so sánh trước, có link dẫn sang `/jobs/new`.
+
+**Việc đã ứng tuyển (`web/`, `/dashboard/applications`)** — tài liệu mục 2.2 yêu cầu "theo dõi trạng thái
+từng đơn, pipeline view rút gọn", nhưng trước đây chỉ là 1 khối danh sách phẳng nhúng trong `/dashboard`:
+liệt kê hết mọi đơn, không nhóm, không ngày nộp, không hiện lý do từ chối. Trang mới tách 2 nhóm "Đang
+xử lý" (New/Reviewing/Shortlisted/Interview/Offer) và "Đã kết thúc" (Hired/Rejected) kèm số đếm, hiện
+ngày nộp và `rejectedReason` (field có sẵn trong DTO nhưng chưa dùng ở đâu). `/dashboard` giới hạn còn 5
+đơn gần nhất + link "Xem tất cả". Thêm tab "Đã ứng tuyển" vào `AccountNav`.
+
+Verify: `web/` tsc + lint + build sạch, `web-admin/` tsc + lint + build sạch + 84/84 test pass. Verify UI
+thật (Playwright) với dữ liệu thật: tạo 2 đơn ứng tuyển qua API rồi mở trang — xác nhận bảng gói hiện đủ
+4 gói kèm cột quyền lợi, tra cứu giao dịch với ID không tồn tại báo lỗi đúng thay vì im lặng, trang đơn
+ứng tuyển hiện đúng nhóm/số đếm/ngày nộp. Nhân tiện xác nhận RBAC hoạt động đúng: thử đổi trạng thái đơn
+bằng employer không sở hữu tin đó → backend trả 403 như mong đợi.
+
+**Hoàn tất kế hoạch hoàn thiện giao diện** (3 bước: dọn tàn dư template → thêm loading/error → làm màn
+còn thiếu). Màn hình còn thiếu so với tài liệu chỉ còn: Tin nhắn (đã loại khỏi phạm vi từ đầu phiên) và
+Góc nghề y (Giai đoạn 3).
+
 ### Giai đoạn 2 — Hoàn thiện
 
 *(Chưa bắt đầu)*
