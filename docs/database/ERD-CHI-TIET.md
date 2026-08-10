@@ -434,7 +434,7 @@ CV riêng lúc ứng tuyển nhưng lưu ở `applications.cv_file_url`, không 
 |---|---|
 | id | uuid PK |
 | org_id | uuid FK |
-| doc_type | varchar(100) |
+| doc_type | varchar(100) — **giá trị phải thuộc** `operating_license` / `pharmacy_license` / `business_registration` / `other` (`Domain/Enums/OrganizationDocumentType.cs`, validator chặn giá trị lạ từ 2026-08-10). Giữ `varchar` chứ không đổi sang `int` để thêm loại giấy tờ mới không cần migration |
 | file_url | text |
 
 **`employer_members`**

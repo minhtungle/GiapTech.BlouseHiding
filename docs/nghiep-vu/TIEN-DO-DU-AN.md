@@ -2347,6 +2347,53 @@ tổ chức: `GET /applications/{id}` trả đúng link `cv-b.pdf` — chính l�
 > Cả 3 lần đều xác minh lại bằng nguồn khác (ảnh chụp UI, truy vấn DB) trước khi kết luận — tiếp tục
 > đúng bài học đã ghi ở đợt học vấn/kinh nghiệm.
 
+**Nợ nhỏ: loại giấy tờ tổ chức + ngôn ngữ đã lưu** — 2 việc cuối trong luồng người dùng đã chốt.
+
+**Ngôn ngữ đã lưu** — hóa ra `web/` **đã** lưu `users.locale` từ trước (dòng tài liệu ghi "không lưu"
+đã lỗi thời, đã sửa). Nhưng rà kỹ thì phát hiện điều còn thiếu **thật**: lựa chọn được lưu mà
+**không chỗ nào đọc lại**. `web/` định tuyến locale bằng **tiền tố URL**, nên đăng nhập ở máy khác qua
+`/vi/auth/login` luôn ra tiếng Việt dù tài khoản đã chọn tiếng Anh. Sửa: `/api/auth/login` đọc `locale`
+từ `GET /users/me` sau khi đặt cookie rồi trả về client, form đăng nhập `router.push` kèm locale đó.
+Kiểm giá trị nằm trong `LOCALES` thay vì ép kiểu — dữ liệu từ DB, locale lạ sẽ điều hướng tới route
+không tồn tại.
+
+**Loại giấy tờ** — phạm vi thật rộng hơn ghi chú cũ ("text hardcode + `docType` cứng"): cả màn hình Hồ
+sơ tổ chức (**547 dòng**) chưa i18n gì, **25 chuỗi tiếng Việt hardcode**. Kèm 2 lỗi hiển thị: dropdown
+"Loại hình" và "Quy mô" hiện **giá trị enum thô** (`BenhVienCong`, `Under50`) cho người dùng thật.
+
+`docType` hardcode `business_license` nghĩa là **nhà thuốc/công ty dược cũng phải nộp "giấy phép khám
+chữa bệnh"** — sai loại giấy tờ theo nghiệp vụ. Thêm 4 loại theo `LUONG-NGHIEP-VU-MAN-HINH.md` mục 1 và
+endpoint `GET /catalog/organization-document-types` để UI không hardcode lại rồi lệch với validator.
+
+Backend trước đây nhận `doc_type` **chuỗi tự do** (chỉ `NotEmpty` + `MaximumLength(100)`) — 1 lỗi chính
+tả ở client là tạo ra loại giấy tờ mới mà Vận hành không lọc/dịch được. Giữ cột `varchar(100)` thay vì
+đổi sang `int` để thêm loại mới không cần migration, nhưng validator chốt danh sách.
+
+Chi tiết UI: ô chọn file **bị chặn** tới khi chọn loại giấy tờ — nếu không thì upload lên MinIO xong mới
+báo lỗi validate, file rác đã nằm trên storage.
+
+**LỖ HỔNG BẢO MẬT phát hiện khi rà, đáng kể nhất trong đợt này**: `GetOrganizationDocumentsQuery`
+**không kiểm quyền gì**, endpoint chỉ `RequireAuthorization()` — nên **bất kỳ user đăng nhập nào** (ứng
+viên, NTD của tổ chức đối thủ) biết `organizationId` đều tải được **file giấy phép doanh nghiệp** của
+tổ chức khác. Command *ghi* thì có kiểm `isMember`, query *đọc* thì không — đúng kiểu lỗi dễ lọt vì
+người ta nhớ chặn lúc ghi mà quên lúc đọc. Vi phạm CLAUDE.md mục 4 quy tắc #9. Tài liệu
+`API-DESIGN.md` thậm chí ghi endpoint này là **`Public`** — nay đã sửa cả code lẫn tài liệu.
+
+Cũng sửa **1 comment lỗi thời** ở đầu `web-admin/src/lib/api.ts`: "App này chỉ tiếng Việt (ADR-0008 mục
+5)" — ADR-0010 đã đảo lại thành 6 ngôn ngữ. Tôi đã sửa `http.ts` ở đợt Cài đặt nhưng **bỏ sót file
+này**; đúng bài học đã ghi trước đó là khi sửa 1 giá trị/nhận định lặp lại thì phải grep cả cây, không
+chỉ file đang mở.
+
+Test backend 145 → 148, `web-admin/` 94 → 95 (test i18n tự thêm case cho namespace mới, xác nhận đủ
+khóa 6 ngôn ngữ). Verify UI thật 11/11: nhà thuốc chọn "Giấy chứng nhận đủ điều kiện kinh doanh dược" →
+**DB lưu đúng `pharmacy_license`**; đổi sang tiếng Anh thì nhãn dịch đúng; và tài khoản có
+`users.locale = "en"` đăng nhập từ `/vi/auth/login` → chuyển đúng sang `/en/dashboard`.
+
+> Ghi nhận thêm 1 việc chưa làm (thấy trên ảnh chụp, không thuộc phạm vi đợt này): ô chọn file dùng
+> `<input type="file">` thuần nên nút hiện chữ `Choose File / No file chosen` theo ngôn ngữ **trình
+> duyệt**, không dịch được qua i18n. Muốn dịch phải bọc lại bằng nút custom + input ẩn (cách đã dùng ở
+> `web/` `AvatarSection`).
+
 ### Giai đoạn 2 — Hoàn thiện
 
 *(Chưa bắt đầu)*
