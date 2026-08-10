@@ -101,7 +101,6 @@
 |---|---|---|---|
 | Tìm kiếm/lọc tin công khai | ✅ `GET /jobs` (LINQ/EF Core, chưa chuyển Postgres full-text) | ✅ `/jobs` — filter qua URL query, giữ SSR + form tìm theo từ khóa (`keyword`, đã có sẵn ở backend/`getJobs`, trước đây chỉ thiếu UI); form tìm nhanh ở trang chủ (`HeroSearchForm`) điều hướng thẳng sang `/jobs?keyword=...` | — |
 | Xem chi tiết tin | ✅ `GET /jobs/{id}` | ✅ `/jobs/[id]` | ✅ (trong danh sách tin của tổ chức) |
-| Lưu tin quan tâm (bookmark) | ⬜ chưa có bounded context/API | ✅ `SaveJobButton` trên `/jobs/[id]` + trang `/dashboard/saved-jobs` — lưu tạm ở `localStorage` phía client (chưa có API, xem TODO trong `lib/saved-jobs.ts`) | — |
 | Tạo tin (draft) | ✅ `POST /jobs` | — | ✅ `/jobs/new` |
 | Sửa tin (chỉ draft/rejected) | ✅ `PUT /jobs/{id}` | — | ✅ `/jobs/$jobId/edit` — nút bút chì chỉ hiện khi `Draft`/`Rejected` |
 | Nộp duyệt (gói Free/Eco/Pro/Max) | ✅ `POST /jobs/{id}/submit` | — | ✅ `/jobs/new` (Free thẳng pending; trả phí → tạo Payment) |
