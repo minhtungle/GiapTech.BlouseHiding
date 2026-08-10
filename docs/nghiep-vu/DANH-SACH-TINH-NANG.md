@@ -148,9 +148,10 @@
   ở ERD mục 0 — đủ dùng cho lượng dữ liệu MVP, tối ưu sau khi có traffic thật
 
 ### Ứng tuyển & ATS
-- 🟨 Ứng tuyển — `POST /jobs/{id}/applications` (chỉ hỗ trợ CV nền tảng qua `CandidateProfile` hiện có;
-  upload CV riêng/CV Builder chưa làm, xem mục "Hồ sơ ứng viên"). Chặn ứng tuyển trùng
-  (`UNIQUE(job_id, candidate_id)`) và tin chưa `published`
+- ✅ Ứng tuyển — `POST /jobs/{id}/applications`, hỗ trợ **cả 3 cách**: CV nền tảng qua
+  `CandidateProfile`, chọn CV đã lưu (`cv_id` — CV Builder hoặc CV file), hoặc upload file riêng ngay
+  lúc ứng tuyển (`cv_file_url`). Chặn ứng tuyển trùng (`UNIQUE(job_id, candidate_id)`) và tin chưa
+  `published`. (Dòng cũ ghi "upload CV riêng/CV Builder chưa làm" — đã hoàn thành 2026-08-10)
 - ✅ Chụp `cv_snapshot` (jsonb từ `CandidateProfile`+`Licenses`+`ProfileSpecialties`) + tính `score` 1
   lần lúc ứng tuyển — không đổi khi hồ sơ gốc thay đổi sau này
 - ✅ ATS Kanban (7 trạng thái pipeline `new→reviewing→shortlisted→interview→offer→hired`, `rejected`
@@ -168,10 +169,10 @@
   nhận qua `POST /ops/payments/{id}/confirm` cộng `credit_wallets.balance` (`reason=purchase`).
   `POST /ops/organizations/{id}/credit-bonus` (Vận hành cộng thủ công, `reason=bonus`) vẫn giữ song
   song — dùng cho khuyến mãi/hỗ trợ, khác mục đích với nạp qua thanh toán
-- ⬜ Hoàn Credit thủ công khi có tranh chấp (`/ops/organizations/{id}/credit-refund`) — chưa làm, khác
-  `credit-bonus` (dùng khi tranh chấp/lỗi hệ thống, không phải nạp thường)
-
-### Thanh toán
+- ✅ Hoàn Credit thủ công khi có tranh chấp (`POST /ops/organizations/{id}/credit-refund` +
+  `GET .../refundable-unlocks`) — hoàn đúng số Credit đã trừ của 1 lần mở hồ sơ, mỗi giao dịch chỉ
+  hoàn 1 lần, ghi audit log kèm lý do. Khác `credit-bonus` (cộng tuỳ ý cho khuyến mãi/hỗ trợ). UI ở
+  `web-admin/` `/ops/credit` (2026-08-10)
 - ✅ Gói tin trả phí (`POST /payments/job-package`) — tạo `payments` (`type=job_package`,
   `provider=manual_transfer`) + `job_purchases` (liên kết ngay, `payment_id` gắn từ lúc tạo, không đợi
   confirm) + sinh `reference_code` (dạng `PAY-XXXXXX`, loại bỏ ký tự dễ nhầm 0/O/1/I vì NTD gõ tay vào

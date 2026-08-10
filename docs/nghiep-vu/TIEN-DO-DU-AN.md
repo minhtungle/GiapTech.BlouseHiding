@@ -31,12 +31,16 @@ Nếu có mục không đạt, ghi rõ lý do + kế hoạch xử lý vào nhậ
 
 ## 2. Trạng thái tổng quan (cập nhật mới nhất lên đầu)
 
+> ⚠️ Bảng này từng lệch rất xa thực tế (ghi `web-admin/` chưa làm, export PDF CV còn thiếu,
+> Jobs/ATS/Credit chưa làm — tất cả đã xong từ lâu). Cập nhật lại 2026-08-10 sau khi rà bằng code
+> thật. Khi hoàn thành 1 khối việc, sửa bảng này **cùng lúc** với nhật ký mục 3.
+
 | Giai đoạn | Trạng thái | Ghi chú ngắn |
 |---|---|---|
-| 0.1 — UI Shell | 🟨 Gần xong | Còn thiếu tin nhắn/thông báo thật, export PDF CV |
-| 0.2 — Backend & hạ tầng | 🟨 Gần xong | Danh mục (đọc+ghi) + CI/CD xong; Jobs/ATS/Credit chưa làm |
-| 1 — MVP | 🟨 Đang làm | Backend: Identity+Jobs+Applications+Credit xong. `web/` đã nối Identity/Jobs/Applications/Hồ sơ ứng viên; `web-admin/` + Payments thật chưa làm |
-| 2 — Hoàn thiện | ⬜ Chưa bắt đầu | |
+| 0.1 — UI Shell | ✅ Xong | Cả 2 app dựng đủ màn hình, đã dọn hết tàn dư template. Còn 1 mục dời sang sau: rà responsive/dark mode/WCAG AA thành 1 đợt riêng |
+| 0.2 — Backend & hạ tầng | ✅ Xong | Clean Architecture + Docker Compose + CI/CD 3 repo + danh mục (đọc/ghi) + middleware `Accept-Language` |
+| 1 — MVP | 🟨 Gần xong (còn 2 mục, cả 2 người dùng đã loại khỏi phạm vi) | Backend 23 endpoint group / 16 migration / 151 test. `web/` + `web-admin/` đã nối API thật toàn bộ luồng chính: Identity, hồ sơ ứng viên (CCHN/chuyên khoa/học vấn/kinh nghiệm/CV Builder/CV file/xuất PDF), tra cứu tin + tổ chức, nộp hồ sơ, ATS Kanban, Credit + unlock hồ sơ, hàng đợi duyệt Vận hành, thanh toán `manual_transfer`. **Còn**: OAuth Google/Zalo + thông báo email — cả 2 người dùng đã loại khỏi phạm vi |
+| 2 — Hoàn thiện | 🟨 Chớm bắt đầu | 3 mục 🟨 làm ở mức đơn giản đã chốt (matching theo chuyên khoa, test năng lực, máy tính lương); OpenSearch/SignalR/mobile chưa bắt đầu |
 | 3 — Mở rộng | ⬜ Chưa bắt đầu | |
 
 ---
@@ -2393,6 +2397,40 @@ khóa 6 ngôn ngữ). Verify UI thật 11/11: nhà thuốc chọn "Giấy chứn
 > `<input type="file">` thuần nên nút hiện chữ `Choose File / No file chosen` theo ngôn ngữ **trình
 > duyệt**, không dịch được qua i18n. Muốn dịch phải bọc lại bằng nút custom + input ẩn (cách đã dùng ở
 > `web/` `AvatarSection`).
+
+**Hoàn Credit thủ công khi tranh chấp** — mục cuối của Giai đoạn 1 mà người dùng chưa loại khỏi phạm
+vi. ERD mục 2.7 thiết kế `reason=refund` từ đầu và `API-DESIGN.md` đã liệt kê endpoint, nhưng **chưa có
+đường nào tạo được giao dịch refund** — Vận hành gặp tranh chấp (NTD trả 15 Credit mở hồ sơ nhưng hồ sơ
+trùng/liên hệ không dùng được) thì không có cách xử lý ngoài cộng bù bằng `credit-bonus`, mà như vậy
+không truy được đã hoàn cho lần mở nào.
+
+Thiết kế khác `credit-bonus` ở 3 điểm, đều là để **kiểm được**: hoàn gắn với **đúng 1 giao dịch
+`unlock_profile`** có thật; **hoàn đúng số đã trừ** (`Math.Abs` của `Amount` âm, không cho nhập tay); và
+**mỗi giao dịch hoàn 1 lần** — giao dịch hoàn trỏ `ReferenceId` về giao dịch gốc, kiểm bằng truy vấn
+thay vì tin vào UI. Để nhập số tự do như bonus thì không có cách nào biết hoàn đúng hay hoàn trùng.
+
+Lọc theo `WalletId` **ngay trong truy vấn** thay vì tìm theo `TransactionId` rồi so ví sau: Vận hành
+nhập nhầm cặp (tổ chức A, giao dịch của tổ chức B) sẽ cộng Credit vào **sai ví**.
+
+Thêm `GET .../refundable-unlocks` là query **riêng cho Vận hành** — `GetCreditTransactionsQuery` phía
+NTD chặn người không phải thành viên tổ chức, Vận hành không dùng được. Trả kèm cờ `isRefunded` để UI
+vô hiệu hoá nút thay vì để bấm rồi mới nhận lỗi.
+
+**LỖI phát hiện khi rà**: ô "Lý do (ghi chú nội bộ)" ở form cộng Credit **tồn tại từ trước** nhưng
+`CreditBonusRequest` không có field đó — Vận hành nhập lý do rồi tưởng đã lưu, thực tế mất. Chú thích
+dưới ô đó thậm chí thừa nhận "hệ thống hiện chưa lưu lại lý do" (trung thực nhưng nghĩa là ô nhập vô
+dụng). Đã thêm `Reason` bắt buộc + **ghi audit log cho cả `credit_bonus` và `credit_refund`** — cả hai
+là thao tác tiền, phải truy được ai làm, bao nhiêu, vì sao.
+
+Test 148 → 156 (+8): hoàn đúng số, chặn hoàn 2 lần, chặn hoàn giao dịch `bonus`, chặn nhầm tổ chức,
+bắt buộc lý do, và kiểm audit log thật ghi được lý do.
+
+Verify UI thật 12/12 + đối chiếu DB: ví 100 → trừ 15 (unlock) → hoàn 15 → **về đúng 100**; giao dịch
+hoàn có `ReferenceId`; audit log ghi đủ lý do cho cả 2 loại thao tác.
+
+> Ghi chú: 9 test `Applications` fail giữa đợt này **không phải do code** — Docker daemon tự tắt nên
+> Testcontainers không khởi động được (`Container runtime 'docker' ... unhealthy`). Bật lại Docker +
+> `docker compose up -d` là pass hết. Đáng ghi lại vì thông báo lỗi trông như lỗi test.
 
 ### Giai đoạn 2 — Hoàn thiện
 
