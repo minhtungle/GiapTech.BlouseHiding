@@ -2187,6 +2187,47 @@ trang 2 có 9 tin và `hasNextPage=false`.
 
 **Với đợt này, cả 2 nhóm chủ dự án yêu cầu đã xong** — luồng nộp hồ sơ và hiển thị danh sách.
 
+**Học vấn & kinh nghiệm làm việc** — chọn mục này từ danh sách còn lại vì phát hiện 1 vấn đề đáng kể khi
+rà: **NTD trả 15 Credit để mở hồ sơ ứng viên nhưng chỉ thấy tên, headline, tiểu sử, chuyên khoa, CCHN** —
+không có học vấn lẫn kinh nghiệm, tức thiếu đúng 2 thứ quan trọng nhất để đánh giá. Học vấn/kinh nghiệm
+trước đó chỉ nằm trong CV Builder (jsonb riêng), không phải phần của hồ sơ nền tảng.
+
+Làm theo thiết kế **đã có sẵn** trong `ERD-CHI-TIET.md` mục 2.2 (`experiences` + `educations`) — cả hai
+thiết kế từ đầu nhưng chưa implement. Thêm enum `FacilityTier` (trung ương/tỉnh/huyện/tư nhân) theo
+`THUAT-NGU.md`: NTD ngành y đánh giá kinh nghiệm **theo tuyến**, không chỉ theo số năm.
+
+`PUT /candidates/me/history` là **replace-all** chứ không phải thêm/sửa/xóa từng dòng: UI là 1 form nhiều
+dòng rồi bấm Lưu 1 lần — tách 3 loại request thì client phải theo dõi dòng nào mới/đã sửa/đã xóa, dễ lệch
+trạng thái khi 1 request lỗi giữa chừng. Bổ sung vào **cả 2 DTO** (ứng viên tự xem và NTD xem sau unlock),
+có test riêng khẳng định NTD thấy được sau khi trả Credit.
+
+**Giữ nguyên** công thức `ProfileCompletion` (5 tiêu chí × 20%) — thêm 2 tiêu chí mới sẽ làm % của mọi hồ
+sơ hiện có tụt xuống vô cớ.
+
+3 vấn đề phát hiện khi làm UI:
+1. **`FACILITY_TIERS` phải tách sang file riêng** (`lib/facility-tier.ts`): `lib/candidates.ts` import
+   `backendFetch` (dùng `cookies()`, server-only), nên Client Component import **giá trị runtime** từ đó
+   kéo cả module vào bundle client → build lỗi. Type thì import được (bị xoá lúc biên dịch), const thì
+   không. Typecheck **không** bắt được, chỉ `next build` mới báo.
+2. **Nhãn nút sai**: dùng khóa i18n `save` — khóa đó vốn của CV Builder nên nội dung là "Lưu CV", hiện
+   nhãn sai hoàn toàn cho khối này. Phát hiện khi xem ảnh chụp UI. Thêm khóa `saveHistory` riêng.
+3. **Thiếu `htmlFor` cho 11 nhãn** — repo đã có convention này ở `profile-form.tsx` nhưng tôi viết thiếu.
+   Nhãn không liên kết input thì trình đọc màn hình cũng không đọc đúng (phát hiện nhờ Playwright
+   `getByLabel` không khớp được).
+
+Cũng sửa 1 **dòng tài liệu sai**: `TIEN-DO-CHI-TIET.md` ghi "Upload giấy phép hoạt động ⬜ chưa nối MinIO",
+nhưng kiểm tra code thấy chức năng **đã hoàn chỉnh** và nối MinIO thật từ trước. Đã sửa kèm ghi rõ phần
+còn thiếu thật (text hardcode chưa qua i18n, `docType` cứng `business_license`).
+
+Verify: backend 135/135 (từ 129) + 3/3, cả 2 frontend tsc + lint + build sạch, `web-admin/` 84/84. Verify
+UI thật đầu-cuối: ứng viên nhập kinh nghiệm → lưu → **tải lại trang, dữ liệu vẫn còn** → NTD nạp Credit,
+unlock hồ sơ → **thấy đủ học vấn + kinh nghiệm kèm tuyến đã dịch tiếng Việt**.
+
+> Ghi chú về quá trình verify: lần đầu script Playwright báo "dữ liệu MẤT sau tải lại", nhưng kiểm tra
+> API thấy dữ liệu **đã lưu đúng** trong DB. Nguyên nhân là script đọc `innerText` mà header nổi che mất
+> text — đổi sang đọc `inputValue()` thì đúng. Bài học: khi kết quả tự động mâu thuẫn với dữ liệu thật,
+> kiểm chứng bằng nguồn khác trước khi kết luận có bug.
+
 ### Giai đoạn 2 — Hoàn thiện
 
 *(Chưa bắt đầu)*

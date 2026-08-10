@@ -359,18 +359,18 @@ erDiagram
 | specialty_id | uuid | FK → specialties |
 | level | enum | `junior`, `mid`, `senior`, `expert` |
 
-**`experiences`**
+**`Experiences`** — đã triển khai (2026-08-10)
 | Cột | Kiểu | Ghi chú |
 |---|---|---|
 | id | uuid | PK |
 | profile_id | uuid | FK |
 | organization_name | varchar(255) | |
 | position | varchar(255) | |
-| tier | enum | `trung_uong`, `tinh`, `huyen`, `tu_nhan` |
+| tier | int (enum `FacilityTier`) nullable | `TrungUong`/`Tinh`/`Huyen`/`TuNhan` — NTD ngành y đánh giá kinh nghiệm theo tuyến, không chỉ theo số năm |
 | from_date / to_date | date | to_date NULL = đang làm |
 | description | text | |
 
-**`educations`**
+**`Educations`** — đã triển khai (2026-08-10)
 | Cột | Kiểu |
 |---|---|
 | id | uuid PK |

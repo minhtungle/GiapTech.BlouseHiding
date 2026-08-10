@@ -68,7 +68,7 @@
 | Thêm chuyên khoa + trình độ | ✅ `POST /candidates/me/specialties` | ✅ `/profile` → `SpecialtySection` mới (dropdown chuyên khoa qua `getSpecialties`, ẩn chuyên khoa đã có) |
 | Upload ảnh CCHN thật (MinIO) | ✅ `POST /uploads/presigned-url` | ✅ `LicenseSection` dùng `lib/upload.ts` — input file thật, PUT thẳng MinIO |
 | Đổi ảnh đại diện | ✅ `PUT /candidates/me/avatar` (command riêng, tách khỏi `PUT /candidates/me`) | ✅ `AvatarSection` trong `/profile` — input file ẩn qua nút "Đổi ảnh đại diện" |
-| Học vấn / kinh nghiệm (`experiences`/`educations`) | ⬜ | ⬜ |
+| Học vấn / kinh nghiệm (`Experiences`/`Educations`) | ✅ `PUT /candidates/me/history` (replace-all) — thêm 2026-08-10, kèm enum `FacilityTier` (tuyến cơ sở) | ✅ `/profile` → khối "Kinh nghiệm làm việc" + "Học vấn", nhập nhiều dòng rồi lưu 1 lần |
 | CV Builder | ✅ bảng `Cvs` + `PUT /candidates/me/cvs/builder` (upsert) + `GET /candidates/me/cvs` — thêm 2026-08-10 | ✅ `/profile/cv` lưu thật, tải lại trang dữ liệu vẫn còn, preview dùng tên/headline thật từ hồ sơ (trước đây `MOCK_CANDIDATE`). Trang đã gate đăng nhập |
 | Xuất CV ra PDF | — | ⬜ nút vẫn `disabled` — cần thư viện render PDF, tách thành việc riêng |
 | Chọn CV đã lưu khi ứng tuyển | ✅ cột `applications.cv_id` + kiểm tra CV thuộc về chính ứng viên — thêm 2026-08-10 | ✅ dialog ứng tuyển có ô "Dùng CV đã lưu" bên cạnh upload file riêng. Trước đây phải upload lại file MỖI LẦN ứng tuyển vì không có CV nào lưu thật |
@@ -86,7 +86,7 @@
 | Danh sách tổ chức công khai (list) | ✅ `GET /organizations?q=` (chỉ `Verified`, filter tên optional) — thêm 2026-08-06 | ✅ `/organizations` nối API thật, không còn suy ra từ `getJobs()` — hiện được cả tổ chức chưa có tin nào | — |
 | Trang chủ hiện tổ chức nổi bật | — | ✅ vẫn suy ra từ `getJobs()` (dedupe theo `organizationId`, sắp theo số tin đang có) — khác trang `/organizations` đã dùng API list riêng, trang chủ giữ cách cũ vì mục đích khác (nổi bật theo hoạt động, không phải danh sách đầy đủ) | — |
 | Ops tìm tổ chức theo tên (mọi trạng thái) | ✅ `GET /ops/organizations/search?q=` — thêm 2026-08-06, khác endpoint public (trả cả `pending`/`rejected`/`suspended`, kèm `creditBalance`) | — | ✅ `/ops/credit` dùng để tìm tổ chức trước khi cộng Credit |
-| Upload giấy phép hoạt động | ⬜ | — | ⬜ chưa nối MinIO |
+| Upload giấy phép hoạt động | ✅ `GET/POST /organizations/{id}/documents` | — | ✅ `/organization` → khối "Giấy phép hoạt động" — upload thật lên MinIO qua `uploadFile(file, 'org_document')`, hiện danh sách file đã tải kèm link xem. Dòng ghi "⬜ chưa nối MinIO" trước đây **đã lỗi thời**, xác nhận lại qua code 2026-08-10. Còn thiếu: text hardcode tiếng Việt chưa qua i18n, `docType` cứng `business_license` (chưa cho chọn loại giấy tờ khác) |
 | Duyệt tổ chức (Verify/Reject/Suspend) | ✅ `POST /ops/organizations/{id}/verify` — Suspend tự động ẩn mọi tin `published` cùng transaction | — | ✅ `/ops/verification` (tab Tổ chức) |
 | Cộng Credit thủ công (khuyến mãi/hỗ trợ) | ✅ `POST /ops/organizations/{id}/credit-bonus` | — | ✅ `/ops/credit` (`features/ops-credit/`) — nối API thật (tìm tổ chức + cộng Credit), không còn `MOCK_ORGANIZATIONS` |
 | Hoàn Credit thủ công khi tranh chấp | ⬜ `/ops/organizations/{id}/credit-refund` chưa làm | — | ⬜ |
@@ -136,7 +136,7 @@
 | Xem ví Credit + lịch sử giao dịch | ✅ `GET /organizations/{id}/credit-wallet`, `.../credit-transactions` | ✅ `/credit` |
 | Tìm ứng viên (ẩn liên hệ tới khi mở) | ✅ `GET /candidates/search` | ✅ `/candidates` |
 | Mở hồ sơ ứng viên (trừ Credit) | ✅ `POST /candidates/{id}/unlock` | ✅ nút "Mở hồ sơ" trong `/candidates` |
-| Xem chi tiết hồ sơ sau khi mở | ✅ `GET /candidates/{id}` (query `organizationId`, 403 nếu chưa unlock, trả `EmployerCandidateProfileDto`) | ✅ `/candidates/$candidateId` — tên/headline/summary/avatar/email/chuyên khoa/CCHN, link từ card đã mở trong `/candidates` |
+| Xem chi tiết hồ sơ sau khi mở | ✅ `GET /candidates/{id}` (query `organizationId`, 403 nếu chưa unlock, trả `EmployerCandidateProfileDto` — **từ 2026-08-10 có kèm học vấn/kinh nghiệm**) | ✅ `/candidates/$candidateId` — tên/headline/summary/avatar/email/chuyên khoa/CCHN + **học vấn & kinh nghiệm làm việc** (trước đây thiếu 2 khối này dù NTD đã trả Credit) |
 | Gợi ý ứng viên cho 1 tin (chuyên khoa trùng) | ✅ dùng lại `GET /candidates/search` (không có endpoint mới) — thêm 2026-08-07 | ✅ nút "Ứng viên gợi ý" ở trang ATS 1 tin (`/applications/$jobId`), mở Sheet, tự tra `specialtyId` qua danh mục vì `ApiJob` không có field này, loại ứng viên đã ứng tuyển, unlock ngay trong Sheet |
 
 ---
