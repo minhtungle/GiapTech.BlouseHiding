@@ -179,6 +179,26 @@ Chế độ tối của **cả 2 app đạt AA toàn bộ**, không phải sửa
 
 > Khi đổi token màu, tính lại tỷ lệ trước khi commit — đừng chỉ nhìn bằng mắt. Cặp 4.48:1 và
 > 4.5:1 nhìn giống hệt nhau nhưng một cái đạt chuẩn, một cái không.
+>
+> **Đo trên DOM đã render, không chỉ tính trên bảng màu.** Script đo phải vẽ màu lên canvas 1×1 để
+> trình duyệt quy về sRGB: `getComputedStyle` có thể trả `oklab()` với giá trị 0..1, parse thô sẽ ra
+> `rgb(0.99, ...)` và tính contrast **sai hoàn toàn** (lần đầu chạy báo 15 lỗi giả ở chế độ sáng).
+
+### Token `on-accent` — chữ đặt trên nền accent
+
+**Không dùng `text-white` cứng trên badge/nút màu.** Nền accent ở chế độ tối **sáng hơn hẳn** chế độ
+sáng, nên chữ trắng mất tương phản:
+
+| Nền | Chữ trắng (sáng) | Chữ trắng (tối) |
+|---|---|---|
+| `accent-jade` | 5.95 ✅ | **2.72 ❌** |
+| `accent-seal` | 5.62 ✅ | **3.47 ❌** |
+| `amber-pending` | **3.97 ❌** | **2.12 ❌** |
+
+Dùng `text-on-accent` — token tự đảo: `#ffffff` ở chế độ sáng, `#101918` (màu nền trang) ở chế độ tối.
+Kèm theo, `--amber-pending` chế độ sáng tối lại `#a9761b` → `#9c6c18` để chữ trắng đạt 4.59.
+
+Áp dụng cho **cả 2 app** (32 chỗ: 9 ở `web/`, 23 ở `web-admin/`).
 
 ### Dark mode
 

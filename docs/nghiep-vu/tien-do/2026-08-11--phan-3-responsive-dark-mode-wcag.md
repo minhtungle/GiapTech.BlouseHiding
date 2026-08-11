@@ -65,3 +65,37 @@ repo build + lint sạch.
 
 > ESLint bắt được lỗi `setState` trong effect ngay lần chạy đầu — đáng ghi vì đây là lỗi tôi định
 > viết theo thói quen, chỉ có lint mới chặn lại.
+
+---
+
+## Rà tiếp: dark mode trên TOÀN BỘ màn hình
+
+Đợt trên mới verify trang chủ. Nay quét **26 màn hình × 2 chế độ** (13 trang `web/` gồm cả trang cần
+đăng nhập, 13 trang `web-admin/`), đo contrast **thật trên DOM đã render** — không chỉ tính trên bảng
+màu, vì bảng màu không biết chỗ nào thực sự đặt chữ gì lên nền gì.
+
+**Lỗi thật tìm được — `text-white` cứng trên badge.** Nền accent ở chế độ tối **sáng hơn hẳn**, nên
+chữ trắng mất tương phản:
+
+| Nền | Chữ trắng (sáng) | Chữ trắng (tối) |
+|---|---|---|
+| `accent-jade` | 5.95 ✅ | **2.72 ❌** |
+| `accent-seal` | 5.62 ✅ | **3.47 ❌** |
+| `amber-pending` | **3.97 ❌** | **2.12 ❌** |
+
+Badge "Chờ duyệt" **không đạt chuẩn ở CẢ 2 chế độ** — lỗi có sẵn từ trước, chế độ tối chỉ làm lộ ra.
+
+Sửa gốc bằng token `--on-accent` tự đảo theo chế độ (`#ffffff` ↔ `#101918`) thay vì sửa từng chỗ, áp
+cho **32 vị trí** (9 ở `web/`, 23 ở `web-admin/`). Kèm tối lại `--amber-pending` chế độ sáng
+`#a9761b` → `#9c6c18`.
+
+Sau khi sửa: **0 lỗi** trên 26 màn × 2 chế độ. 26 mục còn báo đều là nhãn "TanStack Router" của
+devtools — đã kiểm `import.meta.env.MODE === 'development'` nên không lên production.
+
+> **Bẫy khi viết script đo contrast**: `getComputedStyle` có thể trả `oklab()` với giá trị 0..1;
+> parse bằng regex số sẽ ra `rgb(0.99, 0.00004, 0.00002)` và tính contrast **sai hoàn toàn** — lần
+> chạy đầu báo **15 lỗi giả** ở chế độ sáng, gồm cả tiêu đề "BlouseHiding" 1.34:1 (thực tế 14:1).
+> Cách đúng: vẽ màu lên canvas 1×1 rồi đọc pixel, để trình duyệt tự quy về sRGB.
+>
+> Đây là lần thứ 3 trong ngày công cụ đo báo sai còn sản phẩm đúng. Vẫn giữ nguyên tắc: kết quả tự
+> động mâu thuẫn trực giác thì kiểm chứng bằng nguồn khác trước khi sửa code.
