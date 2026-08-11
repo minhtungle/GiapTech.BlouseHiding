@@ -198,7 +198,7 @@ mọi hàng đợi `/ops/*` (xử lý xong là hết).
 
 | Method | Path | Quyền | Mô tả |
 |---|---|---|---|
-| GET | `/jobs` | Public | Tìm kiếm/lọc: `?specialty=&location=&organizationId=&employmentType=&salaryMin=&keyword=`. `organizationId` dùng để lấy danh sách tin **công khai** (chỉ `published`) của 1 tổ chức — khác `GET /organizations/{id}/jobs` (yêu cầu member, trả mọi trạng thái) |
+| GET | `/jobs` | Public | Tìm kiếm/lọc: `?specialty=&location=&organizationId=&employmentType=&salaryMin=&tier=&keyword=&page=&pageSize=`. `organizationId` dùng để lấy danh sách tin **công khai** (chỉ `published`) của 1 tổ chức — khác `GET /organizations/{id}/jobs` (yêu cầu member, trả mọi trạng thái). **`tier` thêm 2026-08-11** — tin không khai tuyến (`tier=null`) **bị loại** khi lọc, vì trả về sẽ khiến ứng viên lọc "tuyến trung ương" nhận cả tin không rõ tuyến. `salaryMin` ngược lại **giữ** tin `salaryNegotiable` (`salary_max` null) — lọc lương mà ẩn hết tin thỏa thuận thì mất phần lớn tin thật của thị trường ngành y |
 | GET | `/jobs/{id}` | Public | Chi tiết tin (chỉ tin `published`, trừ khi là chủ sở hữu) |
 | POST | `/jobs` | Employer (member) | Tạo tin (status = `draft`) |
 | PUT | `/jobs/{id}` | Employer (member cùng org) | Sửa tin (chỉ khi `draft`/`rejected`) |

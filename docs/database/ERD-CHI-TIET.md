@@ -509,6 +509,7 @@ set `accepted_at`. Không tạo `employer_members` với `user_id` rỗng ở b�
 | salary_negotiable | bool | DEFAULT false | |
 | location_id | uuid | FK → locations | |
 | address_detail | varchar(255) | nullable | |
+| tier | int (enum `FacilityTier`) | nullable | Tuyến cơ sở y tế của vị trí — thêm 2026-08-11, dùng cho bộ lọc "tuyến" ở trang Tìm việc. Lưu ở **tin** chứ không suy ra từ tổ chức: 1 bệnh viện tuyến tỉnh vẫn có thể đăng tin cho phòng khám vệ tinh tuyến huyện, và `organizations` không có cột tuyến. Dùng chung enum với `experiences.tier`. `null` = không khai — **bị loại khi lọc theo tuyến** |
 | required_license | bool | DEFAULT true | |
 | min_experience_years | int | DEFAULT 0 | |
 | description / requirements / benefits | text | | ngôn ngữ tự do theo tác giả nhập — **không dịch**, hiển thị nguyên văn bất kể locale người xem (ADR-0006) |

@@ -105,7 +105,7 @@
 
 | Chức năng | Backend | `web/` | `web-admin/` |
 |---|---|---|---|
-| Tìm kiếm/lọc tin công khai | ✅ `GET /jobs` (LINQ/EF Core, chưa chuyển Postgres full-text) | ✅ `/jobs` — filter qua URL query, giữ SSR + form tìm theo từ khóa (`keyword`, đã có sẵn ở backend/`getJobs`, trước đây chỉ thiếu UI); form tìm nhanh ở trang chủ (`HeroSearchForm`) điều hướng thẳng sang `/jobs?keyword=...` | — |
+| Tìm kiếm/lọc tin công khai | ✅ `GET /jobs` (LINQ/EF Core, chưa chuyển Postgres full-text) — **đủ 5 bộ lọc theo thiết kế từ 2026-08-11**: chuyên khoa, địa điểm, loại hình, **mức lương**, **tuyến** (cột `jobs.tier` mới) | ✅ `/jobs` — filter qua URL query, giữ SSR + form tìm theo từ khóa (`keyword`, đã có sẵn ở backend/`getJobs`, trước đây chỉ thiếu UI); form tìm nhanh ở trang chủ (`HeroSearchForm`) điều hướng thẳng sang `/jobs?keyword=...` | — |
 | Xem chi tiết tin | ✅ `GET /jobs/{id}` | ✅ `/jobs/[id]` | ✅ (trong danh sách tin của tổ chức) |
 | Tạo tin (draft) | ✅ `POST /jobs` | — | ✅ `/jobs/new` |
 | Sửa tin (chỉ draft/rejected) | ✅ `PUT /jobs/{id}` | — | ✅ `/jobs/$jobId/edit` — nút bút chì chỉ hiện khi `Draft`/`Rejected` |

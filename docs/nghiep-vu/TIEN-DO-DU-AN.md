@@ -66,6 +66,7 @@ Nếu có mục không đạt, ghi rõ lý do + kế hoạch xử lý vào nhậ
 | 2026-08-10 (p1) | 4 bounded context Ops, đánh giá cơ sở y tế, Giai đoạn 2 | [`2026-08-10--phan-1-ops-va-giai-doan-2.md`](./tien-do/2026-08-10--phan-1-ops-va-giai-doan-2.md) |
 | 2026-08-10 (p2) | Hoàn thiện giao diện, CV, phân trang, học vấn/kinh nghiệm, hoàn Credit | [`2026-08-10--phan-2-hoan-thien-ui-va-cv.md`](./tien-do/2026-08-10--phan-2-hoan-thien-ui-va-cv.md) |
 | 2026-08-11 | **Chốt Giai đoạn 1 (MVP)** — đủ 8 bước checklist | [`2026-08-11--chot-giai-doan-1.md`](./tien-do/2026-08-11--chot-giai-doan-1.md) |
+| 2026-08-11 (p2) | Rà 42 màn hình; bộ lọc tin theo **tuyến** & **mức lương** | [`2026-08-11--phan-2-bo-loc-tin-tuyen-luong.md`](./tien-do/2026-08-11--phan-2-bo-loc-tin-tuyen-luong.md) |
 
 ### Cách ghi nhật ký ngày mới
 
