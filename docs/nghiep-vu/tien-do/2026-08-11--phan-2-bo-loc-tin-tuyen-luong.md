@@ -76,3 +76,47 @@ thật ở 3 tuyến khác nhau.
 >
 > Cũng có 2 lần script báo FAIL oan (regex `/xóa lọc/` không khớp nhãn thật "Xóa bộ lọc"; mã trạng thái
 > đoán 204 trong khi handler `Task` trả 200) — đều là lỗi của script, xác minh lại trước khi kết luận.
+
+---
+
+## Tiếp: 3 khoảng trống còn lại (mục 2, 3, 4)
+
+**Mục 2 — lọc kinh nghiệm ở màn Tìm ứng viên.** Câu hỏi khó nhất là **cách tính số năm**. Cộng thời
+lượng từng giai đoạn nghe chính xác hơn, nhưng 2 giai đoạn **chồng lấn thời gian** (làm 2 nơi cùng lúc
+— rất phổ biến ở ngành y: trực thêm phòng khám ngoài giờ) sẽ bị đếm 2 lần, cho số năm **lớn hơn thực
+tế**. Chọn tính theo khoảng từ `FromDate` sớm nhất tới nay: đổi lại quãng nghỉ giữa chừng cũng tính vào
+thâm niên, nhưng NTD dùng bộ lọc để **khoanh vùng**, không phải đo chính xác. Ghi rõ giới hạn này ở
+handler. Ứng viên chưa khai kinh nghiệm nào **bị loại** khi lọc — trả về thì NTD lọc "từ 5 năm" nhận cả
+hồ sơ trắng, bộ lọc mất tác dụng.
+
+Kèm refactor: `candidatesApi.search` đổi từ **tham số vị trí sang object** — đã có 6 tiêu chí, truyền
+theo thứ tự rất dễ nhầm (`specialty`/`location` cùng kiểu string) và thêm filter mới phải sửa mọi lời gọi.
+
+**Mục 3 — lịch sử tương tác ở chi tiết ứng viên.** Gộp 2 nguồn có sẵn: lần mở hồ sơ (`profile_unlocks`)
+và đơn ứng tuyển vào tin của chính tổ chức. Điểm quan trọng: **chỉ tương tác của tổ chức đang xem** —
+ứng viên ứng tuyển nơi nào, bị tổ chức nào mở hồ sơ là việc riêng của họ, để lộ là rò rỉ thông tin. Có
+test riêng dựng 2 tổ chức cùng mở 1 hồ sơ để khẳng định không lộ chéo.
+
+**Mục 4 — chuỗi hardcode.** Hoá ra không phải 2 mà **6 chuỗi**, và nằm ở **màn đăng nhập** — màn đầu
+tiên người dùng thấy. `not-found.tsx` ở root giữ nguyên: file này nằm **ngoài** provider i18n (Next.js
+yêu cầu có nó khi dùng segment động `[locale]`), không gọi `t()` được.
+
+## Lệch thiết kế phát hiện thêm
+
+Verify lộ ra form đăng nhập hiện **"Password"** dù locale mặc định là `vi`. Không phải lỗi dịch —
+`web-admin/` để `detection.order: ['localStorage', 'navigator']`, nên **máy cài tiếng Anh ra giao diện
+quản trị tiếng Anh ngay lần đầu**, trong khi `web/` theo ADR-0006 mặc định `vi`. Cùng 1 tài khoản mà 2
+app hành xử khác nhau.
+
+Đã hỏi và người dùng chọn **đồng bộ về tiếng Việt**: bỏ `navigator` khỏi `detection.order`. Người dùng
+nước ngoài vẫn tự đổi được bằng nút chọn ngôn ngữ (lưu localStorage).
+
+## Verify
+
+Backend **163/163** (từ 160) + 3/3; `web-admin/` **95/95**; cả 3 build + lint sạch. Playwright **8/8**
+với dữ liệu thật: lọc ≥5 năm giảm từ 20 xuống 5 ứng viên, khối lịch sử tương tác hiện đúng.
+
+> Lại 1 lần nữa **test cũ vỡ vì i18n**: `user-auth-form.test.tsx` tìm chuỗi cứng "Mật khẩu" trong khi
+> form đã chuyển sang `t()`, mà test không init i18n nên nhận khóa thô. Đúng lỗi đã gặp ở
+> `search-provider.test.tsx` đợt trước — sửa cùng cách (import `@/i18n` + ép `vi` trong `beforeEach`).
+> **Bài học lặp lại: i18n hóa 1 component thì phải kiểm luôn test của nó.**

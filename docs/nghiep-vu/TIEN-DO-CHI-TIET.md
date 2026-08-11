@@ -140,7 +140,7 @@
 | Chức năng | Backend | `web-admin/` |
 |---|---|---|
 | Xem ví Credit + lịch sử giao dịch | ✅ `GET /organizations/{id}/credit-wallet`, `.../credit-transactions` | ✅ `/credit` |
-| Tìm ứng viên (ẩn liên hệ tới khi mở) | ✅ `GET /candidates/search` | ✅ `/candidates` |
+| Tìm ứng viên (ẩn liên hệ tới khi mở) | ✅ `GET /candidates/search` — **đủ 3 bộ lọc theo thiết kế từ 2026-08-11**: chuyên khoa, khu vực, **kinh nghiệm** | ✅ `/candidates` |
 | Mở hồ sơ ứng viên (trừ Credit) | ✅ `POST /candidates/{id}/unlock` | ✅ nút "Mở hồ sơ" trong `/candidates` |
 | Xem chi tiết hồ sơ sau khi mở | ✅ `GET /candidates/{id}` (query `organizationId`, 403 nếu chưa unlock, trả `EmployerCandidateProfileDto` — **từ 2026-08-10 có kèm học vấn/kinh nghiệm**) | ✅ `/candidates/$candidateId` — tên/headline/summary/avatar/email/chuyên khoa/CCHN + **học vấn & kinh nghiệm làm việc** (trước đây thiếu 2 khối này dù NTD đã trả Credit) |
 | Gợi ý ứng viên cho 1 tin (chuyên khoa trùng) | ✅ dùng lại `GET /candidates/search` (không có endpoint mới) — thêm 2026-08-07 | ✅ nút "Ứng viên gợi ý" ở trang ATS 1 tin (`/applications/$jobId`), mở Sheet, tự tra `specialtyId` qua danh mục vì `ApiJob` không có field này, loại ứng viên đã ứng tuyển, unlock ngay trong Sheet |
