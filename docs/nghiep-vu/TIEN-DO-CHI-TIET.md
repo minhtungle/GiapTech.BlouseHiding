@@ -8,7 +8,7 @@
 > **Quan hệ với tài liệu khác:**
 > - [`DANH-SACH-TINH-NANG.md`](./DANH-SACH-TINH-NANG.md) — checklist theo giai đoạn (0-3), dùng để biết
 >   *thứ tự làm* và *đã xong giai đoạn nào chưa*.
-> - [`TIEN-DO-DU-AN.md`](./TIEN-DO-DU-AN.md) — nhật ký từng đợt làm việc (context, quyết định, bug đã
+> - [`TIEN-DO-DU-AN.md`](./TIEN-DO-DU-AN.md) + [`tien-do/`](./tien-do/) — nhật ký từng ngày làm việc (context, quyết định, bug đã
 >   vá, verify đã chạy). Dùng để biết *tại sao* một chức năng được làm theo cách hiện tại.
 > - File này — bản đồ *chi tiết nhất*, tra theo module, dùng để biết *chính xác cái gì đã nối, cái gì
 >   còn mock, cái gì hoàn toàn chưa có*.

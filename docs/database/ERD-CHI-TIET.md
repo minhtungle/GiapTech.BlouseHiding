@@ -7,6 +7,19 @@
 
 ---
 
+## Mục lục
+
+- [0. Công nghệ CSDL & lưu trữ](#0-công-nghệ-csdl-lưu-trữ)
+- [1. Sơ đồ quan hệ theo nhóm (Mermaid ER)](#1-sơ-đồ-quan-hệ-theo-nhóm-mermaid-er)
+- [2. Định nghĩa bảng đầy đủ](#2-định-nghĩa-bảng-đầy-đủ)
+- [3. Chỉ mục (index) quan trọng cho hiệu năng](#3-chỉ-mục-index-quan-trọng-cho-hiệu-năng)
+- [4. Ràng buộc nghiệp vụ quan trọng cần enforce ở tầng Application (không chỉ DB)](#4-ràng-buộc-nghiệp-vụ-quan-trọng-cần-enforce-ở-tầng-application-không-chỉ-db)
+- [5. Xem thêm](#5-xem-thêm)
+
+**37 bảng** (mục 2): `AuditLogEntries` · `Cvs` · `Educations` · `Experiences` · `OrganizationReviews` · `SavedJobs` · `application_notes` · `application_stage_history` · `applications` · `candidate_profiles` · `continuing_certificates` · `conversations` · `credit_transactions` · `credit_wallets` · `employer_members` · `event_registrations` · `events` · `job_package_translations` · `job_packages` · `job_purchases` · `jobs` · `licenses` · `location_translations` · `locations` · `messages` · `notifications` · `organization_documents` · `organization_invitations` · `organizations` · `payments` · `profile_specialties` · `profile_unlocks` · `refresh_tokens` · `reports` · `specialties` · `specialty_translations` · `users`
+
+---
+
 ## 0. Công nghệ CSDL & lưu trữ
 
 | Thành phần | Lựa chọn | Lý do |

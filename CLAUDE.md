@@ -14,7 +14,7 @@ Xem [`docs/nghiep-vu/PHAN-TICH-NGHIEP-VU.md`](docs/nghiep-vu/PHAN-TICH-NGHIEP-VU
 
 **Trạng thái hiện tại (2026-08-11):** Giai đoạn 1 (MVP) **đã chốt** — 103 endpoint, 16 migration,
 255 test pass, cả 2 frontend đã nối API thật cho toàn bộ luồng chính. Xem
-[`docs/nghiep-vu/TIEN-DO-DU-AN.md`](docs/nghiep-vu/TIEN-DO-DU-AN.md) mục "CHỐT GIAI ĐOẠN 1".
+[`docs/nghiep-vu/tien-do/2026-08-11--chot-giai-doan-1.md`](docs/nghiep-vu/tien-do/2026-08-11--chot-giai-doan-1.md).
 
 ---
 
@@ -61,7 +61,8 @@ sang nhóm 2 (API cho luồng nộp/nhận hồ sơ). Đừng lấy checklist gi
 | Luồng nghiệp vụ chi tiết + danh sách màn hình | [`docs/nghiep-vu/LUONG-NGHIEP-VU-MAN-HINH.md`](docs/nghiep-vu/LUONG-NGHIEP-VU-MAN-HINH.md) |
 | Checklist tính năng theo giai đoạn | [`docs/nghiep-vu/DANH-SACH-TINH-NANG.md`](docs/nghiep-vu/DANH-SACH-TINH-NANG.md) |
 | Tra cứu chi tiết theo module: chức năng nào đã nối API thật, còn mock, hay chưa có | [`docs/nghiep-vu/TIEN-DO-CHI-TIET.md`](docs/nghiep-vu/TIEN-DO-CHI-TIET.md) |
-| Nhật ký tiến độ + quy trình chốt giai đoạn — **đọc trước khi báo "xong giai đoạn X"** | [`docs/nghiep-vu/TIEN-DO-DU-AN.md`](docs/nghiep-vu/TIEN-DO-DU-AN.md) |
+| Quy trình chốt giai đoạn + trạng thái tổng quan + **mục lục nhật ký theo ngày** — đọc trước khi báo "xong giai đoạn X" | [`docs/nghiep-vu/TIEN-DO-DU-AN.md`](docs/nghiep-vu/TIEN-DO-DU-AN.md) (index ngắn) |
+| Nhật ký chi tiết từng ngày làm việc (đã làm gì, verify ra sao, chốt gì) | [`docs/nghiep-vu/tien-do/`](docs/nghiep-vu/tien-do/) — 1 file/ngày |
 | Quy ước layer/CQRS backend — **đọc trước khi viết bất kỳ code backend nào** | [`docs/backend/KIEN-TRUC-BACKEND.md`](docs/backend/KIEN-TRUC-BACKEND.md) |
 | Thư viện backend cụ thể | [`docs/backend/CONG-NGHE-BACKEND.md`](docs/backend/CONG-NGHE-BACKEND.md) |
 | Hợp đồng API (endpoint, request/response) | [`docs/backend/API-DESIGN.md`](docs/backend/API-DESIGN.md) |
@@ -173,8 +174,9 @@ docs/                 — toàn bộ tài liệu (bản đồ ở mục 2)
 
 **Khi xong toàn bộ 1 giai đoạn (không phải 1 tính năng lẻ)** — trước khi báo "xong Giai đoạn X" hay bắt
 đầu Giai đoạn tiếp theo, chạy đủ checklist chốt giai đoạn ở
-[`docs/nghiep-vu/TIEN-DO-DU-AN.md`](docs/nghiep-vu/TIEN-DO-DU-AN.md) mục 1 và ghi nhật ký vào mục 3 của
-tài liệu đó. Không tự ý coi 1 giai đoạn là xong chỉ vì code compile — phải verify chạy thật.
+[`docs/nghiep-vu/TIEN-DO-DU-AN.md`](docs/nghiep-vu/TIEN-DO-DU-AN.md) mục 1, rồi ghi nhật ký
+vào **file ngày mới** trong [`docs/nghiep-vu/tien-do/`](docs/nghiep-vu/tien-do/) và thêm 1 dòng vào
+bảng mục lục (xem mục 9 bên dưới). Không tự ý coi 1 giai đoạn là xong chỉ vì code compile — phải verify chạy thật.
 
 ## 6. Lệnh build/test/dev
 
@@ -249,3 +251,42 @@ submodule đó** trước, rồi về repo tổng `git add api` (hay `web`/`web-
 - Code, tên biến, tên bảng/cột, tên API viết **tiếng Anh** theo chuẩn ngành (đã áp dụng xuyên suốt ERD/API).
 - Không thêm comment giải thích code hiển nhiên — chỉ comment khi có invariant/lý do không hiển nhiên
   (vd lý do 1 transaction phải lock bảng nào).
+
+---
+
+## 9. Quy ước tổ chức tài liệu — chống "file phình to không ai đọc"
+
+> **Bài học có thật (2026-08-11):** `TIEN-DO-DU-AN.md` phình tới **2512 dòng / 238 KB** vì mọi nhật ký
+> dồn vào 1 file. Hệ quả: yêu cầu "ưu tiên hoàn thiện UI trước" của người dùng **có** được ghi lại
+> (dòng ~1247) nhưng **không lần nào được đọc tới** — dẫn tới lặp lại việc người dùng đã yêu cầu bỏ
+> qua **8 lần**. Tài liệu quá dài thì không ai đọc, kể cả agent.
+
+### 9.1 Phân loại tài liệu — quyết định cách tổ chức
+
+| Loại | Đặc điểm | Cách tổ chức | Ví dụ |
+|---|---|---|---|
+| **Nhật ký / cộng dồn theo thời gian** | Chỉ thêm, không sửa cái cũ; càng ngày càng dài | **1 file / 1 ngày** trong thư mục riêng + 1 file **index ngắn** | [`docs/nghiep-vu/tien-do/`](docs/nghiep-vu/tien-do/) |
+| **Tra cứu theo chủ đề** | Sửa tại chỗ khi code đổi; độ dài ổn định | **Giữ 1 file**, thêm **Mục lục** khi > 300 dòng | `ERD-CHI-TIET.md`, `API-DESIGN.md` |
+| **Quyết định (ADR)** | Bất biến sau khi chốt | **1 file / 1 quyết định**, đánh số tăng dần | `docs/kien-truc/adr/` |
+| **Chỉ dẫn/quy tắc** | Agent đọc mỗi phiên | Phải **ngắn**, ưu tiên đặt lên đầu | File này |
+
+### 9.2 Ngưỡng cứng
+
+- **> 400 dòng** → bắt buộc có **Mục lục** ở đầu file.
+- **> 800 dòng** với tài liệu **cộng dồn** → bắt buộc **tách theo ngày/chủ đề**, giữ lại file index.
+- **> 800 dòng** với tài liệu **tra cứu** → xem có tách được theo nhóm chủ đề không (vd tách ERD theo
+  bounded context); nếu bản chất phải liền mạch thì giữ nguyên nhưng **mục lục phải đủ chi tiết** để
+  nhảy thẳng tới mục cần đọc.
+- File **index** (như `TIEN-DO-DU-AN.md`) phải **luôn dưới 150 dòng** — đọc hết được trong 1 lần.
+
+### 9.3 Ghi nhật ký tiến độ
+
+Xem hướng dẫn ở cuối [`docs/nghiep-vu/TIEN-DO-DU-AN.md`](docs/nghiep-vu/TIEN-DO-DU-AN.md).
+Tóm tắt: **không viết nhật ký vào file index** — tạo `docs/nghiep-vu/tien-do/YYYY-MM-DD--mo-ta.md`,
+rồi thêm 1 dòng vào bảng mục lục.
+
+### 9.4 Yêu cầu/ràng buộc từ người dùng — ghi ngay, đúng chỗ
+
+Khi người dùng nêu **ưu tiên, phạm vi, hoặc thứ tự làm việc**: ghi vào **CLAUDE.md mục 1b ngay lượt
+đó**, không đợi. Ngữ cảnh hội thoại **sẽ mất** (phiên này đã cạn ngữ cảnh 7 lần); chỉ file trong repo
+là sống sót. Ghi vào nhật ký ngày là **chưa đủ** — nhật ký không được đọc mỗi phiên.

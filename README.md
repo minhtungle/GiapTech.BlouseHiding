@@ -75,7 +75,7 @@ chốt ở [`docs/kien-truc/TONG-QUAN-KIEN-TRUC.md`](docs/kien-truc/TONG-QUAN-KI
 - [Phân tích nghiệp vụ](docs/nghiep-vu/PHAN-TICH-NGHIEP-VU.md) — mục tiêu, actor, phạm vi tính năng, đối chiếu TopCV/Ybox, roadmap, rủi ro
 - [Luồng nghiệp vụ & màn hình](docs/nghiep-vu/LUONG-NGHIEP-VU-MAN-HINH.md) — luồng chi tiết theo actor + danh sách màn hình
 - [Danh sách tính năng](docs/nghiep-vu/DANH-SACH-TINH-NANG.md) — checklist theo giai đoạn
-- [Tiến độ dự án](docs/nghiep-vu/TIEN-DO-DU-AN.md) — nhật ký tiến độ + quy trình chốt từng giai đoạn
+- [Tiến độ dự án](docs/nghiep-vu/TIEN-DO-DU-AN.md) — quy trình chốt giai đoạn + trạng thái tổng quan + mục lục nhật ký; nhật ký chi tiết từng ngày ở [`docs/nghiep-vu/tien-do/`](docs/nghiep-vu/tien-do/)
 
 ### Backend
 - [Kiến trúc & quy ước code Backend](docs/backend/KIEN-TRUC-BACKEND.md) — layer, CQRS/Mediator, quy tắc bất biến

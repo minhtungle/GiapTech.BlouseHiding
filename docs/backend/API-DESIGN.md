@@ -7,6 +7,25 @@
 
 ---
 
+## Mục lục
+
+- [1. Quy ước chung](#1-quy-ước-chung)
+- [2. Identity — `/auth`, `/users`](#2-identity-auth-users)
+- [3. Hồ sơ ứng viên — `/candidates`](#3-hồ-sơ-ứng-viên-candidates)
+- [4. Cơ sở y tế (Organization) — `/organizations`](#4-cơ-sở-y-tế-organization-organizations)
+- [5. Tin tuyển dụng — `/jobs`](#5-tin-tuyển-dụng-jobs)
+- [6. Gói tin & thanh toán — `/job-packages`, `/payments`](#6-gói-tin-thanh-toán-job-packages-payments)
+- [7. Credit & mở hồ sơ ứng viên — `/credit`](#7-credit-mở-hồ-sơ-ứng-viên-credit)
+- [8. Ứng tuyển & ATS — `/applications`](#8-ứng-tuyển-ats-applications)
+- [9. Nhắn tin & thông báo — `/conversations`, `/notifications`](#9-nhắn-tin-thông-báo-conversations-notifications)
+- [10. Danh mục dùng chung — `/catalog`](#10-danh-mục-dùng-chung-catalog)
+- [11. Vận hành nền tảng (Ops) — `/ops`](#11-vận-hành-nền-tảng-ops-ops)
+- [12. Sự kiện & CME — `/events` (Giai đoạn 3)](#12-sự-kiện-cme-events-giai-đoạn-3)
+- [13. Ánh xạ luồng nghiệp vụ → endpoint (tham chiếu nhanh)](#13-ánh-xạ-luồng-nghiệp-vụ-endpoint-tham-chiếu-nhanh)
+- [14. Bước tiếp theo](#14-bước-tiếp-theo)
+
+---
+
 ## 1. Quy ước chung
 
 - **Base URL**: `/api/v1`
