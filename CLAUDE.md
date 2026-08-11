@@ -12,10 +12,42 @@ Nền tảng **tuyển dụng chuyên biệt cho ngành y tế** tại Việt Na
 tham khảo TopCV/Ybox nhưng thêm lớp xác thực chứng chỉ hành nghề (CCHN) làm rào cản tin cậy cốt lõi.
 Xem [`docs/nghiep-vu/PHAN-TICH-NGHIEP-VU.md`](docs/nghiep-vu/PHAN-TICH-NGHIEP-VU.md) để hiểu đầy đủ bối cảnh trước khi code.
 
-**Trạng thái hiện tại:** Giai đoạn 0 — solution backend (.NET 10 Clean Architecture) và cả 2 app
-frontend (`web/`, `web-admin/`) đã scaffold, build/test thật đã verify. Chưa có bounded context nghiệp
-vụ nào (Identity/Job/Application...) — chỉ có khung Identity mặc định của template. Xem mục 6 cho lệnh
-build/test/dev thật đã xác minh chạy được.
+**Trạng thái hiện tại (2026-08-11):** Giai đoạn 1 (MVP) **đã chốt** — 103 endpoint, 16 migration,
+255 test pass, cả 2 frontend đã nối API thật cho toàn bộ luồng chính. Xem
+[`docs/nghiep-vu/TIEN-DO-DU-AN.md`](docs/nghiep-vu/TIEN-DO-DU-AN.md) mục "CHỐT GIAI ĐOẠN 1".
+
+---
+
+## 1b. ⚠️ MỤC TIÊU NGƯỜI DÙNG ĐÃ CHỐT — đọc trước khi đề xuất bất kỳ việc gì
+
+> Người dùng đã nhắc **nhiều lần**. Đây là thứ tự ưu tiên bất di bất dịch, **không tự ý đổi**:
+
+**Thứ tự làm việc:**
+1. **Hoàn thiện toàn bộ UI của cả hệ thống trước** — mọi màn hình của `web/` và `web-admin/`, dùng
+   **dữ liệu giả** cũng được. Giao diện đủ và đẹp trước, API sau.
+2. **Rồi mới tới API cho các chức năng chính**: quản lý **nộp/nhận hồ sơ ứng viên**, hồ sơ cá nhân/CV,
+   tra cứu tin & đơn vị tuyển dụng, danh sách ứng viên phù hợp/đã nộp.
+
+**NGOÀI PHẠM VI — không tự ý làm, không đề xuất, không nêu như "thứ đang chặn tiến độ":**
+
+| Hạng mục | Ghi chú |
+|---|---|
+| Thanh toán / cổng thanh toán | Kể cả `manual_transfer` đã có — **không mở rộng thêm** |
+| Email / SMS / provider gửi thông báo | Không nối provider thật, không coi OTP-qua-DB là vấn đề chặn |
+| OAuth Google / Zalo | |
+| Bộ đề y tế thật (test năng lực) | UI minh họa là đủ |
+| Nhắn tin NTD ↔ ứng viên | |
+
+**Sai lầm đã mắc, đừng lặp lại:**
+- Nhiều lần nêu email/SMS/thanh toán như "thứ chặn việc mở cho người dùng thật" — người dùng **đã loại
+  rồi**, nêu lại là lan man.
+- Làm nghiệp vụ Vận hành (hoàn Credit, duyệt/đối soát) trong khi UI còn màn hình chưa hoàn thiện.
+- Đề xuất theo "mục nào còn ⬜ trong checklist" thay vì theo **mục tiêu người dùng đã chốt**.
+
+**Khi không chắc nên làm gì tiếp:** chọn việc thuộc nhóm 1 (hoàn thiện UI) trước; hết việc nhóm 1 thì
+sang nhóm 2 (API cho luồng nộp/nhận hồ sơ). Đừng lấy checklist giai đoạn làm nguồn ưu tiên.
+
+---
 
 ## 2. Bản đồ tài liệu — đọc đúng chỗ trước khi hỏi/đoán
 

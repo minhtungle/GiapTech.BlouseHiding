@@ -9,6 +9,12 @@
 >
 > Trạng thái: ⬜ Chưa làm · 🟨 Đang làm · ✅ Hoàn thành
 
+> ⚠️ **KHÔNG dùng file này làm nguồn quyết định làm gì tiếp.** Thứ tự ưu tiên do người dùng chốt nằm ở
+> [`CLAUDE.md`](../../CLAUDE.md) mục **1b**: (1) hoàn thiện toàn bộ UI cả hệ thống (dữ liệu giả cũng
+> được) → (2) API cho luồng nộp/nhận hồ sơ ứng viên. Thanh toán / email / SMS / OAuth / bộ đề y tế /
+> nhắn tin **ngoài phạm vi** — các mục ⬜ thuộc nhóm đó trong file này chỉ để ghi nhận, **không phải
+> việc cần làm**.
+
 ---
 
 ## Giai đoạn 0 — Khởi tạo
