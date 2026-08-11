@@ -44,10 +44,11 @@
   `AuditLogEntries` + `GET /ops/audit-logs`), ghi tường minh trong 4/5 Command handler nhạy cảm (duyệt
   CCHN/tổ chức, xử lý báo cáo, khóa/mở khóa user — xóa tài khoản để lại sau, không qua Mediator Command),
   `features/ops-audit/` đã nối API thật thay mock (2026-08-06)
-- ⬜ Rà lại responsive + dark mode + contrast WCAG AA trên toàn bộ màn hình — chưa làm riêng thành 1
-  đợt, mới rà thủ công từng màn hình lúc dựng
-
-### 0.2 Backend & hạ tầng (sau khi UI shell đã thấy hình hài)
+- ✅ Rà lại responsive + dark mode + contrast WCAG AA trên toàn bộ màn hình (2026-08-11) — quét 12
+  trang × 3 kích thước. Sửa: menu mobile cho `web/` (4 link chính trước đây **biến mất** dưới 768px),
+  tràn ngang header cả 2 app, contrast chữ phụ trên nền chìm (4.48/4.35 → 4.81), và **kích hoạt dark
+  mode cho `web/`** (CSS đã có sẵn nhưng thiếu provider nên là code chết). Chi tiết ở
+  [`../frontend/THIET-KE-GIAO-DIEN.md`](../frontend/THIET-KE-GIAO-DIEN.md)
 - ✅ Khởi tạo solution Clean Architecture (từ Jason Taylor Template — Mediator/Mapster thay
   MediatR/AutoMapper, xem [ADR-0009](../kien-truc/adr/0009-mediator-mapster-thay-mediatr-automapper.md))
 - ✅ Docker Compose môi trường dev (Postgres, Redis, RabbitMQ, MinIO)

@@ -160,3 +160,51 @@ còn lại (H3 trở xuống, toàn bộ UI/form) dùng Be Vietnam Pro để t�
 Đã dựng thêm [`wireframes/style-guide.html`](./wireframes/style-guide.html) — trang tham chiếu trực
 quan (color swatch, type scale, button/badge/card states, cả 2 theme) để soi khi code component thật,
 tránh mỗi màn hình tự suy diễn lại giá trị. Artifact xem trực tiếp trong hội thoại.
+
+---
+
+## Khả năng tiếp cận & responsive (rà 2026-08-11)
+
+### Contrast — chuẩn WCAG AA (≥ 4.5:1 cho chữ thường)
+
+Đã tính tỷ lệ cho **mọi cặp màu dùng thật** ở cả 2 app, cả chế độ sáng và tối. Kết quả: chỉ 1 cặp
+không đạt ở mỗi app, đều là **chữ phụ trên nền chìm** — đã sửa:
+
+| App | Token | Cũ | Mới | Tỷ lệ trên nền chìm |
+|---|---|---|---|---|
+| `web/` | `--ink-muted` | `#5b6e6c` | `#576968` | 4.48 → **4.81** |
+| `web-admin/` | `--muted-foreground` | `oklch(0.554 …)` | `oklch(0.53 …)` | 4.35 → **4.81** |
+
+Chế độ tối của **cả 2 app đạt AA toàn bộ**, không phải sửa gì.
+
+> Khi đổi token màu, tính lại tỷ lệ trước khi commit — đừng chỉ nhìn bằng mắt. Cặp 4.48:1 và
+> 4.5:1 nhìn giống hệt nhau nhưng một cái đạt chuẩn, một cái không.
+
+### Dark mode
+
+- `web-admin/` — có sẵn từ template shadcn-admin, hoạt động đầy đủ.
+- `web/` — **kích hoạt 2026-08-11**. Trước đó `globals.css` đã có đủ 44 dòng định nghĩa màu `.dark`
+  và package `next-themes` đã cài (`ui/sonner.tsx` gọi `useTheme()`), nhưng **không có provider nào
+  bọc app** nên toàn bộ là code chết. Nay thêm `components/theme-provider.tsx` +
+  `components/theme-switcher.tsx` (nút ở header).
+
+> Nút đổi theme render **cả 2 icon** rồi ẩn/hiện bằng `dark:` của Tailwind, không chọn theo state.
+> Cách `useEffect(() => setMounted(true))` phổ biến trên mạng bị ESLint chặn
+> (`react-hooks/set-state-in-effect`) và thêm 1 lần render mỗi khi mount.
+> `<html>` phải có `suppressHydrationWarning` vì next-themes gắn class ở client trước khi hydrate.
+
+### Responsive
+
+Đã quét tràn ngang + kích thước vùng bấm trên **12 trang × 3 kích thước** (375 / 768 / 1280).
+
+**Lỗi nặng nhất đã sửa:** thanh nav của `web/` để `hidden md:flex` nên dưới 768px **4 link chính
+(Tìm việc / Cơ sở y tế / Giới thiệu / Công cụ) biến mất hoàn toàn**, không có gì thay thế — người
+dùng điện thoại không điều hướng được. Nay có `SiteHeaderMobileNav` (Sheet trượt từ trái).
+
+Cũng sửa tràn ngang: header `web/` (383px > 375px, mọi trang) và header `web-admin/` (403px).
+
+**Còn lại — cố ý không sửa:**
+- Link nằm trong dòng chữ ("Xem tất cả →", "Quên mật khẩu?") cao < 24px: WCAG 2.5.8 **miễn trừ**
+  link trong đoạn văn.
+- `Router16 items` / `state9 items`: TanStack devtools, chỉ render khi `MODE === 'development'`.
+- Thanh kéo sidebar 16×1024: hẹp nhưng cao hết màn hình, không khó bấm.

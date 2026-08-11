@@ -37,7 +37,7 @@ Nếu có mục không đạt, ghi rõ lý do + kế hoạch xử lý vào nhậ
 
 | Giai đoạn | Trạng thái | Ghi chú ngắn |
 |---|---|---|
-| 0.1 — UI Shell | ✅ Xong | Cả 2 app dựng đủ màn hình, đã dọn hết tàn dư template. Còn 1 mục dời sang sau: rà responsive/dark mode/WCAG AA thành 1 đợt riêng |
+| 0.1 — UI Shell | ✅ **Xong hoàn toàn** | Cả 2 app dựng đủ màn hình, đã dọn hết tàn dư template. Đợt rà responsive/dark mode/WCAG AA đã làm 2026-08-11 (p3) |
 | 0.2 — Backend & hạ tầng | ✅ Xong | Clean Architecture + Docker Compose + CI/CD 3 repo + danh mục (đọc/ghi) + middleware `Accept-Language` |
 | 1 — MVP | ✅ **Chốt 2026-08-11** (đủ 8 bước checklist mục 1 — xem log "Chốt Giai đoạn 1" ở mục 3) | Backend 23 endpoint group / 16 migration / 151 test. `web/` + `web-admin/` đã nối API thật toàn bộ luồng chính: Identity, hồ sơ ứng viên (CCHN/chuyên khoa/học vấn/kinh nghiệm/CV Builder/CV file/xuất PDF), tra cứu tin + tổ chức, nộp hồ sơ, ATS Kanban, Credit + unlock hồ sơ, hàng đợi duyệt Vận hành, thanh toán `manual_transfer`. **Còn**: OAuth Google/Zalo + thông báo email — cả 2 người dùng đã loại khỏi phạm vi |
 | 2 — Hoàn thiện | 🟨 Chớm bắt đầu | 3 mục 🟨 làm ở mức đơn giản đã chốt (matching theo chuyên khoa, test năng lực, máy tính lương); OpenSearch/SignalR/mobile chưa bắt đầu |
@@ -67,6 +67,7 @@ Nếu có mục không đạt, ghi rõ lý do + kế hoạch xử lý vào nhậ
 | 2026-08-10 (p2) | Hoàn thiện giao diện, CV, phân trang, học vấn/kinh nghiệm, hoàn Credit | [`2026-08-10--phan-2-hoan-thien-ui-va-cv.md`](./tien-do/2026-08-10--phan-2-hoan-thien-ui-va-cv.md) |
 | 2026-08-11 | **Chốt Giai đoạn 1 (MVP)** — đủ 8 bước checklist | [`2026-08-11--chot-giai-doan-1.md`](./tien-do/2026-08-11--chot-giai-doan-1.md) |
 | 2026-08-11 (p2) | Rà 42 màn hình; bộ lọc tin theo **tuyến** & **mức lương** | [`2026-08-11--phan-2-bo-loc-tin-tuyen-luong.md`](./tien-do/2026-08-11--phan-2-bo-loc-tin-tuyen-luong.md) |
+| 2026-08-11 (p3) | Responsive, **kích hoạt dark mode cho `web/`**, contrast WCAG AA | [`2026-08-11--phan-3-responsive-dark-mode-wcag.md`](./tien-do/2026-08-11--phan-3-responsive-dark-mode-wcag.md) |
 
 ### Cách ghi nhật ký ngày mới
 
