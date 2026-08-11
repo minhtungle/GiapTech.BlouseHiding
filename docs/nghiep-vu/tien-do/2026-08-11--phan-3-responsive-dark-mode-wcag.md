@@ -99,3 +99,43 @@ devtools — đã kiểm `import.meta.env.MODE === 'development'` nên không l�
 >
 > Đây là lần thứ 3 trong ngày công cụ đo báo sai còn sản phẩm đúng. Vẫn giữ nguyên tắc: kết quả tự
 > động mâu thuẫn trực giác thì kiểm chứng bằng nguồn khác trước khi sửa code.
+
+---
+
+## Rà i18n toàn hệ thống
+
+Trước giờ chỉ sửa hardcode khi tình cờ gặp trong lúc làm việc khác. Nay quét một lượt cả 2 app.
+
+**`web/` sạch** — chỉ còn `app/not-found.tsx` ở root, và đó là **trường hợp không sửa được**: Next.js
+yêu cầu file này khi có segment động `[locale]`, nó nằm **ngoài** provider i18n nên không gọi `t()`
+được. Trang trong-locale không đi qua nó (proxy đã redirect về đúng tiền tố).
+
+**`web-admin/` còn 5 chỗ**, đều ở tầng xử lý lỗi toàn cục — chỗ dễ quên nhất vì không thuộc màn hình
+nào:
+- `main.tsx`: 3 chuỗi tiếng Việt + **1 chuỗi tiếng Anh của template** (`'Content not modified!'`)
+- `handle-server-error.ts`: 2 chuỗi tiếng Anh (`'Something went wrong!'`, `'No content.'`) — nghĩa là
+  **người dùng Việt gặp lỗi bất kỳ đều thấy tiếng Anh**
+
+Script quét ban đầu của tôi chỉ tìm ký tự tiếng Việt nên **bỏ sót 3 chuỗi tiếng Anh** — phải đọc file
+mới thấy. Bài học: quét hardcode phải tìm cả chuỗi tiếng Anh còn sót của template, không chỉ tiếng Việt.
+
+Các hàm này chạy **ngoài React component** (trong `QueryCache.onError`) nên gọi `i18next.t()` trực
+tiếp, không dùng hook.
+
+## Chặn tái diễn cho `web/`
+
+`web-admin/` đã có `src/i18n.test.ts` kiểm khóa đủ 6 ngôn ngữ, `web/` thì **không có gì giữ** — mà
+thiếu khóa chỉ lộ ra khi có người mở đúng trang đó bằng đúng ngôn ngữ đó (`MISSING_MESSAGE` lúc
+render), rất dễ lọt tới production. Đã xảy ra thật hôm nay với `jobs.employmentTypeValue.Ctv`.
+
+`web/` chưa có hạ tầng test nào; cài cả vitest chỉ để so khóa JSON là quá nặng. Viết
+`scripts/check-i18n.mjs` (Node thuần) và gắn vào `npm run lint` — CI đã chạy lint nên tự chặn PR.
+
+Bắt **cả 2 chiều**: khóa thiếu và khóa lạ (có ở bản dịch mà không có ở `vi` — thường là dấu hiệu đổi
+tên khóa mà quên sửa 1 file). Đã thử nghiệm bằng cách xoá 1 khóa lồng + thêm 1 khóa thừa: script bắt
+đúng cả 2, trả exit code 1.
+
+Hiện trạng: **8 namespace × 6 ngôn ngữ = 48 file, đủ khóa**.
+
+> `handle-server-error.test.ts` vỡ vì ghim chuỗi cứng — **lần thứ 3 trong ngày** gặp đúng dạng này
+> (`search-provider`, `user-auth-form`, và nay). Đều do i18n hóa 1 chỗ mà quên kiểm test của nó.
